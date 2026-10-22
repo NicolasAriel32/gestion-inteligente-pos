@@ -441,3 +441,17 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
 - Regresión: subproceso PYTHONTZPATH vacío carga Buenos Aires y offset -03:00 desde tzdata.
 - Práctica: distinguir datos auxiliares y biblioteca estándar, probar fallback empaquetable;
   esto no certifica Windows ni el instalador F6.
+
+## H-F5-006 — Captura de carga perdía el estado durante la auditoría
+
+- Prioridad P3; corregido antes de publicar la rama.
+- Reproducción: los PNG «loading» y «summary» tenían bytes idénticos pese a que el test
+  había observado Cargando al entrar. La ruta de prueba retenía solo una solicitud;
+  StrictMode puede cancelar/repetir el efecto inicial mientras axe recorre la pantalla.
+- Fix: retener todas las solicitudes del reporte hasta terminar las capturas, exigir
+  Cargando también después de screens y retirar la ruta al recibir el resultado real.
+  Sin modificar el producto, deshabilitar StrictMode ni simular datos de negocio.
+- Regresión: E2E completo aprobado en 31.4 s; PNG móvil inspeccionado muestra Cargando
+  y Consultar ocupado. Build/tipado E2E y lint pasan. Los archivos finales se regeneraron.
+- Práctica: mantener estable el estado durante toda la captura/auditoría y comprobar
+  el artefacto, no inferir su contenido del nombre ni de una aserción previa.

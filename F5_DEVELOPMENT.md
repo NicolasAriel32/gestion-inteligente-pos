@@ -203,3 +203,14 @@ instalador, backups/restauración o piloto. No se inició F6. Rangos de máximo 
 rankings top 10, consulta explícita para actualizar, sin CSV. El índice acota fechas pero
 la cantidad de filas del período no tiene un máximo artificial: no se promete tiempo
 medido en PC piloto; sumar exacto procesa filas válidas de ese rango. No hay telemetría.
+
+### Corrección final de evidencia de carga
+
+La revisión por tamaño/bytes detectó que las primeras capturas loading eran idénticas
+al resumen: la retención de una sola solicitud no cubría la repetición de efectos en
+StrictMode. Se corrigió el test para retener todas hasta finalizar screens y comprobar
+Cargando otra vez antes de liberar; no cambia código de aplicación. Ver H-F5-006.
+E2E final posterior a esta corrección: **1 aprobado, 0 fallidos, 31.4 s** (32.3 s comando).
+Build TypeScript/Vite y lint nuevamente correctos; artefactos de aplicación idénticos.
+Se inspeccionó PNG móvil de carga: mensaje Cargando reporte y Consultar ocupado visibles.
+Se regeneraron todos los PNG F5; se mantienen **188 casos distintos aprobados**.

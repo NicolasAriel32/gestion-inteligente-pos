@@ -398,16 +398,20 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     expect(await worker.evaluate(async () => (await fetch('/api/reports/summary')).status)).toBe(403)
     let releaseReport!: () => void
     const reportGate = new Promise<void>(resolve => { releaseReport = resolve })
-    await page.route('**/api/reports/summary?*', async route => {
+    // StrictMode puede montar/cancelar/repetir la lectura inicial: retener todas.
+    const holdReports = async (route: import('@playwright/test').Route) => {
       await reportGate
       return route.continue()
-    }, { times: 1 })
+    }
+    await page.route('**/api/reports/summary?*', holdReports)
     await page.getByRole('button', { name: 'Reportes', exact: true }).press('Enter')
     await expect(page.getByText('Cargando reporte…', { exact: true })).toBeVisible()
     await screens(page, 'reports-loading')
+    await expect(page.getByText('Cargando reporte…', { exact: true })).toBeVisible()
     releaseReport()
     await expect(page.getByRole('heading', { name: 'Resumen del período', exact: true })).toBeFocused()
     await expect(page.locator('.report-kpi').filter({ has: page.getByRole('heading', { name: 'Ventas', exact: true }) }).locator('.report-value')).toHaveText('1')
+    await page.unroute('**/api/reports/summary?*', holdReports)
     const realReport = await page.evaluate(async () => fetch('/api/reports/summary').then(r => r.json()))
     expect(realReport.current.sales).toBe('1')
     // La expectativa del importe se comprueba contra la venta histórica real.
