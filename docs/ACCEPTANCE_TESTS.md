@@ -42,3 +42,19 @@ Registrar comandos, resultados, fallos conocidos y evidencia del piloto. Una pru
 
 ## Definición de listo para piloto
 Todas las pruebas críticas de dinero, stock, roles, backup/restauración y concurrencia pasan; instalación validada en PC objetivo; dueño da aprobación explícita.
+
+## Evidencia F2 — 2026-10-22
+
+- AT-010 ejecutada: inicialización válida única; dos solicitudes concurrentes producen
+  201/409, exactamente un ADMIN y un evento de auditoría.
+- AT-011 parcial (identidad): alta/desactivación con actor y UTC; rollback ante fallo de auditoría.
+  Operaciones comerciales siguen pendientes.
+- AT-012 parcial (identidad): inicialización, login y gestión de empleados en Chromium,
+  bloqueando solicitudes externas. No se afirma validación del flujo de venta inexistente.
+- AT-018 parcial (identidad): reinicio real de Python conserva usuarios y sesiones válidas.
+- Autorización: EMPLOYEE recibe 403 en GET/POST/PATCH administrativos; no puede escalar rol.
+- Seguridad: Host/Origin, CSRF, cookies, credenciales inválidas, expiración, logout,
+  desactivación concurrente y ausencia de secretos en respuestas/auditoría probados.
+
+Resultados, comandos y alcance: [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
+El resto de la matriz comercial y Windows continúa pendiente.

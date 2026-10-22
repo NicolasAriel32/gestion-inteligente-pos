@@ -11,3 +11,5 @@ dist/
 *.db-wal
 *.db-shm
 *.egg-info/
+test-results/
+playwright-report/

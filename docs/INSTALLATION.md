@@ -48,3 +48,11 @@ En la primera versión se acepta actualización manual asistida y documentada; n
 - Recuperación de respaldo real.
 - Desinstalación preservando datos.
 - Actualización de prueba sin pérdida de información.
+
+## Desarrollo de identidad F2
+
+La secuencia de desarrollo disponible está en [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
+Después de migrar, `python -m app.bootstrap` genera el secreto para el asistente inicial,
+con vigencia de 30 minutos; `--renew` revoca uno pendiente, únicamente antes de inicializar.
+Nunca imprime el secreto ni admite volver a inicializar una base con ADMIN.
+Este procedimiento de desarrollo no equivale a instalador Windows validado.

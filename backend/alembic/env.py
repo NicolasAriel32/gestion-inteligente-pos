@@ -1,15 +1,12 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
-
 from alembic import context
-from app.infrastructure.database import Base, get_db_path
+from app.infrastructure.database import Base, build_engine, get_db_path
 
 config = context.config
 if config.config_file_name:
     fileConfig(config.config_file_name)
 path = get_db_path()
-path.parent.mkdir(parents=True, exist_ok=True)
 config.set_main_option("sqlalchemy.url", f"sqlite:///{path}")
 target_metadata = Base.metadata
 
@@ -19,7 +16,7 @@ def run_migrations_offline():
         context.run_migrations()
 
 def run_migrations_online():
-    engine = engine_from_config(config.get_section(config.config_ini_section, {}), prefix="sqlalchemy.", poolclass=pool.NullPool)
+    engine = build_engine(path)
     with engine.connect() as connection:
         connection.exec_driver_sql("PRAGMA foreign_keys=ON")
         connection.exec_driver_sql("PRAGMA busy_timeout=5000")

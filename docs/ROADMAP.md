@@ -1,6 +1,9 @@
 # ROADMAP — trabajo incremental SDD
 
-**Estado actual**: F1 completada y validada técnicamente el 2026-10-22. Esqueleto local con API, interfaz, migración y pruebas ejecutadas; evidencia en [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md). Sin funcionalidades comerciales ni instalador; F2 no iniciada.
+**Estado actual**: F1 y F2 completadas y validadas técnicamente el 2026-10-22.
+Identidad local, sesiones, permisos y gestión de empleados; evidencia en
+[F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md) y [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
+Sin catálogo, inventario, ventas ni instalador. F3 no iniciada.
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
 
@@ -17,9 +20,9 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - Aceptación: ejecutar ambos lados localmente sin servicios cloud, comandos documentados y tests básicos pasando.
 
 ## F2 — Identidad y usuarios
-- [ ] Inicialización segura de ADMIN de única ejecución.
-- [ ] Login, logout, sesión y autorización de empleados.
-- [ ] Auditoría básica.
+- [x] Inicialización segura de ADMIN de única ejecución.
+- [x] Login, logout, sesión y autorización de empleados.
+- [x] Auditoría básica.
 - Aceptación: EMPLOYEE no accede a funciones admin vía API.
 
 ## F3 — Catálogo e inventario
