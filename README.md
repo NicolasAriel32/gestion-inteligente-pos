@@ -1,8 +1,10 @@
 # Gestión Inteligente POS
 
 Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
-**Identidad, catálogo, inventario, caja e historial locales implementados.** F4 se entrega
-para revisión; la prueba física de impresoras de 58 mm continúa pendiente.
+**Versión 0.4.0: identidad, catálogo, inventario, caja e historial locales implementados.**
+F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
+Versiones de producto, esquema y evidencias: [VERSIONS.md](docs/VERSIONS.md).
+Siguiente fase preparada, todavía sin iniciar: [instrucción F5](docs/NEXT_STEP_F5.md).
 
 ## Decisiones de producto
 

@@ -1,7 +1,8 @@
 # PERSISTENCE — base de datos, transacciones y respaldos
 
-- Versión: 0.1
-- Propuesta: SQLite + SQLAlchemy + Alembic en una sola PC
+- Versión de referencia: 0.4.0 (2026-10-22)
+- Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema 0004_checkout_history.
+  Respaldo y restauración siguen como diseño F6, sin implementación validada.
 
 ## Ubicación
 En MVP con una misma cuenta de Windows:

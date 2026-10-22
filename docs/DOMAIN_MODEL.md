@@ -1,6 +1,7 @@
 # DOMAIN_MODEL — vocabulario, entidades y eventos
 
-- Versión: 0.1; definición inicial del dominio (revisar con comercio piloto)
+- Versión de referencia: 0.4.0 (2026-10-22); núcleo F1–F4 implementado.
+  Reporting es diseño F5; validar dominio y hardware con el comercio piloto.
 
 ## Lenguaje compartido
 **Producto**: ítem vendible por unidades enteras.
@@ -28,7 +29,7 @@
 - No modificar producto ya vendido mediante borrado físico.
 - El estado VOIDED no retorna a COMPLETED.
 - Una venta completada tiene al menos un ítem y un pago.
-- No registrar saldo a cobrar, descuentos, impuestos desglosados ni pagos mixtos en v0.1.
+- No registrar saldo a cobrar, descuentos, impuestos desglosados ni pagos mixtos en el MVP.
 
 ## Eventos de dominio (descriptivos; no requiere event sourcing)
 PRODUCT_CREATED, PRODUCT_UPDATED, STOCK_ADJUSTED, SALE_COMPLETED, SALE_VOIDED, EMPLOYEE_CREATED, EMPLOYEE_DISABLED.

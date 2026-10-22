@@ -1,6 +1,7 @@
 # ACCEPTANCE_TESTS — criterios de aceptación trazables
 
-Versión 0.1. La matriz define el objetivo completo. Solo los casos señalados en las
+Versión de referencia 0.4.0 (2026-10-22). La matriz define el objetivo completo.
+Solo los casos señalados en las
 secciones de evidencia cuentan como ejecutados; reportes, impresora física y Windows siguen pendientes.
 
 ## Conjunto mínimo (automático + piloto)
@@ -97,6 +98,6 @@ Comandos, resultados y límites: [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
 - Documento de 58 mm: tres PDF reales (normal, texto/código largo y anulado), CSS print
   y reimpresión sin nuevo POST comprobados; no constituye prueba física de Global/Waggs.
 
-119 backend + 34 frontend + 1 E2E = 154 aprobadas, cero fallidas finales. F4 permanece
-pendiente de revisión y validación física de impresora. AT-005/015 son F5; AT-019/020,
+119 backend + 34 frontend + 1 E2E = 154 aprobadas, cero fallidas finales. El propietario
+autorizó integrar F4 conservando pendiente la validación física de impresora. AT-005/015 son F5; AT-019/020,
 respaldo y Windows, siguen pendientes. [Evidencia completa](../F4_DEVELOPMENT.md).

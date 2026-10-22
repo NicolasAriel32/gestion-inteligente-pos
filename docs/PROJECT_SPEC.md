@@ -1,7 +1,8 @@
 # PROJECT_SPEC — Gestión Inteligente POS
 
-- Versión: 0.1 (especificación inicial)
-- Estado: alcance de MVP acordado; arquitectura técnica con propuestas registradas en DECISIONS.md
+- Versión de referencia: 0.4.0 (2026-10-22); ver VERSIONS.md
+- Estado: núcleo F1–F4 implementado y validado localmente; F4 aprobada para integración.
+  Impresora física/piloto pendientes; dashboard y reportes corresponden a F5 sin iniciar.
 - Moneda: ARS; idioma: español argentino; reportes: America/Argentina/Buenos_Aires
 
 ## Misión
@@ -40,7 +41,7 @@ Sin autorregistro público. El dueño puede crear/desactivar empleados; los perm
 - Versionamiento de esquema, logs sin datos secretos y posibilidad de reparación.
 - Software entendible por Codex y otras herramientas mediante specs y pruebas versionadas.
 
-## Fuera de alcance v0.1
+## Fuera de alcance del MVP
 Facturación fiscal ARCA, múltiples sucursales/cajas, sincronización en nube, fiado/cuentas corrientes, proveedores, compras automáticas, pagos online, devoluciones parciales, lector por cámara, e-commerce, MCP operativo, LLM, modo multi-PC.
 
 ## Criterio de aceptación comercial

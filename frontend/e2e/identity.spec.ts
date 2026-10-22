@@ -317,12 +317,18 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     await screens(page, 'checkout-pending')
     await page.reload()
     await page.getByRole('button', { name: 'Caja', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Agregar Agua mineral al carrito', exact: true })).toHaveCount(0)
-    // Salir y volver a autenticar no descarta una venta cuya respuesta fue incierta.
+    // Desmontar Caja y reautenticar no descarta una respuesta comercial incierta.
+    // La sección activa no es un contrato de sesión: volver a Caja explícitamente.
+    await page.getByRole('button', { name: 'Equipo', exact: true }).click()
     await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
     await page.getByLabel('Usuario', { exact: true }).fill('owner')
     await page.getByLabel('Contraseña', { exact: true }).fill('E2e-password-owner-42')
     await page.getByRole('button', { name: 'Ingresar', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Caja', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Caja', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Reintentar la misma venta', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Venta #1 · Registrada', exact: true })).toBeVisible()
     expect(saleRequests).toHaveLength(2)

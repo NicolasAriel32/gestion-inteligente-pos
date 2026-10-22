@@ -1,5 +1,10 @@
 # F4 — Caja e historial
 
+Actualización posterior a la entrega: el propietario autorizó fusionar PR #4 y alinear
+las versiones/specs en 0.4.0, conservando pendiente la prueba física de la impresora.
+La evidencia original que sigue no se reescribe como prueba de hardware ni de F5.
+Estado vigente y control de versiones: docs/ROADMAP.md y docs/VERSIONS.md.
+
 ## Diseño previo — 2026-10-22
 
 El propietario aprobó la revisión de F3 y autorizó fusionar PR #3 y comenzar F4.
@@ -269,14 +274,16 @@ Capturas reales y documentos (datos ficticios, sin campos secretos poblados):
   ROADMAP, DECISIONS, ACCEPTANCE_TESTS, DESIGN_SYSTEM, PRINTING, ENGINEERING_FINDINGS y checklist.
 - Evidencia en docs/screenshots/f4; ninguna base SQLite ni secreto se versiona.
 
-F3 fusionada por autorización en 3848d55. F4 se publica en feat/f4-checkout-history
-y PR borrador hacia main; no se fusiona esta fase. Ramas F1/F2/F3 se conservan.
+Entrega inicial: F3 fusionada en 3848d55 y F4 publicada en feat/f4-checkout-history,
+PR #4 en borrador. Posteriormente el propietario autorizó la fusión y la actualización
+de versiones. Ramas F1/F2/F3 se conservan.
 
 ## Estado y pendientes
 
 Software F4 implementado y verificado técnicamente. **F4 no se marca completamente
-cerrada**: falta revisión del propietario y prueba física del modelo de impresora de
-58 mm en Windows. Ver docs/PRINTING.md para procedimiento y evidencia faltante.
+cerrada** en hardware/piloto: el propietario ya autorizó integrarla, pero falta prueba
+física del modelo de impresora de 58 mm en Windows. Ver docs/PRINTING.md para procedimiento
+y evidencia faltante.
 No hay verificaciones automatizadas pendientes/fallidas; esta limitación de hardware
 se informa por separado y no se reemplaza con capturas/PDF.
 
@@ -288,3 +295,24 @@ Consultar historial antes de volver a registrar una operación incierta en ese c
 La distribución/impresoras concretas/backup y recuperación del navegador requieren
 validación en PC objetivo/piloto. Recuperación de credenciales sigue pendiente de decisión.
 No se inició F5 ni se promete instalador o piloto aprobado.
+
+
+## Revalidación previa al merge autorizado — 2026-10-22
+
+Se alinea producto/API/paquetes/lockfile en 0.4.0 y las specs vigentes, sin modificar
+reglas, esquema 0004 ni dependencias. Se conserva toda la evidencia histórica anterior.
+Comandos, metadata instalada, resultados e incidencias de esta revalidación:
+[docs/VERSIONS.md](docs/VERSIONS.md). Hallazgos H-REL-001/002/003 registrados con
+causa, corrección, regresión y prevención. El primer E2E falló; su repetición diagnóstica
+pasó y el test se ajustó para navegación explícita/estado positivo, sin cambios funcionales.
+
+119 pruebas backend y 34 frontend, Ruff, ESLint, TypeScript/Vite, pip check y migración
+CLI sobre SQLite nueva aprobados en esta revisión. El resultado E2E final consta en
+VERSIONS.md; no se suman repeticiones al conteo de casos distintos. La impresora física
+sigue pendiente aunque el propietario haya autorizado el merge. F5 no se implementó;
+el siguiente prompt está en [docs/NEXT_STEP_F5.md](docs/NEXT_STEP_F5.md).
+
+Resultado final: 1 flujo E2E, ejecutado dos veces sobre bases nuevas, 2/2 ejecuciones
+aprobadas (58.8 s total); 154 casos distintos aprobados y cero fallidos finales.
+Sin solicitudes externas ni errores JavaScript no controlados. No hubo cambios de
+backend funcional, migraciones ni contratos de F1–F4 durante la integración.

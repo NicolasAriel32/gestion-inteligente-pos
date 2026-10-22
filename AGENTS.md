@@ -1,7 +1,10 @@
 # AGENTS.md — instrucciones para agentes de desarrollo
 
 ## Objetivo
-Desarrollar Gestión Inteligente POS: sistema local-first para una caja de kiosco argentino. Este repositorio contiene inicialmente **especificaciones**, no software funcional. No usar Lovable ni agregar servicios cloud obligatorios.
+Desarrollar Gestión Inteligente POS: sistema local-first para una caja de kiosco argentino.
+El repositorio contiene especificaciones y software local F1–F4 (versión 0.4.0).
+Consultar ROADMAP para distinguir entregas verificadas, validación física pendiente y
+fases futuras. No usar Lovable ni agregar servicios cloud obligatorios.
 
 ## Orden de lectura
 1. docs/PROJECT_SPEC.md — alcance y actores
@@ -37,10 +40,12 @@ Ante conflicto, **detener la implementación relacionada y señalarlo**. No rein
 - Nunca registrar secretos ni contraseñas en logs, repositorio o respuestas.
 - No ejecutar operaciones destructivas, migraciones irreversibles ni cambios sensibles sin autorización humana.
 
-## Convenciones para código futuro
+## Convenciones de código
 - Estructura por capas y módulos de dominio; frontend sin acceso directo a SQLite.
 - Tipado explícito, contratos OpenAPI y pruebas automáticas.
 - Comandos de entorno y dependencias versionadas y documentadas en README.
+- Mantener coherentes versiones de backend, API, frontend, lockfile y specs según
+  docs/VERSIONS.md; la revisión Alembic es independiente de la versión del producto.
 - Pruebas de integración reales para concurrencia de SQLite, auth y operaciones monetarias.
 - GitHub es fuente de verdad. Un cambio no está listo por verse correcto visualmente.
 

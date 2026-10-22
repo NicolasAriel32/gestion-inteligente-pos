@@ -27,6 +27,8 @@ No marcar una comprobación como realizada sin registrar comando, entorno y resu
 - [ ] Revisar escenarios negativos: que pase el flujo habitual no basta para cerrar la fase.
 - [ ] Registrar hallazgos con causa, reproducción, fix, regresión y limitaciones comprobadas.
 - [ ] Verificar rama, diff, commits remotos y conservación de ramas fuera del alcance.
+- [ ] Comparar versiones backend/API/frontend/raíces del lockfile y metadata instalada;
+  actualizar specs vigentes sin reescribir evidencia histórica ni validar pendientes por fusión.
 
 ## Dinero, inventario y ampliación de módulos
 
@@ -42,6 +44,8 @@ No marcar una comprobación como realizada sin registrar comando, entorno y resu
 
 - [ ] Probar selección repetida y recarga, sin bucles ni pérdida de historial visible.
 - [ ] Comprobar que avisos, errores y foco pertenezcan a la sección actual.
+- [ ] Esperar estados positivos en E2E y navegar explícitamente tras reautenticar;
+  no inferir montaje por ausencia de controles ni exigir una sección no contratada.
 - [ ] Revisar capturas reales de escritorio/móvil además de axe y desbordamiento.
 
 ## Confirmación comercial e impresión

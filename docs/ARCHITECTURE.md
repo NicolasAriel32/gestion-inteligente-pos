@@ -1,16 +1,18 @@
 # ARCHITECTURE — arquitectura del MVP local
 
-- Versión: 0.1
-- Estado: diseño objetivo sujeto a validación técnica
+- Versión de referencia: 0.4.0 (2026-10-22)
+- Estado: núcleo F1–F4 validado localmente; distribución Windows y partes futuras pendientes.
 - Referencias: PROJECT_SPEC.md, BUSINESS_RULES.md y DECISIONS.md
 
-## Despliegue
-Un equipo Windows ejecuta:
+## Despliegue objetivo Windows (F6)
+La distribución final en un equipo Windows deberá ejecutar:
 - Frontend estático compilado de **React + TypeScript + Vite**.
 - **FastAPI** local que sirve frontend y API REST; por defecto 127.0.0.1:8765 (solo loopback).
 - **SQLite** en carpeta privada de datos; el frontend **nunca** accede al archivo directamente.
 
-No se necesita conexión de red para operaciones esenciales. La distribución final buscará empaquetar todos los runtimes necesarios, sujeta a pruebas en Windows.
+El desarrollo actual ejecuta FastAPI y Vite por separado en loopback; véase README.
+No se necesita internet para las operaciones implementadas. La distribución final buscará
+empaquetar todos los runtimes necesarios, sujeta a pruebas en Windows.
 
 ## Capas y dependencias
 - Presentation: componentes React, vistas, estados de UI.

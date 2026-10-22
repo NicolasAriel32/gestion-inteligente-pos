@@ -327,3 +327,54 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
   tipografía local y contraste, sin animaciones/dependencias añadidas.
 - Práctica transferible: revisar datos reales de uno/muchos y texto orientado a la tarea,
   además de estructura técnica, para sostener una interfaz clara y cercana.
+
+## H-REL-001 — Versiones de paquete y specs rezagadas respecto de la API
+
+- Prioridad: P2. Estado: corregido para la integración autorizada de F4.
+- Reproducción: FastAPI anunciaba 0.4.0, mientras backend/pyproject.toml,
+  frontend/package.json y las dos raíces de package-lock.json seguían en 0.1.0.
+  Las specs conservaban cabeceras 0.1 y AGENTS aún describía un repositorio solo de specs.
+- Causa: se actualizaban funciones/evidencia de fase sin un inventario de versiones
+  ni una comprobación de metadata instalada/documentación vigente antes de integrar.
+- Fix: alinear en 0.4.0 sin cambiar dependencias ni esquema; actualizar estados de
+  implementación y autorización del propietario, conservando pendientes de hardware y
+  distribución. VERSIONS.md distingue producto, revisión Alembic y formato de lockfile.
+- Verificación: comparar metadata Python instalada, pyproject, API/OpenAPI, package.json
+  y ambas versiones raíz del lockfile; confirmar que los paquetes transitivos no cambian.
+  Ejecutar comprobaciones/build reales y registrar resultados en VERSIONS.md.
+- Práctica transferible: revisar versiones como parte del cierre, sin reemplazar en masa
+  referencias históricas ni confundir fusión autorizada con certificación de hardware.
+
+## H-REL-002 — Reinstalación editable sin herramientas de build disponibles
+
+- Prioridad: P3. Estado: corregido sin agregar dependencias de ejecución.
+- Reproducción: pip install --no-index --no-deps --no-build-isolation -e . falló con
+  BackendUnavailable: Cannot import setuptools.build_meta en el entorno existente.
+- Causa: se deshabilitó el aislamiento sin que setuptools estuviera instalado en ese
+  entorno. El backend de build declarado no es una dependencia de ejecución.
+- Fix: reinstalar con pip install --no-deps -e . y el aislamiento predeterminado;
+  las herramientas de build se obtuvieron durante preparación. No se cambió el árbol
+  de dependencias de aplicación ni se exigió internet para ejecutar el POS.
+- Regresión: metadata instalada 0.4.0 y pip check correcto. El primer comando se
+  documenta como fallido, separado de la reinstalación y verificaciones aprobadas.
+- Práctica transferible: distinguir instalación, build y ejecución offline; no asumir
+  que --no-build-isolation funciona sin preparar el backend de construcción.
+
+## H-REL-003 — E2E dependía de la sección activa tras reautenticar
+
+- Prioridad: P3. Estado: flujo de prueba corregido; aplicación/contratos sin cambios.
+- Reproducción: una ejecución agotó 10 s buscando «Reintentar la misma venta» tras
+  logout/login. Antes de logout solo esperaba ausencia de un botón de catálogo, que
+  también se cumple mientras el componente todavía no está montado.
+- Diagnóstico: la repetición con sonda acotada mostró sección Caja e intento conservado
+  y pasó; no se capturó el DOM del primer fallo. No se afirma pérdida de datos ni se
+  atribuye una carrera concreta sin evidencia. La prueba asumía restauración de sección,
+  comportamiento que no forma parte del contrato de sesión.
+- Fix: esperar el panel positivo de venta pendiente tras recarga; navegar a Equipo para
+  desmontar Caja, salir/reautenticar y volver explícitamente a Caja. Comprobar otra vez
+  el panel antes de recuperar el mismo pedido. Se retira la sonda; no se amplían tiempos
+  ni se omiten aserciones de identidad, una sola venta, importe, stock o persistencia.
+- Regresión: ejecutar el flujo E2E completo dos veces con SQLite nuevo por ejecución;
+  resultados reales en VERSIONS.md. La primera ejecución fallida queda registrada.
+- Práctica transferible: sincronizar con estados positivos y pasos de navegación del
+  usuario; separar contratos de sesión/operación de una selección visual transitoria.

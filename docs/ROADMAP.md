@@ -1,11 +1,12 @@
 # ROADMAP — trabajo incremental SDD
 
-**Estado actual**: F1, F2 y F3 completadas y validadas técnicamente el 2026-10-22.
+**Versión de referencia**: 0.4.0 (2026-10-22); esquema 0004_checkout_history.
+**Estado actual**: F1–F4 implementadas y validadas técnicamente.
 Identidad local, empleados, catálogo e inventario; evidencia en
 [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 aprobada y fusionada a main en 3848d55.
-F4 implementada y validada como software en rama; **cierre pendiente** de revisión humana
-y prueba física de la impresora de 58 mm solicitada. Evidencia en
+El propietario autorizó integrar F4 mediante PR #4, manteniendo pendiente la prueba física
+de la impresora de 58 mm. La autorización de fusión no certifica ese hardware. Evidencia en
 [F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md). Sin reportes ni instalador; F5 no iniciada.
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
@@ -51,8 +52,9 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - Software: 119 pruebas backend, 34 frontend y 1 flujo E2E aprobados; 154 en total,
   cero fallidas finales. Migraciones, Ruff, ESLint y build correctos. Recuperación después
   de perder respuesta, reautenticación, reinicio y PDF de 58 mm comprobados.
-- No marcar la fase completamente cerrada: falta modelo y equipo para validar impresión
-  real, además de revisión del propietario. No se inició F5.
+- Software aprobado para integración por el propietario en PR #4. No marcar validada la
+  impresora: faltan modelo, controlador y prueba física. El cierre integral/piloto conserva
+  ese pendiente. F5 todavía no fue autorizada ni iniciada.
 
 ## F5 — Dashboard y reportes
 - [ ] KPIs y comparación temporal.
