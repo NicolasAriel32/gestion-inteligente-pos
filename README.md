@@ -153,3 +153,8 @@ empaquetado sin Python/Node externos. No hay instalador Windows certificado por 
 [Procedimientos de uso/backup/CSV/actualización](docs/F6_OPERATIONS.md) ·
 [Validación Windows pendiente](docs/WINDOWS_VALIDATION.md) ·
 [Diseño y resultados reales](F6_DEVELOPMENT.md).
+
+Build y smoke nativos aprobados en Windows Server 2025; [artefacto candidato y checksums](docs/WINDOWS_VALIDATION.md).
+Sigue pendiente Windows 11 limpio. La instalación compatible seguirá arrancando sin
+actualizar aunque exista otra versión; actualizar es decisión manual del propietario
+y podrá hacerse con una herramienta externa separada (ADR-015).

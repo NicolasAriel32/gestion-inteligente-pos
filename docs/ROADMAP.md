@@ -68,7 +68,7 @@ F6 autorizada por instrucción explícita posterior; implementación candidata e
 ## F6 — Respaldo, importación y distribución
 - [x] Backup consistente y restauración probados en SQLite temporal/Linux; falta PC Windows objetivo.
 - [x] CSV de altas nuevas con vista previa/validación, confirmación atómica y reintentos.
-- [ ] Build Windows, instalador y arranque único.
+- [x] Build Windows, instalador y arranque único comprobados en CI Windows Server 2025; PC Windows 11 limpia pendiente.
 - [x] Actualizaciones manuales documentadas; comprobación Windows pendiente.
 - Aceptación: instalación limpia sin herramientas de desarrollo y recuperación demostrada.
 - **F6 pendiente de cierre**: scripts/paquete candidato y validación Linux no certifican Windows 11 limpio.

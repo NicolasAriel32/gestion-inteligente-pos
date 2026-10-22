@@ -121,3 +121,16 @@ gate/journal y generación; no recuperación sin credenciales. CSV UTF-8 de alta
 500 filas/1 MiB, importes exactos, UUID todo-o-nada. 0006 aditiva. PyInstaller/Inno Setup
 se implementan como candidatos; ADR-007 conserva pendiente validación Windows 11 limpia.
 No modifica alcance de una PC/caja ni incorpora ayuda PR #6. Diseño en F6_DEVELOPMENT.md.
+
+## ADR-015 — Actualización externa voluntaria (aceptada, 2026-10-22)
+
+El propietario establece que una instalación funcional sigue arrancando aunque exista
+una versión posterior. No hay caducidad del ejecutable, versión mínima remota, conexión
+obligatoria ni bloqueo por faltar una actualización. Actualizar depende exclusivamente
+de una acción manual del propietario; puede usar un programa externo separado si lo
+decide. No se implementa ese actualizador externo dentro de este alcance.
+
+El POS conserva validación local de integridad/revisión de SQLite y preparación explícita
+con respaldo al reemplazar voluntariamente binarios. Esas protecciones no consultan
+versiones nuevas ni obligan a cambiar una instalación compatible. La aplicación no
+descarga ni instala actualizaciones al arrancar o cerrar.

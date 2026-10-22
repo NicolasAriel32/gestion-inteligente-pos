@@ -109,3 +109,12 @@ revisado. No se promete rollback de versiones no probado. No hay actualizador si
 Desinstalar elimina binarios/accesos, conserva data/backups/config del perfil privado.
 Reinstalar no recrea ADMIN ni borra datos. Cerrar solo el navegador no detiene el proceso;
 ADMIN usa Cerrar aplicación. En desarrollo usar Ctrl+C en el servidor.
+
+## La actualización es opcional
+
+La versión instalada y compatible sigue funcionando aunque haya una más reciente.
+El arranque no exige comprobar internet, descargar paquetes ni actualizar por antigüedad.
+Solo el propietario decide cuándo reemplazarla, manualmente o con una herramienta externa
+separada si lo desea. F6 no incluye ese programa actualizador ni actualización silenciosa.
+Si decide cambiar los binarios, el procedimiento previo con respaldo y preparación
+explícita de la base sigue siendo obligatorio para proteger sus datos.

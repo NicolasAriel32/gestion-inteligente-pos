@@ -64,3 +64,12 @@ Ante conflicto, **detener la implementación relacionada y señalarlo**. No rein
 - No habilitar autogeneración con metadatos vacíos o parciales.
 - Al cambiar el esquema, actualizar el contrato de arranque y probar versiones incompatibles.
 - Documentar cada nuevo hallazgo con causa, fix, prueba de regresión y práctica reutilizable.
+
+## Actualización voluntaria — instrucción del propietario (2026-10-22)
+
+Nunca bloquear el arranque por existir una versión nueva, antigüedad del programa,
+falta de conexión o falta de actualización. La instalación compatible debe seguir
+funcionando offline. El propietario decide si actualiza, manualmente y mediante una
+herramienta externa separada. No agregar comprobaciones remotas obligatorias ni
+actualizadores automáticos/silenciosos. Se mantienen las protecciones de integridad
+y compatibilidad de la base; no modificar datos ni migrar en el arranque normal.

@@ -175,3 +175,41 @@ según docs/WINDOWS_VALIDATION.md. Una CI Windows Server puede aportar build/smo
 pero no reemplaza esa lista. Se conserva producto 0.5.0 candidato; no se declara 0.6.0
 validada, F6 completa, piloto, producción ni impresión física aprobados. PR #6 de ayuda
 sigue separado. No se autoriza merge, release ni F7.
+
+## Aclaración del propietario durante la entrega — 2026-10-22
+
+Actualización siempre voluntaria: nunca bloquear arranque por versión nueva disponible,
+antigüedad ni falta de conexión. El propietario podrá usar un programa separado para
+actualizar manualmente si lo decide. La implementación no contiene consulta remota,
+caducidad ni requisito de actualización. Se documenta en ADR-015 y AGENTS; los controles
+locales de integridad/esquema permanecen para proteger datos. No se agrega un actualizador
+externo sin un alcance posterior explícito.
+
+## Primera construcción y ejecución Windows reales
+
+El workflow 39769757105 (848dc3a) pasó en Windows Server 2025/26100, Python 3.12.10,
+PyInstaller 6.16.0, Inno Setup 6.7.1: generó setup Windows .exe y completó 8 pasos del
+smoke de instalador con PATH System32. ZIP descargado y checksum contrastado con GitHub.
+Esto ya es evidencia Windows nativa; no transforma la prueba pendiente en Windows 11
+limpio en una aprobación. Detalle y ejecuciones posteriores: docs/WINDOWS_VALIDATION.md.
+
+## Cierre de evidencia y publicación candidata
+
+- Rama publicada feat/f6-backup-import-distribution; commits 848dc3a y b0297dc.
+  [PR #7](https://github.com/NicolasAriel32/gestion-inteligente-pos/pull/7) abierto en borrador
+  hacia main fb85521. No se fusionó; PR #6 de ayuda permanece separado.
+- Windows ampliado aprobado en workflow 39834898033/commit b0297dc: 8 pasos smoke,
+  ventas/anulación/reportes restaurados y hashes DB/backups/config conservados después
+  de reinstalación/desinstalación. Se descargó artefacto y verificaron hash ZIP y setup.
+  Build Windows produjo setup 19.395.208 bytes; evidencia JSON y SHA-256 en
+  docs/validation/f6 y docs/WINDOWS_VALIDATION.md. No se publica release.
+- Código de aplicación final conserva pruebas Linux 171+49+1 aprobadas. Cambios posteriores
+  al conjunto completo: refinamientos de journal/handles cubiertos por 23 focalizadas,
+  E2E y paquetes; selector en español cubierto por frontend build/E2E; ampliación del
+  harness Windows cubierta por ejecución CI real. No se suman repeticiones al total.
+- Estado implementado: backups/restore/CSV/runtime/instalador/actualización manual.
+  Probado: Linux y Windows Server nativo, con alcance descrito. Fallos iniciales corregidos
+  y preservados en este documento; sin fallos finales de suites/build/smoke ejecutados.
+  Bloqueado el cierre de F6 por falta de PC/VM Windows 11 limpia y validación humana del
+  checklist objetivo. Impresora física 58 mm continúa pendiente. Versión final 0.6.0
+  diferida por esa validación; siete fuentes mantienen 0.5.0 candidato. F7 no iniciada.

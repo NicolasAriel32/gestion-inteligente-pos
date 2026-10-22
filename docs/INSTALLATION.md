@@ -92,3 +92,7 @@ actualización requieren confirmación explícita --prepare, respaldo previo y A
 existe. Launcher abre navegador después de health verificado, solo loopback y mutex/lock.
 Procedimientos: [F6_OPERATIONS.md](F6_OPERATIONS.md). Pruebas pendientes de Windows 11
 limpio: [WINDOWS_VALIDATION.md](WINDOWS_VALIDATION.md). No afirmar soporte por build Linux.
+
+Build/smoke Windows Server aprobados: evidencia y artefacto en WINDOWS_VALIDATION.md.
+Windows 11 limpio conserva su checklist pendiente. Nunca bloquear arranque por versión
+nueva, antigüedad o falta de internet; actualización voluntaria externa según ADR-015.
