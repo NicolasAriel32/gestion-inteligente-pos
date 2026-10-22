@@ -16,7 +16,7 @@ def test_baseline_persists_and_identity_upgrade_is_additive(tmp_path):
         subprocess.run(
             command + [revision], cwd=backend, env=env, check=True, capture_output=True, text=True
         )
-        expected = "0002_identity" if revision == "head" else revision
+        expected = "0003_catalog_inventory" if revision == "head" else revision
         with sqlite3.connect(path) as db:
             assert db.execute("SELECT version_num FROM alembic_version").fetchone() == (expected,)
             assert db.execute("PRAGMA foreign_key_check").fetchall() == []
@@ -26,7 +26,17 @@ def test_baseline_persists_and_identity_upgrade_is_additive(tmp_path):
             if revision == "0001_empty_baseline":
                 assert tables == {"alembic_version"}
             else:
-                assert tables == {"alembic_version", "users", "sessions", "bootstrap", "audit_log"}
+                assert tables == {
+                    "alembic_version",
+                    "users",
+                    "sessions",
+                    "bootstrap",
+                    "audit_log",
+                    "audit_events",
+                    "categories",
+                    "products",
+                    "stock_movements",
+                }
 
 
 def test_failed_identity_migration_rolls_back_ddl_and_can_retry(tmp_path, monkeypatch):
@@ -69,7 +79,7 @@ def test_failed_identity_migration_rolls_back_ddl_and_can_retry(tmp_path, monkey
     command.upgrade(config, "head")
     with sqlite3.connect(path) as db:
         assert db.execute("SELECT version_num FROM alembic_version").fetchone() == (
-            "0002_identity",
+            "0003_catalog_inventory",
         )
         assert db.execute("SELECT COUNT(*) FROM users").fetchone() == (0,)
 

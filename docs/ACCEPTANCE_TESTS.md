@@ -1,6 +1,7 @@
 # ACCEPTANCE_TESTS — criterios de aceptación trazables
 
-Versión 0.1. La siguiente lista son **pruebas pendientes**, no resultados ejecutados.
+Versión 0.1. La matriz define el objetivo completo. Solo los casos señalados en las
+secciones de evidencia cuentan como ejecutados; ventas, reportes y Windows siguen pendientes.
 
 ## Conjunto mínimo (automático + piloto)
 | Test | Reglas | Escenario y resultado esperado |
@@ -58,3 +59,20 @@ Todas las pruebas críticas de dinero, stock, roles, backup/restauración y conc
 
 Resultados, comandos y alcance: [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
 El resto de la matriz comercial y Windows continúa pendiente.
+
+## Evidencia F3 — 2026-10-22
+
+- AT-003: EMPLOYEE recibe 403 al crear/editar precios, categorías, productos o stock,
+  incluso enviando solicitudes directas. No recibe costos ni movimientos administrativos.
+- AT-011 parcial: categorías, productos y ajustes dejan evento con actor y UTC;
+  fallo de auditoría revierte producto/stock/movimiento. Ventas/anulaciones pendientes.
+- AT-014: ajuste que dejaría stock negativo devuelve 409; stock, movimientos y auditoría
+  quedan intactos. Dos solicitudes de la última unidad producen una confirmación y un rechazo.
+- AT-012 parcial: flujo de identidad, catálogo e inventario en Chromium con solicitudes
+  externas bloqueadas y cero intentos externos. No se probó un flujo de venta inexistente.
+- AT-013 parcial: desactivar preserva producto y movimientos; no hay ventas históricas aún.
+- AT-018 parcial: reinicio real de Python conserva productos, stock, movimientos y sesiones.
+- Upgrade F2→F3 conserva datos/sesiones/auditoría; fallo intermedio y reintento verificados.
+- Idempotencia de ajuste, datos inválidos, CHECK/FK y desbordamientos probados con SQLite real.
+
+Comandos, resultados y límites: [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).

@@ -36,7 +36,10 @@ auth, users, catalog, inventory, sales, reporting, audit, backup. Evitar servici
 
 Implementados y verificados en F2: health, auth/login, auth/logout, auth/me,
 employees (GET/POST y PATCH de desactivación), además de auth/setup (GET/POST).
-Los otros endpoints siguen siendo contratos de diseño sin implementación.
+Implementados en F3: GET/POST /api/categories, PATCH /api/categories/{id},
+GET/POST /api/products, GET/PATCH /api/products/{id}, POST /api/stock/adjustments y
+GET /api/stock/movements. Contratos tipados y límites en OpenAPI; detalle en
+[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). Ventas, reportes y respaldos siguen pendientes.
 Contratos y errores F2: [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
 
 ## Seguridad local
@@ -72,3 +75,14 @@ cookie HttpOnly/SameSite=Strict, expiración absoluta y CSRF en escrituras auten
 Origin y JSON obligatorios para login/setup; ninguna respuesta refleja secretos de validación.
 Las capas HTTP, casos de uso, contratos de dominio y persistencia están separadas.
 La política de recuperación no se implementa hasta decisión del propietario.
+
+## Catálogo e inventario F3
+
+Casos de uso con puertos tipados y adaptadores SQLite. La sesión y el rol se revalidan
+dentro de la misma transacción que realiza cada escritura. ADMIN gestiona catálogo,
+costos y movimientos; EMPLOYEE solo consulta activos, precio de venta y stock.
+PATCH de producto no admite stock: se registra por carga inicial o ajuste con motivo.
+Los ajustes usan UUID idempotente, BEGIN IMMEDIATE y auditoría atómica, sin reintentos
+automáticos. Interfaz decimal exacta; API y DB conservan centavos enteros.
+audit_events es el registro general; audit_log permanece como compatibilidad de identidad
+sin modificar ni borrar eventos existentes. No se añadieron dependencias ni servicios.

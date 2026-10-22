@@ -9,9 +9,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from app.api.catalog import router as catalog_router
 from app.api.identity import router
+from app.application.catalog import CatalogService
 from app.application.identity import IdentityService
 from app.domain.identity import IdentityError
+from app.infrastructure.catalog import CatalogStore
 from app.infrastructure.database import build_engine
 from app.infrastructure.identity import IdentityStore
 from app.infrastructure.passwords import ArgonPasswords
@@ -31,6 +34,9 @@ def create_app(db_path: Path | None = None) -> FastAPI:
             passwords = ArgonPasswords()
             application.state.identity = IdentityService(
                 IdentityStore(engine), passwords, passwords.dummy
+            )
+            application.state.catalog = CatalogService(
+                CatalogStore(engine), lambda: application.state.identity.clock()
             )
             yield
         finally:
@@ -83,6 +89,7 @@ def create_app(db_path: Path | None = None) -> FastAPI:
         return {"status": "ok"}
 
     application.include_router(router, prefix="/api")
+    application.include_router(catalog_router, prefix="/api")
     return application
 
 

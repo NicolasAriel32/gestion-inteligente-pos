@@ -28,5 +28,22 @@ No marcar una comprobación como realizada sin registrar comando, entorno y resu
 - [ ] Registrar hallazgos con causa, reproducción, fix, regresión y limitaciones comprobadas.
 - [ ] Verificar rama, diff, commits remotos y conservación de ramas fuera del alcance.
 
+## Dinero, inventario y ampliación de módulos
+
+- [ ] Probar decimales representativos y límites JSON/JavaScript/DB sin aritmética float.
+- [ ] Verificar CHECK/FK con SQL directo además de DTO, incluyendo históricos antes/después.
+- [ ] Comprobar permiso dentro de la transacción que modifica stock y registra auditoría.
+- [ ] Probar última unidad concurrente, mismo UUID concurrente, clave reutilizada con otros
+  datos y rollback por fallo al registrar auditoría, usando SQLite real y bases aisladas.
+- [ ] Revisar FKs de auditoría con actor y entidad de IDs distintos al ampliar dominios.
+- [ ] Probar upgrade con datos de la fase anterior y conservar sus sesiones/eventos.
+
+## Interfaz con navegación y consultas
+
+- [ ] Probar selección repetida y recarga, sin bucles ni pérdida de historial visible.
+- [ ] Comprobar que avisos, errores y foco pertenezcan a la sección actual.
+- [ ] Revisar capturas reales de escritorio/móvil además de axe y desbordamiento.
+
 Origen: [hallazgos H-F2-001 a H-F2-003](ENGINEERING_FINDINGS.md). Adaptar a la arquitectura
 real del nuevo proyecto; no trasladar comandos o garantías de SQLite a otro motor sin probarlos.
+Ampliado con los hallazgos H-UI y H-F3 del mismo registro.

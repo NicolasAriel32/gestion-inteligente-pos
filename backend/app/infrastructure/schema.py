@@ -3,8 +3,45 @@
 from sqlalchemy import Engine, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
-EXPECTED_REVISION = "0002_identity"
+EXPECTED_REVISION = "0003_catalog_inventory"
 REQUIRED_COLUMNS = {
+    "categories": {"id", "name", "name_key", "is_active"},
+    "products": {
+        "id",
+        "name",
+        "code",
+        "category_id",
+        "price_cents",
+        "cost_cents",
+        "stock_quantity",
+        "minimum_stock",
+        "is_active",
+        "created_at",
+        "updated_at",
+    },
+    "stock_movements": {
+        "id",
+        "product_id",
+        "movement_type",
+        "quantity_delta",
+        "stock_before",
+        "stock_after",
+        "performed_by",
+        "reason",
+        "request_key",
+        "created_at_utc",
+        "reference_type",
+        "reference_id",
+    },
+    "audit_events": {
+        "id",
+        "actor_id",
+        "action",
+        "entity_type",
+        "entity_id",
+        "event_data",
+        "created_at_utc",
+    },
     "alembic_version": {"version_num"},
     "users": {"id", "username", "password_hash", "role", "is_active", "created_at"},
     "bootstrap": {"id", "token_hash", "expires_at", "completed"},

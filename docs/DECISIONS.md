@@ -63,6 +63,13 @@ permanecen manuales. Ver [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).
 Fecha: 2026-10-22. Dirección C: comercial y enérgica, profesional y cercana.
 Manrope local en WOFF2 con licencia SIL OFL; negro #171714, amarillo #FFD633 y superficies
 #FFF3B0. Microinteracciones CSS discretas con reducción de movimiento.
-La aplicación de esta identidad a F2 se entrega en PR borrador y requiere revisión visual
-antes de fusionarse. No cambia alcance comercial, contratos API ni arquitectura.
+La aplicación de esta identidad a F2 fue autorizada y fusionada en PR #2, merge 058a92f,
+el 2026-10-22. No cambia contratos API ni arquitectura; F3 conserva estos criterios.
 Especificación: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
+
+### Concreción F3 — 2026-10-22
+
+Se informó antes de implementar la ampliación aditiva de auditoría: audit_events conserva
+los eventos de F2 y permite referencias de catálogo/inventario, mientras audit_log sigue
+compatible con identidad. Ajustes serializados e idempotentes; dinero en centavos e
+interfaz decimal exacta. Alcance y contratos en [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).

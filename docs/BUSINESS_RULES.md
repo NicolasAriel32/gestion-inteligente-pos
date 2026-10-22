@@ -26,6 +26,9 @@ Versión 0.1. Cada regla tiene ID estable; toda modificación debe actualizar pr
 - ARS: enteros de centavos, cálculo exacto. No usar float binario para importes.
 - Precio no negativo; total igual a suma de ítems; un medio de pago por venta.
 - Códigos como strings (preservar ceros a la izquierda).
+- Concreción F3: cantidades e importes de catálogo en 0..2^53−1 para intercambio exacto
+  con JavaScript; delta de ajuste entero no cero dentro del mismo rango con signo.
+  La UI convierte texto decimal mediante aritmética entera, sin multiplicación de floats.
 
 ## Condiciones críticas
 - Producto inactivo no se puede añadir a nuevas ventas.

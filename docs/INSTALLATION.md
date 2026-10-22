@@ -56,3 +56,11 @@ Después de migrar, `python -m app.bootstrap` genera el secreto para el asistent
 con vigencia de 30 minutos; `--renew` revoca uno pendiente, únicamente antes de inicializar.
 Nunca imprime el secreto ni admite volver a inicializar una base con ADMIN.
 Este procedimiento de desarrollo no equivale a instalador Windows validado.
+
+## Desarrollo de catálogo e inventario F3
+
+Se conservan los comandos de instalación de README. Antes de desplegar sobre datos
+existentes, hacer respaldo consistente y detener la aplicación; ejecutar upgrade head
+explícitamente. F3 requiere 0003_catalog_inventory y rechaza esquemas anteriores al iniciar.
+No hay migración automática ni downgrade destructivo. Para validar, usar LOCALAPPDATA
+temporal, como se documenta en [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).

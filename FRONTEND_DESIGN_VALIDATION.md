@@ -1,5 +1,10 @@
 # Frontend — identidad visual y validación
 
+Estado posterior: el propietario autorizó la fusión el 2026-10-22. PR #2 quedó fusionado
+a main con merge 058a92ffb0a226adc434d2cafe0dda68608d7ba3. La evidencia histórica que
+sigue corresponde al diseño de F2 antes de esa autorización. Catálogo e inventario se
+validan en [F3_DEVELOPMENT.md](F3_DEVELOPMENT.md), con capturas en docs/screenshots/f3.
+
 Fecha: 2026-10-22. Rama: feat/frontend-yellow-manrope, creada desde main en
 3442de4e05af951d28b501f58c6863be1bc94bd6. Entrega para revisión visual, sin merge.
 F3 no iniciada. No se modificó ningún archivo del backend, migraciones o contratos API.
