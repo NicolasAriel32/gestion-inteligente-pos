@@ -1,6 +1,8 @@
 from logging.config import fileConfig
-from alembic import context
+
 from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 from app.infrastructure.database import Base, get_db_path
 
 config = context.config
@@ -22,6 +24,9 @@ def run_migrations_online():
         connection.exec_driver_sql("PRAGMA foreign_keys=ON")
         connection.exec_driver_sql("PRAGMA busy_timeout=5000")
         connection.exec_driver_sql("PRAGMA journal_mode=WAL")
+        # Los PRAGMA abren una transacción implícita en SQLAlchemy 2.
+        # Cerrarla permite que Alembic confirme su propia transacción.
+        connection.commit()
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()

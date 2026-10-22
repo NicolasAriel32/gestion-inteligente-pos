@@ -1,6 +1,6 @@
 # Gestión Inteligente POS
 
-Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **Proyecto en fase de especificación; todavía no existe una aplicación funcional.**
+Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **F1 validada: esqueleto técnico local; todavía sin funcionalidades comerciales.**
 
 ## Decisiones de producto
 
@@ -40,4 +40,4 @@ Leer `AGENTS.md` y las especificaciones pertinentes **antes de escribir código*
 
 ## Estado actual
 
-**Documentación inicial.** No hay código, instalador ni pruebas ejecutadas. Las decisiones de arquitectura se revisarán ante limitaciones técnicas reales, con cambio registrado en `docs/DECISIONS.md`.
+**F1 completada.** FastAPI, React/Vite y SQLite/Alembic validados localmente; 6 pruebas aprobadas. Instalación, comandos y versiones en [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md). Usar `python -m pip install -e './backend[dev]'` en un entorno virtual y `npm ci` desde frontend. Sin instalador ni funcionalidades comerciales; F2 no iniciada.

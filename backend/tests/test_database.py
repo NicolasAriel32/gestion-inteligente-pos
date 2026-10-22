@@ -1,5 +1,7 @@
 from sqlalchemy import text
+
 from app.infrastructure.database import build_engine
+
 
 def test_sqlite_pragmas(tmp_path):
     engine = build_engine(tmp_path / "pos.db")

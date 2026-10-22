@@ -1,6 +1,6 @@
 # ROADMAP — trabajo incremental SDD
 
-**Estado inicial**: solo documentación. No existe programa compilado, API, interfaz, pruebas ejecutadas ni instalador.
+**Estado actual**: F1 completada y validada técnicamente el 2026-10-22. Esqueleto local con API, interfaz, migración y pruebas ejecutadas; evidencia en [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md). Sin funcionalidades comerciales ni instalador; F2 no iniciada.
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
 
@@ -10,10 +10,10 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - [ ] Revisar propuestas técnicas con prototipo y cerrar decisiones pendientes.
 
 ## F1 — Esqueleto técnico
-- [ ] React/TypeScript/Vite + FastAPI.
-- [ ] SQLite/SQLAlchemy/Alembic con migración inicial vacía.
-- [ ] GET /api/health y frontend que consuma API local.
-- [ ] Comandos de desarrollo, pytest, tests frontend, lint.
+- [x] React/TypeScript/Vite + FastAPI.
+- [x] SQLite/SQLAlchemy/Alembic con migración inicial vacía.
+- [x] GET /api/health y frontend que consuma API local.
+- [x] Comandos de desarrollo, pytest, tests frontend, lint.
 - Aceptación: ejecutar ambos lados localmente sin servicios cloud, comandos documentados y tests básicos pasando.
 
 ## F2 — Identidad y usuarios

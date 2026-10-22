@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
+
 from app.main import app
+
 
 def test_health():
     with TestClient(app, base_url="http://localhost") as client:
