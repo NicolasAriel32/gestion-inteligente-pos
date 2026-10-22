@@ -80,3 +80,10 @@ no borrar SQLite ni recrear ADMIN para recuperar acceso.
 La revisión de F2 dejó un [registro de hallazgos](docs/ENGINEERING_FINDINGS.md) con causas,
 fixes y pruebas, y un [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) para las
 próximas fases y proyectos. La revalidación posterior suma 47 pruebas aprobadas.
+
+## Propuesta de identidad visual
+
+La rama de diseño aplica Manrope local y negro sobre amarillo a las pantallas de acceso
+y empleados. Ver [sistema visual](docs/DESIGN_SYSTEM.md),
+[validación y capturas reales](FRONTEND_DESIGN_VALIDATION.md).
+Se entrega para revisión visual en un PR borrador; no incluye funcionalidades de F3.

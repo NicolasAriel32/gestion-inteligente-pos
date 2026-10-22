@@ -1,109 +1,120 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getHealth } from './api'
 import * as identity from './identity'
-import type { Credentials, Session, User } from './identity'
+import type { Session, User } from './identity'
+import { CredentialForm } from './CredentialForm'
+import { Button, ConfirmDeactivation, Icon, Notice, Panel } from './ui'
 import './style.css'
 
-function CredentialForm({ title, setup = false, submit }: {
-  title: string; setup?: boolean; submit: (value: Credentials, token: string) => Promise<void>
-}) {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const form = event.currentTarget
-    const data = new FormData(form)
-    setBusy(true); setError('')
-    try {
-      await submit({ username: String(data.get('username')), password: String(data.get('password')) },
-                   String(data.get('setup_token') ?? ''))
-      form.reset()
-    } catch (error) { setError(error instanceof Error ? error.message : 'Error de conexión local') }
-    finally { setBusy(false) }
-  }
-  return <form onSubmit={onSubmit}>
-    <h2>{title}</h2>
-    {setup && <label>Secreto de inicialización<input name="setup_token" type="password" required
-      autoComplete="off" minLength={32} maxLength={128} /></label>}
-    <label>Usuario<input name="username" required minLength={3} maxLength={32}
-      pattern="[A-Za-z0-9_.\-]+" autoComplete={title === 'Ingresar' ? 'username' : 'off'} /></label>
-    <label>Contraseña<input name="password" type="password" required minLength={12} maxLength={128}
-      autoComplete={title === 'Ingresar' ? 'current-password' : 'new-password'} /></label>
-    <small>Usuario: 3–32 letras, números, punto, guion o guion bajo. Contraseña: 12–128 caracteres.</small>
-    <button disabled={busy} type="submit">{busy ? 'Procesando…' : title}</button>
-    {error && <p role="alert">{error}</p>}
-  </form>
+type View = { initialized: boolean; session: Session | null; staff: User[] }
+async function readView(): Promise<View> {
+  const [initialized, session] = await Promise.all([identity.setupStatus(), identity.currentSession()])
+  const staff = session?.user.role === 'ADMIN' ? await identity.employees() : []
+  return { initialized, session, staff }
 }
 
 export default function App() {
-  const [health, setHealth] = useState('Comprobando conexión local...')
-  const [initialized, setInitialized] = useState<boolean | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [staff, setStaff] = useState<User[]>([])
+  const [view, setView] = useState<View | null>(null)
+  const [health, setHealth] = useState('Comprobando conexión local…')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const refresh = useCallback(async () => {
-    const [ready, current] = await Promise.all([identity.setupStatus(), identity.currentSession()])
-    setInitialized(ready); setSession(current)
-    setStaff(current?.user.role === 'ADMIN' ? await identity.employees() : [])
-  }, [])
+  const [noticeFocus, setNoticeFocus] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [confirm, setConfirm] = useState<User | null>(null)
+  const actionPending = useRef(false)
+  const heading = useRef<HTMLHeadingElement>(null)
+  const staff = view?.staff ?? []
+  const session = view?.session
+  const stage = !view ? 'loading' : !view.initialized ? 'setup' : session ? 'session' : 'login'
   useEffect(() => {
     let active = true
     getHealth().then(() => { if (active) setHealth('Servidor local conectado') })
       .catch(() => { if (active) setHealth('Servidor local no disponible') })
-    refresh().catch(error => { if (active) setError(String(error)) })
+    readView().then(value => { if (active) setView(value) })
+      .catch(() => { if (active) setError('No pudimos cargar tus datos. Comprobá que la aplicación local esté iniciada y volvé a intentar.') })
     return () => { active = false }
-  }, [refresh])
+  }, [])
+  useEffect(() => { if (stage !== 'loading') heading.current?.focus() }, [stage])
+
+  async function refresh() { setView(await readView()) }
   async function authenticated(action: () => Promise<unknown>) {
     try { await action(); await refresh() }
     catch (error) {
       if (error instanceof identity.ApiError && error.status === 401) {
-        setSession(null); setStaff([])
+        setView(current => current ? { ...current, session: null, staff: [] } : current)
+        setNotice('Tu sesión terminó. Volvé a ingresar para continuar.')
       }
       throw error
     }
   }
-  async function buttonAction(action: () => Promise<unknown>) {
-    setError('')
-    try { await authenticated(action) }
-    catch (error) { setError(error instanceof Error ? error.message : 'Error de conexión local') }
+  async function buttonAction(action: () => Promise<unknown>, success = '') {
+    if (actionPending.current) return
+    actionPending.current = true; setBusy(true); setError(''); setNotice(''); setNoticeFocus(Boolean(success))
+    try { await authenticated(action); setConfirm(null); setNotice(success) }
+    catch (error) { setConfirm(null); setError(error instanceof Error ? error.message : 'No pudimos conectar. Intentá nuevamente.') }
+    finally { actionPending.current = false; setBusy(false) }
   }
-  return <main>
-    <h1>Gestión Inteligente POS</h1>
-    <p>F2 — Identidad y usuarios</p><p role="status">{health}</p>
-    {error && <p role="alert">{error}</p>}{notice && <p>{notice}</p>}
-    {initialized === false && <>
-      <p>Configuración inicial: usá el secreto generado localmente para crear al administrador.</p>
-      <CredentialForm title="Crear administrador" setup submit={async (value, token) => {
-        await identity.initialize(value, token)
-        setNotice('Administrador creado. Eliminá el archivo del secreto e ingresá con tu cuenta.')
-        await refresh()
-      }} />
-    </>}
-    {initialized && !session && <CredentialForm title="Ingresar" submit={async value => {
-      await identity.login(value); setNotice(''); await refresh()
-    }} />}
-    {session && <section>
-      <h2>Sesión de {session.user.username}</h2><p>Rol: {session.user.role}</p>
-      <button onClick={() => void buttonAction(() => identity.logout(session.csrf_token))}>
-        Cerrar sesión
-      </button>
-      {session.user.role === 'ADMIN' && <>
-        <CredentialForm title="Crear empleado" submit={async value => {
-          await authenticated(() => identity.createEmployee(value, session.csrf_token))
-        }} />
-        <h2>Empleados</h2>
-        {staff.length === 0 ? <p>No hay empleados.</p> : <ul>{staff.map(employee => <li key={employee.id}>
-          <span>{employee.username} — {employee.is_active ? 'Activo' : 'Inactivo'}</span>
-          {employee.is_active && <button aria-label={`Desactivar ${employee.username}`}
-            onClick={() => void buttonAction(() => identity.deactivateEmployee(employee.id, session.csrf_token))}>
-            Desactivar
-          </button>}
-        </li>)}</ul>}
+  return <div className="app-shell">
+    <a className="skip-link" href="#main">Ir al contenido</a>
+    <header className="topbar">
+      <div className="brand">
+        <span className="brand__mark" aria-hidden="true">gi<span>.</span></span>
+        <span className="brand__name">Gestión Inteligente<span>Tu negocio, en buenas manos.</span></span>
+      </div>
+      <div className="topbar__right">
+        <span className="connection" role="status"><span className="connection__dot" aria-hidden="true" />{health}</span>
+        {session && <Button variant="secondary" disabled={busy} onClick={() => void buttonAction(() => identity.logout(session.csrf_token))}><Icon name="exit" />Cerrar sesión</Button>}
+      </div>
+    </header>
+    <main id="main" tabIndex={-1} className={session ? 'workspace' : 'welcome'}>
+      {session ? <>
+        <div className="workspace__heading">
+          <div><span className="eyebrow">{session.user.role === 'ADMIN' ? 'PERSONAS Y ACCESOS' : 'MI CUENTA'}</span>
+            <h1 ref={heading} tabIndex={-1}>{session.user.role === 'ADMIN' ? 'Un buen equipo empieza acá.' : `Hola, ${session.user.username}.`}</h1>
+            <p>{session.user.role === 'ADMIN' ? 'Gestioná quién puede ingresar. Cada persona, con su propia cuenta.' : 'Tu sesión está iniciada y tu acceso está listo.'}</p></div>
+          <div className="account"><span className="avatar" aria-hidden="true">{session.user.username.slice(0, 2).toUpperCase()}</span><div><h2>Sesión de {session.user.username}</h2><span>{session.user.role === 'ADMIN' ? 'Administrador' : 'Empleado'}</span></div></div>
+        </div>
+        {error && <Notice tone="error" focus>{error}</Notice>}{notice && <Notice focus={noticeFocus}>{notice}</Notice>}
+        {session.user.role === 'ADMIN' ? <div className="team-layout">
+          <Panel className="team-panel" aria-labelledby="team-title">
+            <div className="panel-heading"><div className="section-icon"><Icon name="users" /></div><div><h2 id="team-title">Empleados</h2><p>Las cuentas de tu equipo.</p></div><span className="count" aria-label={`${staff.length} empleados`}>{staff.length}</span></div>
+            {staff.length === 0 ? <div className="empty-state"><div className="empty-state__symbol"><Icon name="users" /></div><h3>Tu equipo empieza con una persona.</h3><p>Creá la primera cuenta desde el formulario.<br />Cada empleado tendrá su propio acceso.</p></div> : <ul className="employee-list">{staff.map(employee => <li key={employee.id}>
+              <span className="avatar avatar--small" aria-hidden="true">{employee.username.slice(0, 2).toUpperCase()}</span>
+              <div className="employee-info"><span className="employee-name">{employee.username}</span><span className={`badge ${employee.is_active ? '' : 'badge--inactive'}`}>{employee.is_active ? 'Activo' : 'Inactivo'}</span></div>
+              {employee.is_active ? <Button variant="quiet" disabled={busy} aria-label={`Desactivar ${employee.username}`} onClick={() => setConfirm(employee)}>Desactivar</Button> : <span className="employee-disabled">Acceso desactivado</span>}
+            </li>)}</ul>}
+            <p className="panel-note"><Icon name="lock" />Solo vos, como administrador, podés gestionar estas cuentas.</p>
+          </Panel>
+          <Panel className="create-panel"><CredentialForm onBusyChange={setBusy} kind="employee" title="Crear empleado" disabled={busy} submit={async value => {
+            setError(''); setNotice(''); setNoticeFocus(false)
+            await authenticated(() => identity.createEmployee(value, session.csrf_token))
+            setNotice(`La cuenta de ${value.username.toLowerCase()} ya está creada.`)
+          }} /></Panel>
+        </div> : <Panel className="employee-welcome"><div className="section-icon"><Icon name="check" /></div><h2>Ya estás adentro.</h2><p>Por ahora podés ingresar y cerrar tu sesión. Las demás herramientas todavía no están disponibles.</p></Panel>}
+      </> : <>
+        <div className="welcome__story">
+          <span className="eyebrow">GESTIÓN SIMPLE. TODOS LOS DÍAS.</span>
+          <h1 ref={heading} tabIndex={-1}>{stage === 'setup' ? <>El primer paso,<br /><span>bien acompañado.</span></> : <>Qué bueno verte.<br /><span>Sigamos.</span></>}</h1>
+          <p className="welcome__intro">{stage === 'setup' ? 'Dejá listo el acceso a tu negocio. Empezamos por tu cuenta de administrador.' : 'Un lugar para vos y tu equipo. Ingresá con tu cuenta y continuá con tranquilidad.'}</p>
+          <div className="welcome__benefits"><span><Icon name="users" />Una cuenta por persona</span><span><Icon name="lock" />Tus datos, en tu equipo</span><span><Icon name="check" />Sin conexión obligatoria</span></div>
+          <p className="welcome__signature">Cerca de tu negocio.<br /><strong>Listo para tu día.</strong></p>
+        </div>
+        <div className="welcome__form-area">
+          {notice && <Notice focus={noticeFocus}>{notice}</Notice>}
+          {error && <Notice tone="error" focus>{error}</Notice>}
+          {!view ? <Panel><div className="loading">{error ? <Icon name="alert" /> : <span className="spinner" aria-hidden="true" />}<h2>{error ? 'No pudimos conectar' : 'Preparando tu acceso…'}</h2>{error && <Button onClick={() => { setError(''); void refresh().catch(() => setError('La aplicación local sigue sin responder. Volvé a intentar.')) }}>Volver a intentar</Button>}</div></Panel> : <Panel><CredentialForm key={stage} kind={stage === 'setup' ? 'setup' : 'login'} title={stage === 'setup' ? 'Crear administrador' : 'Ingresar'} submit={async (value, token) => {
+            setError('')
+            if (stage === 'setup') {
+              await identity.initialize(value, token)
+              setNotice('Tu cuenta está lista. Eliminá el archivo del secreto e ingresá con tus datos.')
+            } else { await identity.login(value); setNotice('') }
+            await refresh()
+          }} /></Panel>}
+          <p className="recovery-note">{stage === 'setup' ? 'Esta configuración se realiza una sola vez por instalación.' : '¿No recordás tu contraseña? La recuperación todavía no está disponible. Conservá los datos de este equipo.'}</p>
+        </div>
       </>}
-      {session.user.role === 'EMPLOYEE' && <p>Sesión iniciada. Las funciones comerciales aún no están disponibles.</p>}
-    </section>}
-    <p>La recuperación de credenciales todavía no está disponible. No borres los datos para recuperar acceso.</p>
-  </main>
+    </main>
+    <footer className="footer"><span>Gestión Inteligente POS</span><span>Hecho para trabajar cerca.</span></footer>
+    {confirm && session && <ConfirmDeactivation username={confirm.username} busy={busy} onCancel={() => setConfirm(null)} onConfirm={() => void buttonAction(() => identity.deactivateEmployee(confirm.id, session.csrf_token), `El acceso de ${confirm.username} quedó desactivado.`)} />}
+  </div>
 }

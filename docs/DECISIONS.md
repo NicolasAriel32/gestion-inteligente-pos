@@ -58,3 +58,11 @@ Se concreta la exigencia existente de migraciones seguras y rechazo de esquemas
 incompatibles: transacción física SQLite, contrato de arranque y bloqueo de autogeneración
 con metadatos incompletos. No cambia el stack ni las decisiones aceptadas. Las migraciones
 permanecen manuales. Ver [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).
+
+### ADR-011 — Identidad visual Manrope, negro y amarillo (APROBADA POR EL PROPIETARIO)
+Fecha: 2026-10-22. Dirección C: comercial y enérgica, profesional y cercana.
+Manrope local en WOFF2 con licencia SIL OFL; negro #171714, amarillo #FFD633 y superficies
+#FFF3B0. Microinteracciones CSS discretas con reducción de movimiento.
+La aplicación de esta identidad a F2 se entrega en PR borrador y requiere revisión visual
+antes de fusionarse. No cambia alcance comercial, contratos API ni arquitectura.
+Especificación: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
