@@ -80,3 +80,10 @@ Ampliado con los hallazgos H-UI, H-F3 y H-F4 del mismo registro.
 - [ ] Revisar padding/altura de paneles con pocos datos y capturas de carga/error/vacío/datos.
 
 Aplicación concreta de esta plantilla a F5 y comandos/resultados: F5_DEVELOPMENT.md.
+
+## Ayuda y documentación integrada
+
+- [ ] Mantener pasos y nombres de controles alineados con las pantallas disponibles.
+- [ ] Distinguir guías por rol y explicación de permisos; no presentar funciones futuras disponibles.
+- [ ] Comprobar que consultar ayuda no envía escrituras ni pierde formularios/intentos pendientes.
+- [ ] Probar búsqueda/filtro/vacío, teclado/foco, scroll interno y capturas del viewport del diálogo.

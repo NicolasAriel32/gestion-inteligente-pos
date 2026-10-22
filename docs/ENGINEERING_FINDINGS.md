@@ -455,3 +455,27 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
   y Consultar ocupado. Build/tipado E2E y lint pasan. Los archivos finales se regeneraron.
 - Práctica: mantener estable el estado durante toda la captura/auditoría y comprobar
   el artefacto, no inferir su contenido del nombre ni de una aserción previa.
+
+## H-HELP-001 — El filtro por rol puede conservar explicaciones de permisos
+
+- Prioridad P3; corregido en la prueba, sin fallo de autorización del producto.
+- Reproducción: primer Vitest esperaba [] al buscar cambiar precio como EMPLOYEE;
+  devolvió la guía pública del rol que indica pedir ayuda al administrador.
+- Causa: se confundió excluir instrucciones administrativas con eliminar toda respuesta
+  relacionada con una operación no disponible.
+- Fix: exigir únicamente la explicación de permisos y mantener aserciones de ausencia
+  de guía de precios/anulación; no debilitar el filtro por rol ni ocultar ayuda útil.
+- Regresión: 50 pruebas frontend y E2E con EMPLOYEE y ADMIN aprobados, sin cambios backend.
+- Práctica: probar qué contenido orienta al usuario además de lo que debe quedar oculto;
+  documentación visible no concede permisos, que se siguen comprobando en servidor.
+
+## H-HELP-002 — Un modal requiere evidencia de viewport
+
+- Prioridad P3; captura corregida, sin cambio de comportamiento de la aplicación.
+- Reproducción visual: screenshot fullPage de un diálogo fijo mostró documento bajo el
+  viewport sin backdrop, aunque ese sector no era parte de la ventana visible.
+- Causa: se reutilizó la captura larga de pantallas para un modal con scroll interno.
+- Fix: capturas de ayuda con fullPage=false; revisar también desborde del cuerpo interno.
+- Regresión: E2E final 32.5 s, PNG reales a 1366/390 px revisados y checks de desborde.
+- Práctica: elegir el área de captura según el componente y comprobar que la evidencia
+  representa lo que el usuario ve; un modal desplazable no es una página larga.

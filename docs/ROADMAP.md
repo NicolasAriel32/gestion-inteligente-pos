@@ -1,7 +1,7 @@
 # ROADMAP — trabajo incremental SDD
 
-**Versión de referencia**: 0.5.0 (2026-10-22); esquema 0005_reporting_indexes.
-**Estado actual**: F1–F5 implementadas y validadas técnicamente; F5 en revisión por PR borrador.
+**Versión de referencia**: 0.5.1 (2026-10-22); esquema 0005_reporting_indexes.
+**Estado actual**: F1–F5 implementadas y validadas técnicamente; F5 aprobada y fusionada (PR #5, fb85521).
 Identidad local, empleados, catálogo e inventario; evidencia en
 [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 aprobada y fusionada a main en 3848d55.
@@ -62,8 +62,11 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - [x] Filtros y estados sin datos.
 - Aceptación: reportes excluyen anuladas y coinciden con datos de prueba.
 
-Software F5 verificado localmente, revisión humana pendiente mediante PR borrador.
+Software F5 verificado localmente y fusionado por autorización del propietario en PR #5 (fb85521).
 Evidencia y límites: F5_DEVELOPMENT.md. F6 no iniciada ni autorizada.
+
+Mejora posterior 0.5.1: ayuda de uso local con guías rápidas y buscador, sin avanzar F6.
+Evidencia en USER_HELP_DEVELOPMENT.md; revisión de la mejora independiente del merge F5.
 
 ## F6 — Respaldo, importación y distribución
 - [ ] Backup consistente y restauración probada.

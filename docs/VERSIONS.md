@@ -1,7 +1,7 @@
 # Versiones y estado de entrega
 
-Actualizado: 2026-10-22. Versión de referencia del software: **0.5.0**.
-F1–F5 implementadas y verificadas; F5 pendiente de revisión humana por PR borrador.
+Actualizado: 2026-10-22. Versión de referencia del software: **0.5.1**.
+F1–F5 implementadas y verificadas; F5 fusionada por autorización del propietario en PR #5 (fb85521).
 Impresora física de 58 mm, Windows/instalador y piloto conservan sus pendientes.
 F6 no iniciada. La versión del software no certifica esas validaciones.
 
@@ -9,20 +9,20 @@ F6 no iniciada. La versión del software no certifica esas validaciones.
 
 | Elemento | Versión / ubicación |
 | --- | --- |
-| Paquete backend | 0.5.0 en backend/pyproject.toml, project.version |
-| API / OpenAPI | 0.5.0 en backend/app/main.py, FastAPI.version |
-| Paquete frontend | 0.5.0 en frontend/package.json |
-| Lockfile, raíz y packages[""] | 0.5.0 en frontend/package-lock.json |
+| Paquete backend | 0.5.1 en backend/pyproject.toml, project.version |
+| API / OpenAPI | 0.5.1 en backend/app/main.py, FastAPI.version |
+| Paquete frontend | 0.5.1 en frontend/package.json |
+| Lockfile, raíz y packages[""] | 0.5.1 en frontend/package-lock.json |
 | Esquema SQLite | 0005_reporting_indexes, independiente de la versión del producto |
-| Specs funcionales vigentes | Referencia 0.5.0; las secciones futuras siguen identificadas |
+| Specs funcionales vigentes | Referencia 0.5.1; las secciones futuras siguen identificadas |
 
-lockfileVersion=3 es el formato de npm y no debe cambiarse a 0.5.0.
+lockfileVersion=3 es el formato de npm y no debe cambiarse a 0.5.1.
 Las versiones de Python/Node/dependencias son distintas y se registran con comandos
 reales en F5_DEVELOPMENT.md. F5 agrega tzdata y un índice (migración 0005).
 
 ## Política para próximas entregas
 
-- Usar MAJOR.MINOR.PATCH. La entrega actual es 0.5.0; correcciones posteriores de F5
+- Usar MAJOR.MINOR.PATCH. La entrega actual es 0.5.1; correcciones posteriores de F5
   pueden ser 0.5.x. F6 requiere autorización y validación independientes.
 - Actualizar juntos paquete backend, API/OpenAPI, frontend y las dos raíces del lockfile.
   Para npm: npm version VERSION --no-git-tag-version --ignore-scripts --offline.
@@ -102,3 +102,11 @@ nueva: tzdata>=2025.2,<2027 (instalada 2026.5) para datos horarios locales en Wi
 Las migraciones anteriores y sus contratos económicos permanecen sin editar.
 Suite/regresión, comandos y build/capturas reales: [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md).
 F5 en revisión humana, sin merge ni inicio de F6. La versión no certifica hardware/piloto.
+
+
+## Mejora 0.5.1 — ayuda local
+
+Ayuda rápida por rol, sin nuevas dependencias ni migraciones; esquema permanece
+0005_reporting_indexes. Versiones de paquetes/API/lockfile se alinean a 0.5.1. F5 conserva
+sus resultados históricos y merge autorizado fb85521; F6 no se inicia. Evidencia real y
+metadata instalada: USER_HELP_DEVELOPMENT.md.

@@ -1,6 +1,6 @@
 # DECISIONS — decisiones arquitectónicas y de producto
 
-Versión de referencia: 0.5.0. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
+Versión de referencia: 0.5.1. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
 Formato: ID, fecha, estado, decisión, motivo, consecuencias. Distinguir **aprobado**, **implementado** y **propuesto**.
 
 ## Aceptadas por el propietario
@@ -111,3 +111,12 @@ superar int64/JS seguro, sin modificar DTO de F1–F4. SQLite pos_sum Python exa
 BigInt en UI. Índice aditivo 0005 justificado por búsqueda global por estado/fecha.
 Única nueva dependencia tzdata para datos horarios offline en Windows. No implica
 instalador Windows aprobado. F6, CSV, backups y hardware siguen pendientes.
+
+### ADR-013 — Ayuda local y guías por rol (IMPLEMENTADA 0.5.1, 2026-10-22)
+
+El propietario propuso ayuda rápida con signo de pregunta para cargar productos, cambiar
+precios y configurar funciones existentes. Se concreta en una guía estática local con
+búsqueda y temas; no requiere servicios, IA ni conexión. Muestra pasos según rol y aclara
+funciones pendientes sin presentarlas disponibles. No realiza acciones comerciales ni
+reemplaza permisos backend. Es una mejora de uso separada de F6; F6 no está iniciada.
+Diseño previo/criterios/resultados en USER_HELP_DEVELOPMENT.md.

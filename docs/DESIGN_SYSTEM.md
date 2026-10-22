@@ -109,3 +109,12 @@ exacto siempre se lee como texto. Selector distingue transacciones y facturació
 los picos siempre usan tickets. Períodos comparados explícitos, estado vacío y errores
 con reintento/foco. Solo ADMIN; carga local diferida. Controles y tipografía conservados.
 Capturas reales/axe y revisión visual: [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md).
+
+## Ayuda integrada
+
+Botón circular ? de 44 px al extremo derecho del encabezado, con nombre accesible Abrir
+ayuda y tooltip. Diálogo con fondo inerte, encabezado/cierre siempre visibles y cuerpo
+con scroll; en móvil búsqueda/tema se apilan. Preguntas en details/summary nativos con
+pasos numerados. Al abrir enfoca búsqueda; Escape/cierre devuelve foco y Tab/Shift+Tab
+permanece dentro. Conserva Manrope, paleta, contraste y movimiento reducido. Capturas y
+verificación: [USER_HELP_DEVELOPMENT.md](../USER_HELP_DEVELOPMENT.md).

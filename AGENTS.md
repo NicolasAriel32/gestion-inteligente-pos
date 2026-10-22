@@ -2,7 +2,7 @@
 
 ## Objetivo
 Desarrollar Gestión Inteligente POS: sistema local-first para una caja de kiosco argentino.
-El repositorio contiene especificaciones y software local F1–F5 (versión 0.5.0).
+El repositorio contiene especificaciones y software local F1–F5 (versión 0.5.1).
 Consultar ROADMAP para distinguir entregas verificadas, validación física pendiente y
 fases futuras. No usar Lovable ni agregar servicios cloud obligatorios.
 
