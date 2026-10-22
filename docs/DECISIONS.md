@@ -44,3 +44,17 @@ Registrar efectivo, transferencia, débito o crédito; sin verificación externa
 - Confirmar si lectura de código de barras mediante lector USB tipo teclado es prioritaria (distinto de cámara).
 
 Registrar decisiones futuras con fecha y efecto en PROJECT_SPEC/BUSINESS_RULES/ACCEPTANCE_TESTS.
+
+## Detalles de implementación F2 — 2026-10-22
+
+Sesiones opacas revocables en SQLite, Argon2id, inicialización con secreto local de
+uso único y CSRF se concretan en [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
+Se mantienen las decisiones de despliegue y roles existentes. La recuperación de
+credenciales continúa pendiente del propietario; F2 no introduce ningún bypass.
+
+### Correcciones de implementación F2 — 2026-10-22
+
+Se concreta la exigencia existente de migraciones seguras y rechazo de esquemas
+incompatibles: transacción física SQLite, contrato de arranque y bloqueo de autogeneración
+con metadatos incompletos. No cambia el stack ni las decisiones aceptadas. Las migraciones
+permanecen manuales. Ver [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).

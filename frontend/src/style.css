@@ -1,0 +1,11 @@
+:root { font-family: system-ui, sans-serif; color: #162b35; background: #f2f6f7; }
+body { margin: 0; }
+main { max-width: 48rem; margin: 2rem auto; padding: 1.5rem; }
+form, section { padding: 1.5rem; background: white; border: 1px solid #c4d3d8; border-radius: .5rem; margin: 1rem 0; }
+label { display: block; margin: 1rem 0; }
+input { display: block; box-sizing: border-box; width: 100%; max-width: 28rem; padding: .7rem; margin-top: .3rem; font: inherit; }
+button { display: block; padding: .7rem 1rem; margin-top: 1rem; background: #07586b; color: white; border: 0; border-radius: .3rem; font: inherit; cursor: pointer; }
+button:disabled { opacity: .6; cursor: wait; }
+[role=alert] { color: #a11620; }
+li { margin: 1rem 0; }
+small { display: block; max-width: 30rem; }

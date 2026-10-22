@@ -1,6 +1,6 @@
 # Gestión Inteligente POS
 
-Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **Proyecto en fase de especificación; todavía no existe una aplicación funcional.**
+Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **F2 validada: identidad y gestión de empleados locales; sin catálogo, inventario ni ventas.**
 
 ## Decisiones de producto
 
@@ -40,4 +40,43 @@ Leer `AGENTS.md` y las especificaciones pertinentes **antes de escribir código*
 
 ## Estado actual
 
-**Documentación inicial.** No hay código, instalador ni pruebas ejecutadas. Las decisiones de arquitectura se revisarán ante limitaciones técnicas reales, con cambio registrado en `docs/DECISIONS.md`.
+**F1 y F2 completadas.** FastAPI, React/Vite y SQLite/Alembic validados localmente.
+F2 agrega inicialización protegida de ADMIN, login/logout, sesiones y gestión de empleados.
+Instalación y resultados: [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md); evidencia histórica de F1:
+[F1_DEVELOPMENT.md](F1_DEVELOPMENT.md). Sin instalador. F3 no iniciada.
+
+## Desarrollo local
+
+Requiere Python >=3.11 y Node >=22. Crear y activar un entorno virtual:
+```sh
+python -m venv backend/.venv
+# Linux/macOS:
+. backend/.venv/bin/activate
+# Windows PowerShell: backend/.venv/Scripts/Activate.ps1
+python -m pip install -e './backend[dev]'
+cd backend
+python -m alembic -c alembic.ini upgrade head
+python -m app.bootstrap
+python -m app
+```
+
+El comando bootstrap indica la ruta del secreto local; no imprime su contenido.
+Abrir el archivo localmente e introducirlo en el formulario inicial. No compartirlo ni
+versionarlo. Después de crear ADMIN eliminar ese archivo. No ejecutar bootstrap de nuevo
+sobre una instalación ya inicializada. Para datos existentes: respaldo previo antes de migrar.
+
+En otra terminal:
+```sh
+cd frontend
+npm ci
+npm run dev -- --strictPort
+```
+Abrir http://127.0.0.1:5173. Ambos servicios escuchan solo en loopback.
+No se necesita un servicio cloud. Recuperación de credenciales pendiente de decisión;
+no borrar SQLite ni recrear ADMIN para recuperar acceso.
+
+## Prácticas aprendidas
+
+La revisión de F2 dejó un [registro de hallazgos](docs/ENGINEERING_FINDINGS.md) con causas,
+fixes y pruebas, y un [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) para las
+próximas fases y proyectos. La revalidación posterior suma 47 pruebas aprobadas.

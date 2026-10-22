@@ -43,3 +43,13 @@ Ventas válidas = status COMPLETED. Agregación por fecha local Buenos Aires; co
 
 ## Evolución
 Separar dominio de infraestructura para incorporar MySQL/API remota/MCP después; no modelar varias empresas ni multi-caja como funcionalidad del MVP.
+
+## Identidad implementada en F2
+
+`users` implementa los campos indicados, con username ASCII normalizado en la API,
+rol validado por CHECK e índice parcial que permite un solo ADMIN. No se crean ADMIN por API administrativa.
+`sessions`: token_hash SHA-256, user_id FK y expires_at Unix UTC; nunca token en claro en DB.
+`bootstrap`: singleton id=1, token_hash nullable, expires_at y completed. El hash se elimina al consumirlo.
+`audit_log`: actor_id y entity_id FK a users, action, entity_type, event_data vacío por defecto
+(sin contenido libre recibido del cliente), created_at_utc. En F2 solo audita identidad.
+No se implementaron todavía las entidades comerciales del modelo objetivo.

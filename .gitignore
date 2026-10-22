@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+*.db
+*.db-wal
+*.db-shm
+*.egg-info/
+test-results/
+playwright-report/

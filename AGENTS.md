@@ -49,3 +49,12 @@ Ante conflicto, **detener la implementación relacionada y señalarlo**. No rein
 - Sin regresión de reglas críticas ni cambios fuera de alcance.
 - Documentación coherente y riesgos pendientes explícitos.
 - La creación de documentación por sí sola **no implica software implementado**.
+
+## Aprendizajes obligatorios para nuevas fases
+- Leer [docs/ENGINEERING_FINDINGS.md](docs/ENGINEERING_FINDINGS.md) antes de trabajar en
+  persistencia, migraciones, arranque o cierre de validación.
+- Aplicar los puntos pertinentes de [docs/PROJECT_REVIEW_CHECKLIST.md](docs/PROJECT_REVIEW_CHECKLIST.md).
+- No asumir atomicidad del DDL por usar un contexto transaccional: probar interrupción y reintento.
+- No habilitar autogeneración con metadatos vacíos o parciales.
+- Al cambiar el esquema, actualizar el contrato de arranque y probar versiones incompatibles.
+- Documentar cada nuevo hallazgo con causa, fix, prueba de regresión y práctica reutilizable.

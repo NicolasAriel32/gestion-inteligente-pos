@@ -63,3 +63,24 @@ ADMIN, motivo obligatorio, stock resultante >= 0, movimiento antes/después y au
 
 ## Pruebas prioritarias
 Invariantes de stock, dos ventas simultáneas, idempotencia, anulación repetida, excepción en mitad de transacción, persistencia al reiniciar, FK, migración, respaldo/restauración, base corrupta, acceso denegado.
+
+## Verificación F2 (2026-10-22)
+
+Migración aditiva 0002_identity: users, sessions, bootstrap y audit_log. Inicialización,
+altas y desactivación con auditoría se confirman o revierten juntas en BEGIN IMMEDIATE.
+La desactivación elimina sesiones y se revalida antes de confirmar un login concurrente.
+Los bloqueos tienen timeout de 5 segundos; si no se obtiene acceso, 503 y reintento explícito,
+sin reintentar escrituras automáticamente. No se ejecuta downgrade destructivo.
+Datos de prueba aislados; no se migraron ni eliminaron datos preexistentes.
+En POSIX, la aplicación y Alembic protegen carpetas propias con 0700 y SQLite con 0600.
+Windows usa ACL del perfil privado: su comprobación en PC objetivo queda para F6.
+
+## Garantías comprobadas después de revisar F2
+
+DDL y marcador de revisión se ejecutan en una misma transacción SQLite física
+(BEGIN IMMEDIATE). Un fallo intermedio se revierte y permite reintentar. El proceso
+rechaza iniciar si revisión, tablas o columnas requeridas no corresponden a su versión;
+no se habilita health antes de validar. No hay reparación automática de instalaciones
+parcialmente migradas. La autogeneración de Alembic queda bloqueada hasta disponer de
+metadatos completos; continuar con migraciones manuales revisadas.
+Evidencia: [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).

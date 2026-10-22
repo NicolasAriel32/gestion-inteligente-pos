@@ -34,7 +34,10 @@ auth, users, catalog, inventory, sales, reporting, audit, backup. Evitar servici
 - POST /api/backups; procedimientos de restauración administrados y fuera de sesiones activas
 - GET /api/health (sin información sensible)
 
-Son contratos de diseño, no endpoints implementados. Definir errores y autorización por endpoint antes de crear cada módulo.
+Implementados y verificados en F2: health, auth/login, auth/logout, auth/me,
+employees (GET/POST y PATCH de desactivación), además de auth/setup (GET/POST).
+Los otros endpoints siguen siendo contratos de diseño sin implementación.
+Contratos y errores F2: [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
 
 ## Seguridad local
 - Credenciales únicas; contraseñas Argon2id; sesiones con expiración.
@@ -60,3 +63,12 @@ AGENTS.md, especificaciones, decisiones y pruebas hacen el repositorio accesible
 
 ## Exclusiones técnicas iniciales
 Sin Lovable, Supabase, dependencia obligatoria de cloud, sincronización distribuida, Docker requerido en cliente ni MySQL cliente. MySQL quedará como alternativa futura con adaptación y pruebas de persistencia, no migración automática.
+
+## Concreción de seguridad F2
+
+La API no ofrece autorregistro. La inicialización requiere secreto local temporal y
+transacción BEGIN IMMEDIATE. Las sesiones son opacas, revocables y almacenadas como hashes;
+cookie HttpOnly/SameSite=Strict, expiración absoluta y CSRF en escrituras autenticadas.
+Origin y JSON obligatorios para login/setup; ninguna respuesta refleja secretos de validación.
+Las capas HTTP, casos de uso, contratos de dominio y persistencia están separadas.
+La política de recuperación no se implementa hasta decisión del propietario.

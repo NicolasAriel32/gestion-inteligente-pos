@@ -1,6 +1,9 @@
 # ROADMAP — trabajo incremental SDD
 
-**Estado inicial**: solo documentación. No existe programa compilado, API, interfaz, pruebas ejecutadas ni instalador.
+**Estado actual**: F1 y F2 completadas y validadas técnicamente el 2026-10-22.
+Identidad local, sesiones, permisos y gestión de empleados; evidencia en
+[F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md) y [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
+Sin catálogo, inventario, ventas ni instalador. F3 no iniciada.
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
 
@@ -10,17 +13,20 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - [ ] Revisar propuestas técnicas con prototipo y cerrar decisiones pendientes.
 
 ## F1 — Esqueleto técnico
-- [ ] React/TypeScript/Vite + FastAPI.
-- [ ] SQLite/SQLAlchemy/Alembic con migración inicial vacía.
-- [ ] GET /api/health y frontend que consuma API local.
-- [ ] Comandos de desarrollo, pytest, tests frontend, lint.
+- [x] React/TypeScript/Vite + FastAPI.
+- [x] SQLite/SQLAlchemy/Alembic con migración inicial vacía.
+- [x] GET /api/health y frontend que consuma API local.
+- [x] Comandos de desarrollo, pytest, tests frontend, lint.
 - Aceptación: ejecutar ambos lados localmente sin servicios cloud, comandos documentados y tests básicos pasando.
 
 ## F2 — Identidad y usuarios
-- [ ] Inicialización segura de ADMIN de única ejecución.
-- [ ] Login, logout, sesión y autorización de empleados.
-- [ ] Auditoría básica.
+- [x] Inicialización segura de ADMIN de única ejecución.
+- [x] Login, logout, sesión y autorización de empleados.
+- [x] Auditoría básica.
 - Aceptación: EMPLOYEE no accede a funciones admin vía API.
+
+- Revisión posterior: H-F2-001/002/003 corregidos y revalidados; 47 pruebas aprobadas.
+  [Hallazgos y prevención](ENGINEERING_FINDINGS.md).
 
 ## F3 — Catálogo e inventario
 - [ ] Categorías, productos, desactivación.
