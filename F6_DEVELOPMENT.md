@@ -233,3 +233,10 @@ lockfile idéntico a main con ayuda y documentos históricos F1–F5/ayuda intac
 Se incluye PRIMER_INICIO.txt dentro del instalador y un acceso al documento. Build y
 smoke Windows nuevos deben ejecutarse antes de entregar el artefacto combinado.
 No se ejecutó una instalación en la PC Windows del propietario desde este entorno.
+
+Build/smoke del candidato combinado 0.5.1 aprobados: workflow 39837508411, código 3808bd1,
+8 pasos Windows nativos. Artefacto 12450694251 descargado, hash ZIP y setup contrastados.
+Incluye ayuda PR #6 aprobada y primeros pasos locales. Resultados JSON Windows conservados
+sin reemplazar evidencia previa. Instalación en la PC del propietario bloqueada por
+ausencia de endpoint Windows en esta sesión; no es un fallo del instalador ni se declara
+realizada. Se entrega artefacto para continuar en Codex con ejecución local Windows.

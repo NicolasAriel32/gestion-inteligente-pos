@@ -107,10 +107,10 @@ F5 en revisión humana, sin merge ni inicio de F6. La versión no certifica hard
 ## Candidato F6 — no entrega final
 
 Main F5 fue fusionado en fb85521. F6 está autorizada y en desarrollo, con esquema candidato
-0006_local_operations. Se mantiene producto 0.5.0 en todas las fuentes mientras falta
+0006_local_operations. Tras integrar la ayuda autorizada se mantiene 0.5.1 mientras falta
 Windows 11 limpio; no se etiqueta 0.6.0 final ni se crea release. Al cerrar todos los
-criterios se alinearán juntos producto/API/paquetes/lockfile/metadata a 0.6.0. PR ayuda #6
-sigue separado. No hay dependencias de ejecución nuevas; herramientas de build separadas.
+criterios se alinearán juntos producto/API/paquetes/lockfile/metadata a 0.6.0. Ayuda PR #6
+incorporada tras autorización posterior. No hay dependencias de ejecución nuevas; herramientas de build separadas.
 
 
 ## Mejora 0.5.1 — ayuda local

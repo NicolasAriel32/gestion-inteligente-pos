@@ -85,3 +85,24 @@ setup candidato **GestionInteligentePOS-0.5.0-F6-candidate-setup.exe**, 19.395.2
 SHA-256 del setup: `cf8be1920bfd01eceea5237a2c73a500e7b7f3d70f01edcd1a64caf52714cef7`.
 ZIP descargado y hash verificado; JSON de build/smoke conservados en docs/validation/f6.
 Artefacto expira 2026-10-29. No se publicó release ni se declara instalación objetivo validada.
+
+## Candidato con ayuda autorizada — instalación de prueba solicitada
+
+PR #6 fusionado por autorización explícita en main **4b40e3f**. Incorporado a la rama
+F6 candidata en **3808bd1**, producto **0.5.1**, con PRIMER_INICIO.txt y acceso a sus
+instrucciones dentro del instalador. PR #7 no se fusiona ni F7 se inicia.
+
+Build y 8 pasos smoke Windows aprobados en workflow
+[39837508411](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/runs/39837508411).
+[Artefacto para prueba](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/runs/39837508411/artifacts/12450694251),
+setup **GestionInteligentePOS-0.5.1-F6-candidate-setup.exe**. ZIP y setup descargados y
+verificados: SHA-256 setup
+`9f252c195a3240e2fb57021d137d339806b1865e0a87c603b0695ebf52c8b9bf`.
+Evidencia JSON windows-help-trial-* conserva versión/build, origen y resultado nativo.
+
+El propietario tiene Codex local en Windows y realizará la prueba offline. Esta sesión
+sigue conectada a Linux remoto sin PowerShell, unidad Windows ni endpoint de escritorio;
+no se afirma que el POS esté instalado en su PC. Se entrega instalador descargable para
+ejecutar desde una sesión local Windows. Nunca tocar datos comerciales para probar ni
+desconectar redes remotamente; primera cuenta ADMIN queda a cargo de su titular.
+F6 y el checklist Windows 11 limpio conservan su estado pendiente.
