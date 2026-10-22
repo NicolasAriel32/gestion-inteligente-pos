@@ -47,3 +47,12 @@ Versión 0.1. Cada regla tiene ID estable; toda modificación debe actualizar pr
 
 ## Criterio humano
 Solo ADMIN valida anulaciones y restauraciones. Ningún agente de IA tiene permiso de ejecutar operaciones comerciales críticas en MVP. Excepciones de negocio nuevas requieren cambiar primero esta spec y sus pruebas.
+
+## Concreción de caja F4
+
+Cotización no reserva stock. Confirmar recalcula precio en servidor, exige revisar si
+cambió y registra un único pago por el total. Reintentar el mismo UUID/pedido recupera
+la venta existente; no crea otra ni valida de nuevo el catálogo histórico.
+Una anulación total conserva instantáneas y repone cantidades una sola vez, incluso
+si el producto está inactivo. Otro motivo en una anulación repetida no cambia el original.
+Imprimir/reimprimir es lectura posterior: cancelar el diálogo no anula ni duplica la venta.

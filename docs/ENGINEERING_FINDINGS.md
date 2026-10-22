@@ -209,3 +209,121 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
   desbordamiento horizontal también a 320 px.
 - Práctica transferible: revisar comodidad y legibilidad en capturas reales; no basta con
   que una pantalla no tenga scroll horizontal o pase una auditoría automatizada.
+
+## H-F4-001 — Una respuesta perdida puede inducir un segundo cobro registrado
+
+- Prioridad: P1. Estado: prevenido y validado en F4, sin incidente en datos comerciales.
+- Reproducción real de prueba: Playwright deja que POST /sales confirme en SQLite y
+  corta la respuesta. Si el cliente descartara la identidad del pedido, otro UUID crearía
+  una venta nueva al reintentar, aunque el primer registro ya exista.
+- Causa: confundir ausencia de respuesta con ausencia de commit. Deshabilitar un botón
+  solo mientras se envía no resuelve el estado posterior ni una recarga.
+- Fix: guardar el intento antes del envío, ligado al usuario, y bloquear otra venta
+  mientras sea incierto. Reenviar el mismo UUID/pedido; el servidor busca la clave antes
+  de revalidar catálogo. Validar el comprobante, importes y pago antes de liberar el intento.
+  Auth, red, 5xx y JSON inválido no lo descartan. Un 409 de catálogo/stock sí prueba rechazo
+  porque la búsqueda idempotente ocurre primero; conflicto de clave conserva el bloqueo.
+- Regresión: E2E corta respuesta tras 201 real, recarga, sale/reingresa y recupera el mismo
+  ID, con dos pedidos iguales y una venta/pago/movimiento. SQLite prueba UUID concurrente,
+  conflicto de datos/actor, orden normalizado y reintento después de editar/anular.
+  Vitest rechaza comprobantes inconsistentes y conserva intentos corruptos para revisión.
+- Práctica transferible: probar resultado incierto después del commit, además del fallo
+  previo. Un identificador comercial recuperable pertenece al diseño de la operación.
+- Límite: sessionStorage cubre esa pestaña/recargas/reingreso, no cierre definitivo o
+  borrado del almacenamiento. En ese caso consultar historial antes de repetir una venta;
+  no se promete recuperación automática del carrito al reiniciar el navegador.
+
+## H-F4-002 — FK y CHECK por fila no bastan para preservar un comprobante
+
+- Prioridad: P2. Estado: prevenido y validado.
+- Riesgo identificado al diseñar: cantidades/subtotales válidos por separado no prueban
+  suma del pago ni impiden agregar/cambiar ítems después de confirmar.
+- Fix: un único pago valida existencia de ítems y suma/total; su inserción sella la
+  composición. Triggers bloquean edición/borrado de ítems/pagos, cabecera económica,
+  borrado de venta y reapertura de anuladas. Los casos de uso completan todo en una unidad.
+- Regresión: ventas multilínea y precio cero, SQL directo contra historia y FK de
+  productos usados, snapshots después de cambiar/desactivar catálogo y rollback en
+  cuatro pasos intermedios. No se afirma que DB sola prohíba toda cabecera incompleta
+  insertada por un administrador de SQLite fuera de la aplicación.
+- Práctica transferible: separar invariantes por fila de invariantes entre tablas y del
+  ciclo de vida. Probar escrituras directas e interrupciones, sin inventar garantías de DB.
+
+## H-F4-003 — SQLite acepta un CHECK cuyo resultado es NULL
+
+- Prioridad: P2. Estado: corregido antes de publicar la migración.
+- Reproducción ejecutada en SQLite en memoria: una tabla con CHECK(length(trim(reason))
+  BETWEEN 3 AND 240) admitió INSERT de NULL (una fila confirmada).
+- Causa: el primer borrador del estado VOIDED verificaba longitud pero no IS NOT NULL.
+  SQLite solo rechaza CHECK falso; NULL no equivale a falso en esa restricción.
+- Fix: condición explícita void_reason IS NOT NULL para anuladas, además de validación
+  HTTP estricta y caso de uso ADMIN. Estado COMPLETED exige datos de anulación nulos.
+- Regresión: SQL directo intenta anular sin motivo y es rechazado; pruebas API exigen
+  motivo, misma causa al repetir y rechazo de reversión parcial/overflow.
+- Práctica transferible: probar NULL en condiciones compuestas; no inferir NOT NULL de
+  una comparación de longitud/rango, especialmente para campos condicionales de estado.
+
+## H-F4-004 — Selector de prueba confundía texto de etiqueta y opciones
+
+- Prioridad: P3. Estado: corregido y validado.
+- Reproducción: primer E2E F4 agotó 90 s al seleccionar el medio de pago; no llegó a
+  generar capturas F4. El snapshot mostraba el control nativo y sus opciones disponibles.
+- Causa: getByLabel exacto sobre label que contiene select incorporaba texto de opciones;
+  no coincidía con el selector, aunque el nombre accesible del combobox era correcto.
+- Fix: getByRole('combobox', {name, exact:true}) para pago/filtros. actionTimeout=10 s
+  aporta una ubicación de fallo más precisa. No se alteró el producto ni se amplió timeout
+  para forzar verde. La ejecución posterior completó el flujo real.
+- Práctica transferible: localizar por semántica observable y revisar snapshot/causa
+  antes de aumentar esperas. Diferenciar defecto de automatización y defecto de aplicación.
+
+## H-F4-005 — Abrir el diálogo no confirma impresión física
+
+- Prioridad: P2. Estado: formato/flujo verificados; hardware pendiente.
+- Riesgo: anunciar «impreso» tras window.print o prometer compatibilidad por marca
+  ocultaría cancelación, falta de papel, controlador incorrecto o ancho imprimible menor.
+- Fix: impresión posterior al commit, botón sin estado falso de éxito, reimpresión desde
+  historial y contenido de 48 mm para papel nominal de 58 mm. UI/documentación distinguen
+  registro de venta y salida física. Modelo/controlador Global/Waggs aún no proporcionado.
+- Regresión: tres PDF reales de Chromium (normal, nombre largo/código de 64 caracteres,
+  anulado), ancho nominal con tolerancia del motor, texto extraído y print CSS sin desborde;
+  llamar Imprimir no genera otro POST ni altera stock/pago. No se conectó una impresora.
+- Práctica transferible: comprobar qué confirma cada API; documento, spooler y hardware
+  son evidencias diferentes. Registrar tamaño efectivo y probar controlador/dispositivo.
+
+## H-F4-006 — Un type guard estrechaba demasiado el DTO antes de validarlo
+
+- Prioridad: P3. Estado: corregido y validado.
+- Reproducción: build reportó TS2339 en nombre/precio/código de líneas de venta y borrador.
+- Causa: el guard de items reducía unknown a Item (ID/cantidad) antes de inspeccionar
+  propiedades adicionales; esas propiedades no pertenecían al tipo reducido.
+- Fix: guards separados de unknown a Line y Draft, sin any/ts-ignore ni debilitar strict.
+  Validar importes, suma, pago y estado mantiene el intento bloqueado si la respuesta falla.
+- Regresión: TypeScript/Vite y 14 pruebas nuevas de comprobante/intento; E2E con respuesta
+  perdida y recuperación real. No se declaró compilación aprobada durante el fallo.
+- Práctica transferible: diseñar guards por contrato completo y mantener la validación
+  de entradas externas en unknown hasta demostrar cada propiedad.
+
+## H-F4-007 — Reutilización de fixture con import sombreado
+
+- Prioridad: P3. Estado: corregido y validado.
+- Reproducción: Ruff F811 al importar old_database como fixture y usar el mismo nombre
+  como argumento en otra fixture. Las pruebas corrían, pero el lint rechazaba el cierre.
+- Fix: declarar el módulo compartido en pytest_plugins; sin suprimir F811 ni duplicar
+  datos de identidad/migración. Se conservan bases temporales por caso.
+- Regresión: siete pruebas de migraciones previas/nuevas aprobadas y Ruff correcto.
+- Práctica transferible: dar una ubicación y mecanismo explícitos a fixtures compartidas;
+  un test aprobado no reemplaza la comprobación de herramientas del proyecto.
+
+## H-F4-008 — Detalles técnicos y contadores poco claros en móvil
+
+- Prioridad: P3. Estado: corregido y validado.
+- Reproducción: primera captura real mostraba «1 encontrados» en el encabezado y texto
+  sobre el servidor en la descripción del carrito, sin ayudar a confirmar una venta.
+- Fix: contadores con singular/plural, tamaño secundario y distribución adaptable;
+  instrucciones centradas en revisar precios/cantidades y confirmar el pago informado.
+  La revisión del estado incierto también mostró catálogo deshabilitado con stock previo
+  al commit cuya respuesta se perdió: se oculta ese formulario y se muestra únicamente
+  el pedido pendiente y su recuperación, sin presentar cantidades desactualizadas como actuales.
+- Regresión: capturas finales, axe y ausencia de desborde a 1366/390/320 px. Se mantiene
+  tipografía local y contraste, sin animaciones/dependencias añadidas.
+- Práctica transferible: revisar datos reales de uno/muchos y texto orientado a la tarea,
+  además de estructura técnica, para sostener una interfaz clara y cercana.

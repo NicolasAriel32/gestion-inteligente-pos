@@ -73,3 +73,18 @@ Se informó antes de implementar la ampliación aditiva de auditoría: audit_eve
 los eventos de F2 y permite referencias de catálogo/inventario, mientras audit_log sigue
 compatible con identidad. Ajustes serializados e idempotentes; dinero en centavos e
 interfaz decimal exacta. Alcance y contratos en [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
+
+### Concreción F4 — 2026-10-22
+
+El propietario aprobó fusionar PR #3 e implementar F4 respetando las especificaciones.
+Se conserva pago manual único, sin integración financiera, como define DOMAIN_MODEL.
+Comprobante no fiscal mediante impresión del navegador; requisitos de impresora física
+y política definitiva del piloto siguen pendientes, sin bloquear las operaciones locales.
+Cotización calculada por servidor y revisión explícita si cambia el catálogo; venta con
+UUID idempotente y recuperación del intento tras respuesta perdida. Anulación ADMIN
+total e idempotente. Diseño previo, riesgos y contratos: [F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md).
+
+El propietario añadió formato de ticket para térmicas económicas de 58 mm (Global/Waggs).
+Se concreta con controlador de Windows y diálogo local del navegador; compatibilidad
+física pendiente del modelo y prueba real. No se presume impresión silenciosa/ESC-POS.
+Un fallo de impresión conserva la venta y permite reimprimir: [PRINTING.md](PRINTING.md).

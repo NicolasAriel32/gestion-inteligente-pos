@@ -6,6 +6,7 @@ export default defineConfig({
   retries: 0,
   timeout: 90_000,
   use: {
+    actionTimeout: 10000,
     headless: true,
     trace: 'off',
     screenshot: 'off',

@@ -3,8 +3,10 @@
 **Estado actual**: F1, F2 y F3 completadas y validadas técnicamente el 2026-10-22.
 Identidad local, empleados, catálogo e inventario; evidencia en
 [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
-[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 se entrega en rama para revisión humana.
-Diseño original fusionado con autorización (058a92f). Sin ventas ni instalador; F4 no iniciada.
+[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 aprobada y fusionada a main en 3848d55.
+F4 implementada y validada como software en rama; **cierre pendiente** de revisión humana
+y prueba física de la impresora de 58 mm solicitada. Evidencia en
+[F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md). Sin reportes ni instalador; F5 no iniciada.
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
 
@@ -37,14 +39,20 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - Evidencia: 78 pruebas backend, 20 frontend y 1 flujo E2E aprobados (99; 0 fallidas).
   Ruff, ESLint, TypeScript/Vite y migraciones sobre SQLite nuevo aprobados; concurrencia,
   idempotencia, rollback, upgrade desde F2 y reinicio real verificados. Revisión visual de
-  la extensión F3 y validación Windows/piloto todavía pendientes; no implican F4 habilitada.
+  la extensión F3 aprobada por el propietario. Windows/piloto continúan pendientes de sus fases.
 
 ## F4 — Caja e historial
-- [ ] Carrito y cobro manual registrado.
-- [ ] Venta atómica e idempotente en SQLite.
-- [ ] Anulación ADMIN y comprobante no fiscal.
-- [ ] Pruebas de concurrencia, rollback, duplicados.
+- [x] Carrito y cobro manual registrado.
+- [x] Venta atómica e idempotente en SQLite.
+- [x] Anulación ADMIN y comprobante no fiscal (documento/flujo de impresión verificados).
+- [x] Pruebas de concurrencia, rollback, duplicados.
+- [ ] Validación física con modelo Global/Waggs u otra térmica de 58 mm y controlador Windows.
 - Aceptación: superar todas las invariantes de venta.
+- Software: 119 pruebas backend, 34 frontend y 1 flujo E2E aprobados; 154 en total,
+  cero fallidas finales. Migraciones, Ruff, ESLint y build correctos. Recuperación después
+  de perder respuesta, reautenticación, reinicio y PDF de 58 mm comprobados.
+- No marcar la fase completamente cerrada: falta modelo y equipo para validar impresión
+  real, además de revisión del propietario. No se inició F5.
 
 ## F5 — Dashboard y reportes
 - [ ] KPIs y comparación temporal.

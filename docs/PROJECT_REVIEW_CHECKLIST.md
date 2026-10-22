@@ -44,6 +44,19 @@ No marcar una comprobación como realizada sin registrar comando, entorno y resu
 - [ ] Comprobar que avisos, errores y foco pertenezcan a la sección actual.
 - [ ] Revisar capturas reales de escritorio/móvil además de axe y desbordamiento.
 
+## Confirmación comercial e impresión
+
+- [ ] Cortar la respuesta después del commit y recuperar la misma operación tras recargar
+  y reautenticar; bloquear otra venta mientras sea incierta, sin reintentos automáticos.
+- [ ] Validar el comprobante recibido antes de liberar la identidad comercial del intento.
+- [ ] Probar campos NULL en CHECK compuestos y precisar invariantes entre tablas.
+- [ ] Verificar instantáneas e inmutabilidad mediante SQL directo y API, con fallos parciales.
+- [ ] Separar venta registrada de impresión: cancelar/reimprimir no registra otro pago/stock.
+- [ ] Probar nombre/código largos, ancho efectivo de PDF y controlador/dispositivo reales;
+  no certificar hardware a partir de window.print o de una marca.
+- [ ] Diagnosticar selectores de E2E con roles/snapshot y tiempos acotados, sin ampliar
+  esperas para ocultar fallos ni suprimir errores de tipado/lint.
+
 Origen: [hallazgos H-F2-001 a H-F2-003](ENGINEERING_FINDINGS.md). Adaptar a la arquitectura
 real del nuevo proyecto; no trasladar comandos o garantías de SQLite a otro motor sin probarlos.
-Ampliado con los hallazgos H-UI y H-F3 del mismo registro.
+Ampliado con los hallazgos H-UI, H-F3 y H-F4 del mismo registro.

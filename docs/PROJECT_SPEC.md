@@ -14,6 +14,9 @@ Sin autorregistro público. El dueño puede crear/desactivar empleados; los perm
 
 ## Módulos funcionales
 1. **Caja:** búsqueda por nombre/código, carrito, cantidades, total, confirmación, efectivo/transferencia/débito/crédito registrados manualmente, comprobante imprimible **no fiscal**.
+   Requisito añadido por el propietario durante F4: ticket para térmicas económicas de
+   58 mm (por ejemplo Global/Waggs), con controlador local de Windows. Modelo y prueba
+   física pendientes; detalle en PRINTING.md. Impresión fallida no duplica ni revierte la venta.
 2. **Productos:** alta, edición y desactivación; código opcional, nombre, categoría, precio, costo opcional, stock mínimo, búsqueda y filtros.
 3. **Inventario:** carga inicial, entradas y ajustes con motivo, alerta de stock bajo y movimientos auditables.
 4. **Ventas:** historial, filtro por empleado según rol, detalle con instantánea de nombre y precio, anulación solo por ADMIN con motivo.

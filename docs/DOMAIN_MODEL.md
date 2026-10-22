@@ -52,8 +52,7 @@ rol validado por CHECK e índice parcial que permite un solo ADMIN. No se crean 
 `bootstrap`: singleton id=1, token_hash nullable, expires_at y completed. El hash se elimina al consumirlo.
 `audit_log`: actor_id y entity_id FK a users, action, entity_type, event_data vacío por defecto
 (sin contenido libre recibido del cliente), created_at_utc. En F2 solo audita identidad.
-Las entidades comerciales implementadas se precisan a continuación; ventas y pagos
-continúan como modelo objetivo sin implementación.
+Las entidades comerciales implementadas se precisan a continuación para F3 y F4.
 
 ## Catálogo e inventario implementados en F3
 
@@ -71,3 +70,19 @@ continúan como modelo objetivo sin implementación.
 - Desactivar categoría no cambia el estado de productos. No se asignan categorías
   inactivas a productos nuevos; un producto existente puede conservar su categoría.
   No hay borrado físico ni ajustes de productos inactivos.
+
+## Caja e historial implementados en F4
+
+sales agrega request_hash del pedido normalizado y username_snapshot, además de los
+campos previstos. idempotency_key UUID UNIQUE es una identidad comercial, no de sesión.
+sale_items guarda también product_code_snapshot; nombre, código y precio históricos no
+cambian al editar/desactivar catálogo. payments implementa un único medio declarado y
+el importe total, sin confirmación bancaria ni saldo pendiente.
+
+La inserción del pago comprueba ítems/suma y sella su composición. Triggers impiden
+editar/borrar ítems/pagos, cambiar cabecera económica, borrar venta o reabrir una anulada.
+Los casos de uso completan el conjunto en una transacción; la DB no sustituye esa unidad
+de trabajo para una cabecera insertada por SQL directo sin pago/ítems.
+Movimientos SALE/VOID referencian SALE/id; índice parcial único por venta/producto/tipo.
+Anulación total por ADMIN, con motivo no nulo, responsable y UTC. Productos inactivos
+recuperan stock conservando su estado. No hay devoluciones parciales ni reportes F5.

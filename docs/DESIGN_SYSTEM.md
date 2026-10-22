@@ -2,7 +2,8 @@
 
 Dirección C aprobada por el propietario: comercial y enérgica, profesional y cercana.
 Aplicada a configuración inicial, ingreso y empleados; extendida en F3 a catálogo,
-categorías y ajustes de inventario. Caja y ventas continúan pendientes, sin enlaces ficticios.
+categorías y ajustes de inventario, y en F4 a Caja, Historial y comprobante no fiscal.
+Reportes continúan pendientes, sin enlaces ficticios.
 
 ## Color y contraste
 
@@ -64,8 +65,18 @@ El monograma gi. es un recurso tipográfico local de interfaz; no implica regist
   visibles, estado activo/stock bajo en texto, importes ARS y código conservado como texto.
 - Inventario: selección de producto, ajuste con motivo e historial real de antes/después.
   EMPLOYEE consulta catálogo, sin costos ni controles administrativos. El backend lo verifica.
-- La navegación limpia avisos de otra sección. Un único envío pendiente bloquea formularios,
-  navegación y logout; errores y confirmaciones se anuncian y reciben foco.
+- La navegación limpia avisos de otra sección. Mientras una operación se está enviando
+  se bloquean formularios, navegación y logout; errores y confirmaciones se anuncian
+  y reciben foco. Una venta con respuesta incierta permite consultar historial o salir,
+  conservando su intento por usuario en esa pestaña, pero bloquea otra venta.
+- Caja: lista/buscador y carrito con cantidades; revisión del importe antes de confirmar.
+  Cotización y comprobante reciben foco. Un intento de respuesta incierta queda visible,
+  bloquea otra venta y permite reintentar exactamente la misma operación.
+- Historial: filtros de persona para ADMIN, estado y paginación; detalle y anulación con
+  motivo/confirmación. EMPLOYEE recibe solo las suyas por API.
+- Ticket: vista de papel blanco, tinta negra y Manrope local; documento de 48 mm de
+  contenido dentro de papel nominal de 58 mm. Print oculta navegación y acciones, permite
+  saltos entre ítems y ajusta nombres/códigos largos. No se simula estado «impreso».
 
 Username normalizado y roles siguen definidos por la API. El diseño no cambia los contratos,
 la autorización ni el manejo de sesiones/CSRF. No se añade almacenamiento de credenciales
@@ -87,3 +98,5 @@ Capturas reales y resultados en [FRONTEND_DESIGN_VALIDATION.md](../FRONTEND_DESI
 El propietario autorizó la fusión del diseño original el 2026-10-22: PR #2, merge 058a92f.
 Las capturas adicionales de F3 están en docs/screenshots/f3 y su validación en
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
+F3 aprobada y fusionada (3848d55). Capturas/PDF adicionales y resultados de F4:
+[F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md); validación física de impresión pendiente.

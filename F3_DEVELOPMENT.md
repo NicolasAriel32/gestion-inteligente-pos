@@ -1,5 +1,9 @@
 # F3 — Catálogo e inventario
 
+Estado posterior: el propietario aprobó la revisión y autorizó fusionar F3 e iniciar F4.
+PR #3 fusionado en main, merge 3848d55ad84398e99e1907c404ddc5a426b861ff.
+La evidencia que sigue corresponde a la entrega original. F4 se documenta por separado.
+
 ## Diseño previo a la implementación — 2026-10-22
 
 Rama feat/f3-catalog-inventory desde main 058a92f, después del merge autorizado del diseño.
