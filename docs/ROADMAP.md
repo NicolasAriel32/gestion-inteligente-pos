@@ -1,6 +1,6 @@
 # ROADMAP — trabajo incremental SDD
 
-**Versión de referencia**: 0.5.0 (2026-10-22); esquema candidato 0006_local_operations.
+**Versión de referencia**: 0.5.1 (2026-10-22); esquema candidato 0006_local_operations.
 **Estado actual**: F1–F5 implementadas y validadas técnicamente; F5 fusionada por autorización (fb85521).
 Identidad local, empleados, catálogo e inventario; evidencia en
 [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
@@ -65,6 +65,9 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 Software F5 verificado y fusionado en PR #5 (fb85521).
 F6 autorizada por instrucción explícita posterior; implementación candidata en F6_DEVELOPMENT.md.
 
+Mejora posterior 0.5.1: ayuda de uso local con guías rápidas y buscador, sin avanzar F6.
+Evidencia en USER_HELP_DEVELOPMENT.md; revisión de la mejora independiente del merge F5.
+
 ## F6 — Respaldo, importación y distribución
 - [x] Backup consistente y restauración probados en SQLite temporal/Linux; falta PC Windows objetivo.
 - [x] CSV de altas nuevas con vista previa/validación, confirmación atómica y reintentos.
@@ -82,3 +85,7 @@ F6 autorizada por instrucción explícita posterior; implementación candidata e
 
 ## Futuro, no MVP
 MySQL multi-PC, servidor remoto, MCP, n8n, actualizador asistido, pagos online, varias cajas, facturación fiscal. Cada evolución requiere nueva spec y análisis de riesgos.
+
+Actualización posterior: PR #6 autorizado e integrado en main 4b40e3f. Candidato F6
+incorpora esa ayuda, mantiene producto 0.5.1 y conserva pendiente Windows 11 limpio.
+La evidencia anterior describe su ejecución original; PR #7 no se fusiona.

@@ -1,6 +1,6 @@
 # PERSISTENCE — base de datos, transacciones y respaldos
 
-- Versión de referencia: 0.5.0 (2026-10-22)
+- Versión de referencia: 0.5.1 (2026-10-22)
 - Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema candidato 0006_local_operations.
   Respaldo y restauración siguen como diseño F6, sin implementación validada.
 

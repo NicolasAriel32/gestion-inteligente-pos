@@ -1,6 +1,6 @@
 # DOMAIN_MODEL — vocabulario, entidades y eventos
 
-- Versión de referencia: 0.5.0 (2026-10-22); núcleo F1–F5 implementado.
+- Versión de referencia: 0.5.1 (2026-10-22); núcleo F1–F5 implementado.
   Reporting validado localmente; dominio/hardware y piloto conservan sus pendientes.
 
 ## Lenguaje compartido

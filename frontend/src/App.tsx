@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { getHealth } from './api'
 import * as identity from './identity'
 import type { Session, User } from './identity'
+import HelpCenter from './HelpCenter'
 import { CredentialForm } from './CredentialForm'
 import { Button, ConfirmDeactivation, Icon, Notice, Panel } from './ui'
 import './style.css'
@@ -86,7 +87,7 @@ export default function App() {
       </div>
       <div className="topbar__right">
         <span className="connection" role="status"><span className="connection__dot" aria-hidden="true" />{health}</span>
-        {session && <Button variant="secondary" disabled={busy} onClick={() => void buttonAction(() => identity.logout(session.csrf_token))}><Icon name="exit" />Cerrar sesión</Button>}
+        <div className="topbar__actions">{session && <Button variant="secondary" disabled={busy} onClick={() => void buttonAction(() => identity.logout(session.csrf_token))}><Icon name="exit" />Cerrar sesión</Button>}<HelpCenter key={`${stage}-${session?.user.id ?? 'guest'}`} role={session?.user.role ?? 'GUEST'} disabled={busy} /></div>
       </div>
     </header>
     <main id="main" tabIndex={-1} className={session ? 'workspace' : 'welcome'}>

@@ -101,3 +101,10 @@ Aplicación concreta de esta plantilla a F5 y comandos/resultados: F5_DEVELOPMEN
 
 Aplicación concreta y resultados F6: [F6_DEVELOPMENT.md](../F6_DEVELOPMENT.md).
 Las casillas son plantilla reutilizable; el estado de entrega lo define ROADMAP.
+
+## Ayuda y documentación integrada
+
+- [ ] Mantener pasos y nombres de controles alineados con las pantallas disponibles.
+- [ ] Distinguir guías por rol y explicación de permisos; no presentar funciones futuras disponibles.
+- [ ] Comprobar que consultar ayuda no envía escrituras ni pierde formularios/intentos pendientes.
+- [ ] Probar búsqueda/filtro/vacío, teclado/foco, scroll interno y capturas del viewport del diálogo.

@@ -1,6 +1,6 @@
 # DECISIONS — decisiones arquitectónicas y de producto
 
-Versión de referencia: 0.5.0. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
+Versión de referencia: 0.5.1. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
 Formato: ID, fecha, estado, decisión, motivo, consecuencias. Distinguir **aprobado**, **implementado** y **propuesto**.
 
 ## Aceptadas por el propietario
@@ -134,3 +134,12 @@ El POS conserva validación local de integridad/revisión de SQLite y preparaci�
 con respaldo al reemplazar voluntariamente binarios. Esas protecciones no consultan
 versiones nuevas ni obligan a cambiar una instalación compatible. La aplicación no
 descarga ni instala actualizaciones al arrancar o cerrar.
+
+### ADR-013 — Ayuda local y guías por rol (IMPLEMENTADA 0.5.1, 2026-10-22)
+
+El propietario propuso ayuda rápida con signo de pregunta para cargar productos, cambiar
+precios y configurar funciones existentes. Se concreta en una guía estática local con
+búsqueda y temas; no requiere servicios, IA ni conexión. Muestra pasos según rol y aclara
+funciones pendientes sin presentarlas disponibles. No realiza acciones comerciales ni
+reemplaza permisos backend. Es una mejora de uso separada de F6; F6 no está iniciada.
+Diseño previo/criterios/resultados en USER_HELP_DEVELOPMENT.md.

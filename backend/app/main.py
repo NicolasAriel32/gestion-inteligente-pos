@@ -92,7 +92,7 @@ def create_app(db_path: Path | None = None, frontend_path: Path | None = None) -
         finally:
             engine.dispose()
 
-    application = FastAPI(title="Gestión Inteligente POS", version="0.5.0", lifespan=lifespan)
+    application = FastAPI(title="Gestión Inteligente POS", version="0.5.1", lifespan=lifespan)
 
     application.state.request_shutdown = None
     application.state.instance_id = None

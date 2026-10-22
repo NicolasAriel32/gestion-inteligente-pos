@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.5.0"
+  #define AppVersion "0.5.1"
 #endif
 [Setup]
 AppId={{F95EAEE3-B79F-4501-9C08-02EF49B75021}
@@ -24,12 +24,14 @@ UninstallDisplayIcon={app}\GestionInteligentePOS.exe
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 [Files]
 Source: "..\dist\GestionInteligentePOS\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "PRIMER_INICIO.txt"; DestDir: "{app}"; Flags: ignoreversion
 [Tasks]
 Name: "desktopicon"; Description: "Crear acceso en el escritorio"; Flags: unchecked
 [Icons]
 Name: "{group}\Gestión Inteligente POS"; Filename: "{app}\GestionInteligentePOS.exe"
 Name: "{group}\Preparar o actualizar base local"; Filename: "{app}\GestionInteligentePOS.exe"; Parameters: "--prepare"
 Name: "{group}\Recuperar restauración interrumpida"; Filename: "{app}\GestionInteligentePOS.exe"; Parameters: "--recover-restore"
+Name: "{group}\Primeros pasos para probar sin internet"; Filename: "{app}\PRIMER_INICIO.txt"
 Name: "{autodesktop}\Gestión Inteligente POS"; Filename: "{app}\GestionInteligentePOS.exe"; Tasks: desktopicon
 [Run]
 Filename: "{app}\GestionInteligentePOS.exe"; Parameters: "--prepare"; Description: "Preparar base local (requiere confirmación explícita)"; Flags: postinstall skipifsilent

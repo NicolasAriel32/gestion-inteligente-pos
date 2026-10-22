@@ -213,3 +213,23 @@ limpio en una aprobación. Detalle y ejecuciones posteriores: docs/WINDOWS_VALID
   Bloqueado el cierre de F6 por falta de PC/VM Windows 11 limpia y validación humana del
   checklist objetivo. Impresora física 58 mm continúa pendiente. Versión final 0.6.0
   diferida por esa validación; siete fuentes mantienen 0.5.0 candidato. F7 no iniciada.
+
+## Integración de ayuda aprobada y preparación de instalación — 2026-10-22
+
+El propietario autorizó PR #6 y pidió instalar para una prueba offline. Se fusionó #6
+en main 4b40e3f; esto no autoriza fusionar #7 ni iniciar F7. Se incorpora el nuevo main
+a la rama candidata para que el instalador incluya ayuda. Resolver conflictos conservando
+ambos módulos y evidencia histórica; baseline producto pasa a 0.5.1 de main, sin declarar
+0.6.0/F6 validada. Revalidar frontend/E2E/health y build/smoke Windows; datos temporales.
+Esta sesión continúa en Linux remoto sin acceso al escritorio Windows del propietario;
+preparar artefacto descargable y procedimiento de ejecución local, sin afirmar instalación
+en esa PC ni desconectar redes del equipo remoto.
+
+Resultado de integración autorizado: 54 Vitest aprobadas (3.14 s), lint/build correctos;
+24 pruebas focalizadas backend health/operaciones aprobadas (23.94 s), Ruff/pip check
+correctos; E2E completo ayuda + F1–F6 aprobado (40.2 s), cero solicitudes externas.
+Metadata editable reinstalada sin dependencias nuevas; siete fuentes coinciden 0.5.1,
+lockfile idéntico a main con ayuda y documentos históricos F1–F5/ayuda intactos.
+Se incluye PRIMER_INICIO.txt dentro del instalador y un acceso al documento. Build y
+smoke Windows nuevos deben ejecutarse antes de entregar el artefacto combinado.
+No se ejecutó una instalación en la PC Windows del propietario desde este entorno.

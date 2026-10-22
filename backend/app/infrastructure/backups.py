@@ -156,7 +156,7 @@ class BackupFiles:
             backup_id = str(uuid4())
             manifest = {'format': 1, 'schema': revision, 'created_at_utc': datetime.now(UTC).isoformat(),
                         'sha256': hashlib.sha256(data).hexdigest(), 'kind': kind, 'id': backup_id,
-                        'product_version': '0.5.0'}
+                        'product_version': '0.5.1'}
             temporary = Path(folder) / 'container'
             with zipfile.ZipFile(temporary, 'w', compression=zipfile.ZIP_STORED) as archive:
                 archive.write(snapshot, 'pos.db')

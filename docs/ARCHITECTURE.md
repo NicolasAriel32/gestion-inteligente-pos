@@ -1,6 +1,6 @@
 # ARCHITECTURE — arquitectura del MVP local
 
-- Versión de referencia: 0.5.0 (2026-10-22)
+- Versión de referencia: 0.5.1 (2026-10-22)
 - Estado: núcleo F1–F5 validado localmente; distribución Windows y partes futuras pendientes.
 - Referencias: PROJECT_SPEC.md, BUSINESS_RULES.md y DECISIONS.md
 
@@ -130,3 +130,11 @@ estructura canónica de migraciones, hash y límites; no rutas recibidas por API
 Runtime serve solo dist/assets/licencias/index; directorios de datos nunca estáticos.
 Launcher y servidor fuente oficial comparten bloqueo de instancia; mantenimiento offline
 explícito y no reparaciones silenciosas. Detalles y límites en F6_DEVELOPMENT.md.
+
+## Ayuda local de uso (0.5.1)
+
+HelpCenter abre diálogo nativo modal desde encabezado; contenido estático versionado en
+userHelp.ts, búsqueda local por términos sin distinguir acentos/mayúsculas. No consulta
+APIs, escribe storage ni realiza acciones comerciales. Filtro por rol es de presentación;
+la autorización backend de todos los módulos continúa intacta. Sin dependencias/esquema
+nuevos. No introduce navegación que desmonte borradores ni modifica intento de caja.

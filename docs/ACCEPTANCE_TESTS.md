@@ -1,6 +1,6 @@
 # ACCEPTANCE_TESTS — criterios de aceptación trazables
 
-Versión de referencia 0.5.0 (2026-10-22). La matriz define el objetivo completo.
+Versión de referencia 0.5.1 (2026-10-22). La matriz define el objetivo completo.
 Solo los casos señalados en las
 secciones de evidencia cuentan como ejecutados; impresora física, backups y Windows siguen pendientes.
 
@@ -122,3 +122,10 @@ de historia/stock/usuarios, estado previo ante error, journal/rechazo/recover au
 CSV nuevo: límites, exactitud, errores, UUID concurrente, rollback, respuesta perdida y roles.
 AT-020 permanece pendiente de instalación limpia Windows 11; scripts o paquete Linux no
 la aprueban. Resultados/comandos/capturas: F6_DEVELOPMENT.md. Impresora física/F7 pendientes.
+
+## Mejora de ayuda 0.5.1
+
+Botón ? y diálogo sin red, búsqueda local por palabras/acentos y filtro de temas, respuestas
+según rol. Teclado/foco/fondo inerte y preservación de formulario/intento de venta; lectura
+sin escrituras por API. Evidencia ejecutada en USER_HELP_DEVELOPMENT.md. No modifica las
+reglas AT comerciales ni declara aprobadas fases futuras/impresora física.
