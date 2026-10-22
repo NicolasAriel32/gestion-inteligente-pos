@@ -1,29 +1,29 @@
 # Versiones y estado de entrega
 
-Actualizado: 2026-10-22. Versión de referencia del software: **0.4.0**.
-F1–F4 implementadas y verificadas; el propietario autorizó la integración del PR #4.
+Actualizado: 2026-10-22. Versión de referencia del software: **0.5.0**.
+F1–F5 implementadas y verificadas; F5 pendiente de revisión humana por PR borrador.
 Impresora física de 58 mm, Windows/instalador y piloto conservan sus pendientes.
-F5 no iniciada. La versión del software no certifica esas validaciones.
+F6 no iniciada. La versión del software no certifica esas validaciones.
 
 ## Fuentes verificables
 
 | Elemento | Versión / ubicación |
 | --- | --- |
-| Paquete backend | 0.4.0 en backend/pyproject.toml, project.version |
-| API / OpenAPI | 0.4.0 en backend/app/main.py, FastAPI.version |
-| Paquete frontend | 0.4.0 en frontend/package.json |
-| Lockfile, raíz y packages[""] | 0.4.0 en frontend/package-lock.json |
-| Esquema SQLite | 0004_checkout_history, independiente de la versión del producto |
-| Specs funcionales vigentes | Referencia 0.4.0; las secciones futuras siguen identificadas |
+| Paquete backend | 0.5.0 en backend/pyproject.toml, project.version |
+| API / OpenAPI | 0.5.0 en backend/app/main.py, FastAPI.version |
+| Paquete frontend | 0.5.0 en frontend/package.json |
+| Lockfile, raíz y packages[""] | 0.5.0 en frontend/package-lock.json |
+| Esquema SQLite | 0005_reporting_indexes, independiente de la versión del producto |
+| Specs funcionales vigentes | Referencia 0.5.0; las secciones futuras siguen identificadas |
 
-lockfileVersion=3 es el formato de npm y no debe cambiarse a 0.4.0.
+lockfileVersion=3 es el formato de npm y no debe cambiarse a 0.5.0.
 Las versiones de Python/Node/dependencias son distintas y se registran con comandos
-reales en F4_DEVELOPMENT.md. Esta actualización no cambia dependencias ni migraciones.
+reales en F5_DEVELOPMENT.md. F5 agrega tzdata y un índice (migración 0005).
 
 ## Política para próximas entregas
 
-- Usar MAJOR.MINOR.PATCH. La entrega actual es 0.4.0; correcciones posteriores de F4
-  pueden ser 0.4.x y F5 implementada/validada será candidata 0.5.0.
+- Usar MAJOR.MINOR.PATCH. La entrega actual es 0.5.0; correcciones posteriores de F5
+  pueden ser 0.5.x. F6 requiere autorización y validación independientes.
 - Actualizar juntos paquete backend, API/OpenAPI, frontend y las dos raíces del lockfile.
   Para npm: npm version VERSION --no-git-tag-version --ignore-scripts --offline.
 - Tras modificar metadata Python, reinstalar editable sin actualizar dependencias y
@@ -91,3 +91,14 @@ Manrope local y cero solicitudes externas/errores JavaScript no controlados.
 Conteo final de casos distintos: **119 + 34 + 1 = 154 aprobados, 0 fallidos finales**;
 se conserva el fallo E2E inicial como incidencia, sin contarlo como prueba nunca ejecutada.
 La repetición es evidencia de estabilidad, no un caso adicional. No prueba hardware real.
+
+
+## Entrega F5 — 2026-10-22
+
+Backend, metadata editable instalada, API/OpenAPI, frontend y dos raíces de lockfile
+coinciden en **0.5.0** (siete valores verificados). Esquema **0005_reporting_indexes**,
+índice aditivo; versiones transitivas npm idénticas a main. Única dependencia directa
+nueva: tzdata>=2025.2,<2027 (instalada 2026.5) para datos horarios locales en Windows.
+Las migraciones anteriores y sus contratos económicos permanecen sin editar.
+Suite/regresión, comandos y build/capturas reales: [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md).
+F5 en revisión humana, sin merge ni inicio de F6. La versión no certifica hardware/piloto.

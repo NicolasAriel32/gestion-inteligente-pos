@@ -1,8 +1,8 @@
 # BUSINESS_RULES — reglas verificables del POS
 
-Versión de referencia 0.4.0 (2026-10-22). Cada regla tiene ID estable; toda modificación
-debe actualizar pruebas y registro de decisiones. Las reglas de reportes son alcance F5,
-todavía sin implementar; la matriz de aceptación diferencia evidencia ejecutada y objetivos.
+Versión de referencia 0.5.0 (2026-10-22). Cada regla tiene ID estable; toda modificación
+debe actualizar pruebas y registro de decisiones. Las reglas de reportes están implementadas en F5;
+la matriz de aceptación diferencia evidencia ejecutada y objetivos.
 
 | ID | Regla | Garantía |
 | --- | --- | --- |
@@ -58,3 +58,12 @@ la venta existente; no crea otra ni valida de nuevo el catálogo histórico.
 Una anulación total conserva instantáneas y repone cantidades una sola vez, incluso
 si el producto está inactivo. Otro motivo en una anulación repetida no cambia el original.
 Imprimir/reimprimir es lectura posterior: cancelar el diálogo no anula ni duplica la venta.
+
+## Concreción F5
+
+Períodos locales semiabiertos, corte en ahora si incluyen hoy; anterior desplazado la
+misma cantidad de días calendario y con el mismo corte local. Fechas de 2000..2099,
+1..366 días sin futuros. Agregados enteros exactos sin cota JS/int64; JSON decimal como
+texto. Ticket promedio al centavo y porcentajes a centésimas, mitad alejándose de cero;
+comparar promedios usa fracciones sin redondeo previo. Base cero: sin porcentaje salvo
+ambos valores cero (0 %). Detalle/contratos en F5_DEVELOPMENT.md y ADR-012.

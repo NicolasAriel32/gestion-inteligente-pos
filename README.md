@@ -1,10 +1,10 @@
 # Gestión Inteligente POS
 
 Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
-**Versión 0.4.0: identidad, catálogo, inventario, caja e historial locales implementados.**
+**Versión 0.5.0: identidad, catálogo, inventario, caja, historial y reportes ADMIN locales.**
 F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
 Versiones de producto, esquema y evidencias: [VERSIONS.md](docs/VERSIONS.md).
-Siguiente fase preparada, todavía sin iniciar: [instrucción F5](docs/NEXT_STEP_F5.md).
+Diseño, contratos y resultados de F5: [F5_DEVELOPMENT.md](F5_DEVELOPMENT.md).
 
 ## Decisiones de producto
 
@@ -53,7 +53,9 @@ productos activos, precios y existencias, sin costos ni administración del cat�
 Instalación, comandos y resultados: [F4_DEVELOPMENT.md](F4_DEVELOPMENT.md),
 [F3_DEVELOPMENT.md](F3_DEVELOPMENT.md),
 [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md) y [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md).
-Sin reportes ni instalador. F5 no iniciada. No confundir esta entrega con piloto aprobado.
+F5 agrega KPIs, comparación con período anterior, ranking por unidades/ingresos y ventas
+por hora de Buenos Aires; excluye anuladas y mantiene instantáneas históricas.
+Sin instalador ni piloto aprobado. F6 requiere autorización independiente.
 
 ## Desarrollo local
 
@@ -112,3 +114,22 @@ unidades una sola vez. El ticket de 58 mm se imprime desde el diálogo del naveg
 con el controlador de Windows. Cancelar la impresión no cancela la venta.
 [Preparación y límites Global/Waggs](docs/PRINTING.md) y
 [capturas/PDF reales](docs/screenshots/f4/). Compatibilidad física pendiente de modelo y prueba.
+
+## Dashboard y reportes (ADMIN)
+
+Abrí Reportes y consultá hoy, ayer, últimos 7/30 días o fechas personalizadas (máximo
+366 días, sin futuros). Si incluye hoy, corta al instante de consulta y compara con
+el mismo corte del período anterior; ambos intervalos se muestran explícitamente.
+Facturación, ventas, ticket promedio y unidades excluyen todas las anuladas. Ranking
+hasta 10 productos por unidades/ingresos; hora pico por transacciones, con alternativa
+de facturación por hora. Sin ventas se muestra el estado vacío y la base cero no
+inventa un porcentaje. Consultar actualiza los datos; no hay actualización automática.
+
+F5 requiere migración explícita a **0005_reporting_indexes**, índice aditivo sin cambio
+de tablas/historia. Sobre instalación existente, detener y respaldar de forma consistente
+antes de migrar; para probar usar LOCALAPPDATA temporal. Conserva comandos locales de
+arriba. Única dependencia nueva: `tzdata>=2025.2,<2027`, datos IANA para zoneinfo en
+Windows, instalados junto al backend y disponibles offline. Sin servicios externos.
+Contrato OpenAPI: GET /api/reports/summary. Dinero/unidades agregadas viajan como texto
+decimal exacto y se formatean con BigInt; los contratos de ventas F4 no cambian.
+[Criterios y evidencia](F5_DEVELOPMENT.md) · [capturas](docs/screenshots/f5/).

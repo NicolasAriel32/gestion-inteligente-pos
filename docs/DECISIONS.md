@@ -1,6 +1,6 @@
 # DECISIONS — decisiones arquitectónicas y de producto
 
-Versión de referencia: 0.4.0. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
+Versión de referencia: 0.5.0. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
 Formato: ID, fecha, estado, decisión, motivo, consecuencias. Distinguir **aprobado**, **implementado** y **propuesto**.
 
 ## Aceptadas por el propietario
@@ -99,3 +99,15 @@ API, frontend y lockfile en 0.4.0; esquema Alembic 0004_checkout_history sin cam
 No cambia arquitectura ni reglas comerciales. Los estados anteriores se actualizan
 según implementación/evidencia, sin certificar Windows, piloto ni impresora.
 F5 todavía no se implementa; su siguiente instrucción se documenta en NEXT_STEP_F5.md.
+
+### ADR-012 — Reporte consistente y exacto (IMPLEMENTADA F5, 2026-10-22)
+
+Dentro del alcance F5 autorizado: una sola respuesta GET /api/reports/summary consolida
+KPIs, comparación, rankings y horas sobre un snapshot de lectura explícito. Se concreta
+la API prevista sin exponer endpoints separados con instantes distintos. No cambia stack.
+Calendario, comparación comparable, límites 366 días y redondeo exacto se definen en
+[F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md). Agregados como strings enteros decimales para
+superar int64/JS seguro, sin modificar DTO de F1–F4. SQLite pos_sum Python exacto;
+BigInt en UI. Índice aditivo 0005 justificado por búsqueda global por estado/fecha.
+Única nueva dependencia tzdata para datos horarios offline en Windows. No implica
+instalador Windows aprobado. F6, CSV, backups y hardware siguen pendientes.

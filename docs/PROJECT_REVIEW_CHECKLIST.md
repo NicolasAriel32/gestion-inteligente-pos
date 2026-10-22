@@ -64,3 +64,19 @@ No marcar una comprobación como realizada sin registrar comando, entorno y resu
 Origen: [hallazgos H-F2-001 a H-F2-003](ENGINEERING_FINDINGS.md). Adaptar a la arquitectura
 real del nuevo proyecto; no trasladar comandos o garantías de SQLite a otro motor sin probarlos.
 Ampliado con los hallazgos H-UI, H-F3 y H-F4 del mismo registro.
+
+## Reporting y agregados (incorporado en F5)
+
+- [ ] Probar sumas por encima de int64 y JS seguro además del límite por fila; evitar
+  float/total de SQLite, truncamientos y conversiones a Number para dinero.
+- [ ] Separar agregados de cabecera e ítems para impedir duplicación al unir tablas.
+- [ ] Comparar fracciones exactas antes de redondear promedio/variaciones; definir base cero.
+- [ ] Declarar intervalos semiabiertos, timezone y mismo corte en comparación de parciales;
+  probar día/mes/año/bisiesto, vacíos y anuladas en ambos períodos.
+- [ ] Fijar snapshot explícito y confirmar un escritor entre consultas para probar aislamiento.
+- [ ] Usar instantáneas históricas sin depender de catálogo/personas activas.
+- [ ] Revisar plan de búsqueda real e índices globales, no asumir útil un prefijo por usuario.
+- [ ] Probar fallback IANA donde el SO no incluye zonas; no inferir validación Windows.
+- [ ] Revisar padding/altura de paneles con pocos datos y capturas de carga/error/vacío/datos.
+
+Aplicación concreta de esta plantilla a F5 y comandos/resultados: F5_DEVELOPMENT.md.

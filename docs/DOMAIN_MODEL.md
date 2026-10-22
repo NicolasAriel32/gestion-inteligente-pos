@@ -1,7 +1,7 @@
 # DOMAIN_MODEL — vocabulario, entidades y eventos
 
-- Versión de referencia: 0.4.0 (2026-10-22); núcleo F1–F4 implementado.
-  Reporting es diseño F5; validar dominio y hardware con el comercio piloto.
+- Versión de referencia: 0.5.0 (2026-10-22); núcleo F1–F5 implementado.
+  Reporting validado localmente; dominio/hardware y piloto conservan sus pendientes.
 
 ## Lenguaje compartido
 **Producto**: ítem vendible por unidades enteras.
@@ -87,3 +87,11 @@ de trabajo para una cabecera insertada por SQL directo sin pago/ítems.
 Movimientos SALE/VOID referencian SALE/id; índice parcial único por venta/producto/tipo.
 Anulación total por ADMIN, con motivo no nulo, responsable y UTC. Productos inactivos
 recuperan stock conservando su estado. No hay devoluciones parciales ni reportes F5.
+
+## Reporting implementado en F5
+
+Lectura ADMIN de COMPLETED exclusivamente, sin joins a catálogo o personas activas.
+Métricas de cabecera separadas de unidades/ítems; instantáneas de la última venta válida
+por producto/fecha/ID para nombrar ranking. Dos top 10 con empate por ID y 24 horas
+locales; todas las horas empatadas por tickets, vacío sin pico. Sin entidad comercial
+nueva: 0005 agrega un índice. Agregados en texto decimal exacto, no modifican F4.

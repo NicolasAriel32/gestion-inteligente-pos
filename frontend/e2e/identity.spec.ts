@@ -39,7 +39,7 @@ async function stop(child?: ChildProcess) {
 async function screenshot(page: Page, name: string) {
   const inventoryScreen = name.startsWith('catalog-') || name.startsWith('inventory-')
   const salesScreen = ['checkout-', 'receipt-', 'history-', 'void-'].some(prefix => name.startsWith(prefix))
-  const destination = salesScreen ? process.env.POS_F4_CAPTURE_DIR ?? captures : inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
+  const destination = name.startsWith('reports-') ? process.env.POS_F5_CAPTURE_DIR : salesScreen ? process.env.POS_F4_CAPTURE_DIR ?? captures : inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
   if (!destination) return
   mkdirSync(destination, { recursive: true })
   // Las capturas solo se toman con campos secretos vacíos.
@@ -393,6 +393,63 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     await page.getByRole('button', { name: 'Ver venta 2', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Venta #2 · Anulada', exact: true })).toBeVisible()
     expect(await page.evaluate(async () => (await fetch('/api/products/1').then(response => response.json())).stock_quantity)).toBe(2)
+    // F5: misma SQLite y ventas reales, después de anular y reiniciar.
+    await expect(worker.getByRole('button', { name: 'Reportes', exact: true })).toHaveCount(0)
+    expect(await worker.evaluate(async () => (await fetch('/api/reports/summary')).status)).toBe(403)
+    let releaseReport!: () => void
+    const reportGate = new Promise<void>(resolve => { releaseReport = resolve })
+    // StrictMode puede montar/cancelar/repetir la lectura inicial: retener todas.
+    const holdReports = async (route: import('@playwright/test').Route) => {
+      await reportGate
+      return route.continue()
+    }
+    await page.route('**/api/reports/summary?*', holdReports)
+    await page.getByRole('button', { name: 'Reportes', exact: true }).press('Enter')
+    await expect(page.getByText('Cargando reporte…', { exact: true })).toBeVisible()
+    await screens(page, 'reports-loading')
+    await expect(page.getByText('Cargando reporte…', { exact: true })).toBeVisible()
+    releaseReport()
+    await expect(page.getByRole('heading', { name: 'Resumen del período', exact: true })).toBeFocused()
+    await expect(page.locator('.report-kpi').filter({ has: page.getByRole('heading', { name: 'Ventas', exact: true }) }).locator('.report-value')).toHaveText('1')
+    await page.unroute('**/api/reports/summary?*', holdReports)
+    const realReport = await page.evaluate(async () => fetch('/api/reports/summary').then(r => r.json()))
+    expect(realReport.current.sales).toBe('1')
+    // La expectativa del importe se comprueba contra la venta histórica real.
+    const historicalTotal = await page.evaluate(async () => (await fetch('/api/sales/1').then(r => r.json())).total_cents)
+    expect(realReport.current.revenue_cents).toBe(String(historicalTotal))
+    expect(realReport.top_units[0].name).toBe('Agua mineral')
+    await screens(page, 'reports-summary')
+    await page.getByRole('combobox', { name: 'Ordenar por', exact: true }).selectOption('revenue')
+    await page.getByRole('combobox', { name: 'Mostrar por hora', exact: true }).selectOption('revenue_cents')
+    await expect(page.getByRole('table')).toContainText('Facturación en ARS por hora local')
+    for (const period of ['yesterday', '7d', '30d', 'today']) {
+      await page.getByRole('combobox', { name: 'Período', exact: true }).selectOption(period)
+      await page.getByRole('button', { name: 'Consultar', exact: true }).press('Enter')
+      await expect(page.getByRole('heading', { name: 'Resumen del período', exact: true })).toBeFocused()
+    }
+    await page.getByRole('combobox', { name: 'Período', exact: true }).selectOption('custom')
+    await page.getByLabel('Desde', { exact: true }).fill('2000-01-01')
+    await page.getByLabel('Hasta', { exact: true }).fill('2000-01-02')
+    await page.getByRole('button', { name: 'Consultar', exact: true }).press('Enter')
+    await expect(page.getByText('No hay ventas completadas en este período. Probá otras fechas.', { exact: true })).toBeVisible()
+    await screens(page, 'reports-empty')
+    await page.getByLabel('Desde', { exact: true }).fill('2000-01-03')
+    await page.getByRole('button', { name: 'Consultar', exact: true }).press('Enter')
+    await expect(page.getByRole('alert')).toBeFocused()
+    await expect(page.getByRole('alert')).toContainText('Elegí un rango')
+    await page.route('**/api/reports/summary?*', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Base local no disponible; reintentá el reporte' }) }), { times: 1 })
+    await page.getByRole('combobox', { name: 'Período', exact: true }).selectOption('today')
+    await page.getByRole('button', { name: 'Consultar', exact: true }).press('Enter')
+    await expect(page.getByRole('alert')).toContainText('Base local no disponible')
+    await screens(page, 'reports-error')
+    await page.getByRole('button', { name: 'Reintentar reporte', exact: true }).press('Enter')
+    await expect(page.getByRole('heading', { name: 'Resumen del período', exact: true })).toBeFocused()
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect(await page.locator('.reports .button').first().evaluate(e => getComputedStyle(e).transitionDuration)).toBe('0s')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    // Repetir navegación y selección no dispara bucles ni conserva errores de otra vista.
+    await page.getByRole('button', { name: 'Reportes', exact: true }).click()
+    await expect(page.getByRole('alert')).toHaveCount(0)
     await page.getByRole('button', { name: 'Equipo', exact: true }).click()
     await page.getByRole('button', { name: 'Desactivar worker', exact: true }).click()
     await expect(page.getByRole('dialog')).toBeVisible()

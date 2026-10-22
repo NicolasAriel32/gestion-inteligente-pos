@@ -11,15 +11,18 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.catalog import router as catalog_router
 from app.api.identity import router
+from app.api.reporting import router as reporting_router
 from app.api.sales import router as sales_router
 from app.application.catalog import CatalogService
 from app.application.identity import IdentityService
+from app.application.reporting import ReportingService
 from app.application.sales import SalesService
 from app.domain.identity import IdentityError
 from app.infrastructure.catalog import CatalogStore
 from app.infrastructure.database import build_engine
 from app.infrastructure.identity import IdentityStore
 from app.infrastructure.passwords import ArgonPasswords
+from app.infrastructure.reporting import ReportingStore
 from app.infrastructure.sales import SalesStore
 from app.infrastructure.schema import verify_schema
 
@@ -44,11 +47,14 @@ def create_app(db_path: Path | None = None) -> FastAPI:
             application.state.sales = SalesService(
                 SalesStore(engine), lambda: application.state.identity.clock()
             )
+            application.state.reporting = ReportingService(
+                ReportingStore(engine), lambda: application.state.identity.clock()
+            )
             yield
         finally:
             engine.dispose()
 
-    application = FastAPI(title="Gestión Inteligente POS", version="0.4.0", lifespan=lifespan)
+    application = FastAPI(title="Gestión Inteligente POS", version="0.5.0", lifespan=lifespan)
 
     @application.middleware("http")
     async def local_security(
@@ -97,6 +103,7 @@ def create_app(db_path: Path | None = None) -> FastAPI:
     application.include_router(router, prefix="/api")
     application.include_router(catalog_router, prefix="/api")
     application.include_router(sales_router, prefix="/api")
+    application.include_router(reporting_router, prefix="/api")
     return application
 
 
