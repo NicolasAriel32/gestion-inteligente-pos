@@ -1,7 +1,7 @@
 # ROADMAP — trabajo incremental SDD
 
-**Versión de referencia**: 0.5.0 (2026-10-22); esquema 0005_reporting_indexes.
-**Estado actual**: F1–F5 implementadas y validadas técnicamente; F5 en revisión por PR borrador.
+**Versión de referencia**: 0.5.0 (2026-10-22); esquema candidato 0006_local_operations.
+**Estado actual**: F1–F5 implementadas y validadas técnicamente; F5 fusionada por autorización (fb85521).
 Identidad local, empleados, catálogo e inventario; evidencia en
 [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 aprobada y fusionada a main en 3848d55.
@@ -62,15 +62,17 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - [x] Filtros y estados sin datos.
 - Aceptación: reportes excluyen anuladas y coinciden con datos de prueba.
 
-Software F5 verificado localmente, revisión humana pendiente mediante PR borrador.
-Evidencia y límites: F5_DEVELOPMENT.md. F6 no iniciada ni autorizada.
+Software F5 verificado y fusionado en PR #5 (fb85521).
+F6 autorizada por instrucción explícita posterior; implementación candidata en F6_DEVELOPMENT.md.
 
 ## F6 — Respaldo, importación y distribución
-- [ ] Backup consistente y restauración probada.
-- [ ] CSV de productos con vista previa/validación (mejora para onboarding piloto).
+- [x] Backup consistente y restauración probados en SQLite temporal/Linux; falta PC Windows objetivo.
+- [x] CSV de altas nuevas con vista previa/validación, confirmación atómica y reintentos.
 - [ ] Build Windows, instalador y arranque único.
-- [ ] Actualizaciones manuales documentadas.
+- [x] Actualizaciones manuales documentadas; comprobación Windows pendiente.
 - Aceptación: instalación limpia sin herramientas de desarrollo y recuperación demostrada.
+- **F6 pendiente de cierre**: scripts/paquete candidato y validación Linux no certifican Windows 11 limpio.
+  Ver F6_DEVELOPMENT.md y WINDOWS_VALIDATION.md. F7 no iniciada.
 
 ## F7 — Piloto y comercialización
 - [ ] Pruebas de flujo real con dueño y empleado.

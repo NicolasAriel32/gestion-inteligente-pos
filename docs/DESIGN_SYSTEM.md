@@ -109,3 +109,12 @@ exacto siempre se lee como texto. Selector distingue transacciones y facturació
 los picos siempre usan tickets. Períodos comparados explícitos, estado vacío y errores
 con reintento/foco. Solo ADMIN; carga local diferida. Controles y tipografía conservados.
 Capturas reales/axe y revisión visual: [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md).
+
+## Herramientas F6 candidatas
+
+Vista ADMIN con CSV/vista previa y respaldos/configuración. Importación y restauración
+usan confirmación nativa, avisos con foco, estados de espera y reintento recuperable.
+Archivos tienen controles de 44 px y texto español independiente del navegador; tabla
+acotada a primeros 20, scroll local en móvil. Contraseña solo en estado transitorio,
+nunca en storage/capturas. Se conservan Manrope/amarillo, contraste y movimiento reducido.
+Evidencia real en F6_DEVELOPMENT.md; ayuda PR #6 no incorporada.

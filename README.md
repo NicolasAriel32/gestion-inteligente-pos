@@ -133,3 +133,23 @@ Windows, instalados junto al backend y disponibles offline. Sin servicios extern
 Contrato OpenAPI: GET /api/reports/summary. Dinero/unidades agregadas viajan como texto
 decimal exacto y se formatean con BigInt; los contratos de ventas F4 no cambian.
 [Criterios y evidencia](F5_DEVELOPMENT.md) · [capturas](docs/screenshots/f5/).
+
+## F6 candidata — respaldos, CSV y distribución
+
+F6 está autorizada y en desarrollo, **no se declara terminada** hasta probar instalación
+limpia/recuperación en Windows 11. F5 fue fusionada en fb85521; el PR #6 de ayuda sigue
+separado. Producto candidato conserva 0.5.0 hasta validar F6 y alinear entrega 0.6.0.
+
+ADMIN dispone de Herramientas: CSV de productos nuevos (vista previa/confirmación,
+500 filas/1 MiB), respaldos manuales/automáticos, descarga externa y restauración con
+contraseña/aprobación. Esquema nuevo **0006_local_operations**; migración explícita,
+no ejecutar sobre datos comerciales para probar. Se conservan los comandos de desarrollo.
+
+Launcher opcional de distribución: desde backend, `python -m app.runtime --prepare`
+(preparación explícita), luego `python -m app.runtime`; requiere frontend compilado.
+Build Windows nativo: `packaging/build-windows.ps1`. La PC cliente usará el ejecutable
+empaquetado sin Python/Node externos. No hay instalador Windows certificado por Linux.
+
+[Procedimientos de uso/backup/CSV/actualización](docs/F6_OPERATIONS.md) ·
+[Validación Windows pendiente](docs/WINDOWS_VALIDATION.md) ·
+[Diseño y resultados reales](F6_DEVELOPMENT.md).
