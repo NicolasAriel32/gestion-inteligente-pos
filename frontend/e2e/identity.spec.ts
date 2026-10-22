@@ -39,7 +39,7 @@ async function stop(child?: ChildProcess) {
 async function screenshot(page: Page, name: string) {
   const inventoryScreen = name.startsWith('catalog-') || name.startsWith('inventory-')
   const salesScreen = ['checkout-', 'receipt-', 'history-', 'void-'].some(prefix => name.startsWith(prefix))
-  const destination = name.startsWith('reports-') ? process.env.POS_F5_CAPTURE_DIR : salesScreen ? process.env.POS_F4_CAPTURE_DIR ?? captures : inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
+  const destination = name.startsWith('help-') ? process.env.POS_HELP_CAPTURE_DIR : name.startsWith('reports-') ? process.env.POS_F5_CAPTURE_DIR : salesScreen ? process.env.POS_F4_CAPTURE_DIR ?? captures : inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
   if (!destination) return
   mkdirSync(destination, { recursive: true })
   // Las capturas solo se toman con campos secretos vacíos.
@@ -50,11 +50,12 @@ async function screenshot(page: Page, name: string) {
     await expect(page.locator('.skip-link')).not.toBeFocused()
     expect(await page.locator('.skip-link').evaluate(element => element.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0)
   }
-  await page.screenshot({ path: join(destination, `${name}.png`), fullPage: true })
+  await page.screenshot({ path: join(destination, `${name}.png`), fullPage: !name.startsWith('help-') })
 }
 async function accessible(page: Page) {
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([])
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  if (await page.locator('.help-dialog').isVisible()) expect(await page.locator('.help-dialog__body').evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true)
 }
 async function screens(page: Page, name: string) {
   await page.setViewportSize({ width: 1366, height: 768 })
@@ -145,6 +146,14 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     expect(await page.locator('h1').evaluate(element => getComputedStyle(element).fontWeight)).toBe('800')
     expect(renderedFonts.fonts.some(font => font.familyName === 'Manrope ExtraLight' && font.isCustomFont && font.glyphCount > 0)).toBe(true)
     await cdp.detach()
+    // Ayuda local disponible sin sesión y sin tocar datos ni mostrar guías ADMIN.
+    await page.getByRole('button', { name: 'Abrir ayuda', exact: true }).press('Enter')
+    const guestHelp = page.getByRole('dialog')
+    await expect(guestHelp.getByLabel('Buscar en la ayuda', { exact: true })).toBeFocused()
+    await expect(guestHelp.locator('summary').filter({ hasText: '¿Cómo cargar un producto?' })).toHaveCount(0)
+    await expect(guestHelp.locator('summary').filter({ hasText: '¿Qué hago si no puedo ingresar?' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: 'Abrir ayuda', exact: true })).toBeFocused()
     await screens(page, 'setup')
     await page.getByRole('link', { name: 'Ir al contenido' }).focus()
     await page.keyboard.press('Enter')
@@ -208,9 +217,54 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     await expect(worker.getByRole('heading', { name: 'Sesión de worker' })).toBeVisible()
     await expect(worker.getByRole('button', { name: 'Crear empleado', exact: true })).toHaveCount(0)
     expect(await worker.evaluate(async () => (await fetch('/api/employees')).status)).toBe(403)
+    // Ayuda del empleado explica su rol y no ofrece guías administrativas.
+    await worker.getByRole('button', { name: 'Abrir ayuda', exact: true }).click()
+    await expect(worker.getByRole('dialog')).toContainText('Guías para tu cuenta de empleado')
+    await expect(worker.getByRole('dialog').locator('summary').filter({ hasText: '¿Cómo cambiar el precio de un producto?' })).toHaveCount(0)
+    await worker.getByRole('dialog').getByLabel('Buscar en la ayuda', { exact: true }).fill('venta pendiente')
+    await expect(worker.getByRole('dialog').locator('summary').filter({ hasText: '¿Qué hago si una venta queda pendiente' })).toBeVisible()
+    await worker.getByRole('button', { name: 'Cerrar ayuda', exact: true }).press('Enter')
     // Catálogo e inventario: operaciones reales de F3, sin ventas ni datos precargados.
     await page.getByRole('button', { name: 'Catálogo', exact: true }).click()
     await expect(page.getByText('La cuenta de worker ya está creada.', { exact: true })).toHaveCount(0)
+    // Consultar ayuda conserva el borrador y no envía escrituras a la API.
+    await page.getByLabel('Nombre del producto', { exact: true }).fill('Borrador conservado')
+    const helpWrites: string[] = []
+    const observeHelpWrites = (request: import('@playwright/test').Request) => {
+      if (new URL(request.url()).pathname.startsWith('/api/') && !['GET', 'HEAD'].includes(request.method())) helpWrites.push(request.method())
+    }
+    page.on('request', observeHelpWrites)
+    await page.getByRole('button', { name: 'Abrir ayuda', exact: true }).press('Enter')
+    const help = page.getByRole('dialog')
+    await expect(help.getByLabel('Buscar en la ayuda', { exact: true })).toBeFocused()
+    await help.getByLabel('Buscar en la ayuda', { exact: true }).fill('CARGAR PRODUCTO')
+    await help.locator('summary').filter({ hasText: '¿Cómo cargar un producto?' }).press('Enter')
+    await expect(help).toContainText('Motivo de carga inicial')
+    await screens(page, 'help-product')
+    await help.getByLabel('Buscar en la ayuda', { exact: true }).fill('cambiar precio')
+    await help.locator('summary').filter({ hasText: '¿Cómo cambiar el precio de un producto?' }).click()
+    await expect(help).toContainText('Guardar producto')
+    await screens(page, 'help-price')
+    await help.getByLabel('Buscar en la ayuda', { exact: true }).fill('mercaderia')
+    await expect(help.locator('summary').filter({ hasText: '¿Cómo ingreso mercadería' })).toBeVisible()
+    await help.getByRole('combobox', { name: 'Tema de ayuda', exact: true }).selectOption('Reportes')
+    await expect(help.getByRole('heading', { name: 'No encontramos una respuesta.', exact: true })).toBeVisible()
+    await help.getByRole('button', { name: 'Ver todas las guías', exact: true }).click()
+    await expect(help.getByLabel('Buscar en la ayuda', { exact: true })).toBeFocused()
+    await help.getByRole('button', { name: 'Cerrar ayuda', exact: true }).focus()
+    await page.keyboard.press('Shift+Tab')
+    await expect(help.locator('summary').last()).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(help.getByRole('button', { name: 'Cerrar ayuda', exact: true })).toBeFocused()
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    expect(await help.getByRole('button', { name: 'Cerrar ayuda', exact: true }).evaluate(e => getComputedStyle(e).transitionDuration)).toBe('0s')
+    await page.keyboard.press('Escape')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await expect(page.getByRole('button', { name: 'Abrir ayuda', exact: true })).toBeFocused()
+    await expect(page.getByLabel('Nombre del producto', { exact: true })).toHaveValue('Borrador conservado')
+    page.off('request', observeHelpWrites)
+    expect(helpWrites).toEqual([])
+    await page.getByLabel('Nombre del producto', { exact: true }).clear()
     await page.getByLabel('Nombre de categoría', { exact: true }).fill('Bebidas')
     await page.getByRole('button', { name: 'Crear categoría', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Editar categoría Bebidas', exact: true })).toBeVisible()
@@ -314,6 +368,13 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     await page.getByRole('button', { name: 'Confirmar venta y registrar cobro', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Reintentar la misma venta', exact: true })).toBeEnabled()
+    await page.getByRole('button', { name: 'Abrir ayuda', exact: true }).click()
+    await page.getByRole('dialog').getByLabel('Buscar en la ayuda', { exact: true }).fill('respuesta')
+    await page.getByRole('dialog').locator('summary').filter({ hasText: '¿Qué hago si una venta queda pendiente' }).click()
+    await expect(page.getByRole('dialog')).toContainText('Reintentar la misma venta')
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
+    expect(saleRequests).toHaveLength(1)
     await screens(page, 'checkout-pending')
     await page.reload()
     await page.getByRole('button', { name: 'Caja', exact: true }).click()

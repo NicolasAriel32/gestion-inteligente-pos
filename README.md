@@ -1,7 +1,7 @@
 # Gestión Inteligente POS
 
 Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
-**Versión 0.5.0: identidad, catálogo, inventario, caja, historial y reportes ADMIN locales.**
+**Versión 0.5.1: identidad, catálogo, inventario, caja, historial y reportes ADMIN locales.**
 F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
 Versiones de producto, esquema y evidencias: [VERSIONS.md](docs/VERSIONS.md).
 Diseño, contratos y resultados de F5: [F5_DEVELOPMENT.md](F5_DEVELOPMENT.md).
@@ -133,3 +133,15 @@ Windows, instalados junto al backend y disponibles offline. Sin servicios extern
 Contrato OpenAPI: GET /api/reports/summary. Dinero/unidades agregadas viajan como texto
 decimal exacto y se formatean con BigInt; los contratos de ventas F4 no cambian.
 [Criterios y evidencia](F5_DEVELOPMENT.md) · [capturas](docs/screenshots/f5/).
+
+## Ayuda integrada
+
+El botón **?** en la esquina superior derecha abre guías rápidas sin salir de la pantalla.
+Buscá por palabras (por ejemplo «cambiar precio») o filtrá por tema y desplegá una respuesta.
+Incluye carga de productos, precios, stock, caja/historial, reportes y problemas de acceso o
+impresión. Las instrucciones administrativas aparecen para ADMIN; los empleados ven las
+guías de su rol. Sin sesión sigue disponible la ayuda de acceso/conexión/impresión.
+
+El contenido funciona sin internet y no ejecuta operaciones. Cerrar o presionar Escape
+regresa al trabajo conservando los campos completados. No requiere dependencias ni
+migraciones nuevas. [Diseño, validación y capturas](USER_HELP_DEVELOPMENT.md).

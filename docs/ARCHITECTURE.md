@@ -1,6 +1,6 @@
 # ARCHITECTURE — arquitectura del MVP local
 
-- Versión de referencia: 0.5.0 (2026-10-22)
+- Versión de referencia: 0.5.1 (2026-10-22)
 - Estado: núcleo F1–F5 validado localmente; distribución Windows y partes futuras pendientes.
 - Referencias: PROJECT_SPEC.md, BUSINESS_RULES.md y DECISIONS.md
 
@@ -120,3 +120,11 @@ pos_hour usa zoneinfo Buenos Aires; tzdata proporciona IANA offline donde falta 
 Índice 0005 por estado/fecha acota consultas; tablas previas e invariantes de escritura intactas.
 Vista React diferida, AbortController al reemplazar consulta/desmontar, carga/vacío/error y
 reintento explícito; importes BigInt sin Number. Sin servicios cloud ni gráficos remotos.
+
+## Ayuda local de uso (0.5.1)
+
+HelpCenter abre diálogo nativo modal desde encabezado; contenido estático versionado en
+userHelp.ts, búsqueda local por términos sin distinguir acentos/mayúsculas. No consulta
+APIs, escribe storage ni realiza acciones comerciales. Filtro por rol es de presentación;
+la autorización backend de todos los módulos continúa intacta. Sin dependencias/esquema
+nuevos. No introduce navegación que desmonte borradores ni modifica intento de caja.

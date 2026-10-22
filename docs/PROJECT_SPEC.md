@@ -1,7 +1,7 @@
 # PROJECT_SPEC — Gestión Inteligente POS
 
-- Versión de referencia: 0.5.0 (2026-10-22); ver VERSIONS.md
-- Estado: núcleo F1–F5 implementado y validado localmente; F5 en revisión por PR borrador.
+- Versión de referencia: 0.5.1 (2026-10-22); ver VERSIONS.md
+- Estado: núcleo F1–F5 implementado y validado localmente; F5 aprobada y fusionada en PR #5 (fb85521).
   Impresora física/piloto pendientes; F6 sin iniciar.
 - Moneda: ARS; idioma: español argentino; reportes: America/Argentina/Buenos_Aires
 
@@ -46,3 +46,10 @@ Facturación fiscal ARCA, múltiples sucursales/cajas, sincronización en nube, 
 
 ## Criterio de aceptación comercial
 Instalar en PC piloto, inicializar ADMIN, crear EMPLOYEE, cargar productos, ingresar stock, vender, anular, verificar indicadores, reiniciar conservando datos y **restaurar una copia**. Autorizar piloto únicamente tras pruebas documentadas; ninguna spec equivale a una función ya construida.
+
+## Ayuda de uso integrada — mejora 0.5.1
+
+Botón ? en encabezado, ayuda local con buscador/temas y pasos según rol. Explica los
+controles existentes sin ejecutar operaciones ni modificar formularios/pedidos; disponible
+sin red. Guías administrativas solo para ADMIN; acceso/conexión/impresión también sin sesión.
+No incorpora funciones comerciales nuevas ni inicia F6. Diseño/evidencia en USER_HELP_DEVELOPMENT.md.

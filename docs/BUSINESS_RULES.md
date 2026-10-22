@@ -1,6 +1,6 @@
 # BUSINESS_RULES — reglas verificables del POS
 
-Versión de referencia 0.5.0 (2026-10-22). Cada regla tiene ID estable; toda modificación
+Versión de referencia 0.5.1 (2026-10-22). Cada regla tiene ID estable; toda modificación
 debe actualizar pruebas y registro de decisiones. Las reglas de reportes están implementadas en F5;
 la matriz de aceptación diferencia evidencia ejecutada y objetivos.
 

@@ -1,6 +1,6 @@
 # INSTALLATION — instalación, uso y actualizaciones
 
-- Versión de referencia: 0.5.0 (2026-10-22)
+- Versión de referencia: 0.5.1 (2026-10-22)
 - Modalidad aprobada: aplicación local y sin internet
 - Destino objetivo: Windows 11 de 64 bits; Windows 10 requiere evaluación explícita por fin de soporte general.
 
