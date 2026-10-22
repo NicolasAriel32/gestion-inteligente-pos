@@ -2,6 +2,7 @@ name: Windows F6 candidate
 on:
   push:
     branches: [feat/f6-backup-import-distribution]
+    paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
   pull_request:
     branches: [main]
     paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']

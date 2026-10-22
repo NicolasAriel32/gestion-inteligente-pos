@@ -56,18 +56,40 @@ with tempfile.TemporaryDirectory(prefix='pos-win-smoke-') as temporary:
         preview = call('/api/imports/products/preview', {'content': csv}, csrf)
         imported = call('/api/imports/products/confirm', {'content': csv, 'source_hash': preview['source_hash'], 'reason': 'Carga ficticia', 'idempotency_key': str(uuid4())}, csrf)
         assert len(imported['product_ids']) == 1
+        product_id = imported['product_ids'][0]
+        cart = {'items': [{'product_id': product_id, 'quantity': 1}]}
+        def buy():
+            quote = call('/api/sales/quote', cart, csrf)
+            return call('/api/sales', {**cart, 'quote_fingerprint': quote['quote_fingerprint'], 'payment_method': 'CASH', 'idempotency_key': str(uuid4())}, csrf)
+        sale = buy()
+        voided = buy()
+        call(f"/api/sales/{voided['id']}/void", {'reason': 'Anulación ficticia'}, csrf)
+        assert sale['total_cents'] == 125
         backup = call('/api/backups', {}, csrf)
+        call('/api/stock/adjustments', {'product_id': product_id, 'quantity_delta': 5, 'reason': 'Cambio posterior ficticio', 'idempotency_key': str(uuid4())}, csrf)
         assert call('/api/backups/restore', {'backup_id': backup['id'], 'password': password, 'confirmation': 'RESTAURAR'}, csrf)['restored']
         csrf = call('/api/auth/login', {'username': 'owner', 'password': password})['csrf_token']
-        steps.append('import_backup_restore_and_reauthentication')
+        assert call(f'/api/products/{product_id}')['stock_quantity'] == 2
+        assert call(f"/api/sales/{sale['id']}")['total_cents'] == 125
+        assert call(f"/api/sales/{voided['id']}")['status'] == 'VOIDED'
+        assert call('/api/reports/summary')['current']['revenue_cents'] == '125'
+        steps.append('import_sales_void_backup_restore_reports_and_reauthentication')
         call('/api/runtime/shutdown', {}, csrf); process.wait(timeout=15)
         assert process.returncode == 0
         steps.append('controlled_shutdown')
         database = folder / 'profile/GestionInteligentePOS/data/pos.db'
         before = hashlib.sha256(database.read_bytes()).hexdigest()
+        private = folder / 'profile/GestionInteligentePOS'
+        preserved = {path: hashlib.sha256(path.read_bytes()).hexdigest()
+                     for path in [secret, *(private / 'backups').glob('*.posbackup')]}
+        assert len(preserved) >= 3  # secreto, respaldo manual y previo a restauración
+        def check_preserved_files():
+            assert all(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == digest
+                       for path, digest in preserved.items())
         install_candidate()
         assert hashlib.sha256(database.read_bytes()).hexdigest() == before
-        steps.append('reinstall_preserves_database')
+        check_preserved_files()
+        steps.append('reinstall_preserves_database_backups_and_config')
         process = start()
         csrf = call('/api/auth/login', {'username': 'owner', 'password': password})['csrf_token']
         assert call('/api/products')['items'][0]['code'] == '0001'
@@ -75,7 +97,8 @@ with tempfile.TemporaryDirectory(prefix='pos-win-smoke-') as temporary:
         before = hashlib.sha256(database.read_bytes()).hexdigest()
         subprocess.run([str(install / 'unins000.exe'), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'], env=env, check=True, timeout=60)
         assert database.exists() and hashlib.sha256(database.read_bytes()).hexdigest() == before
-        steps.append('uninstall_preserves_data_and_backups')
+        check_preserved_files()
+        steps.append('uninstall_preserves_database_backups_and_config')
     finally:
         if process and process.poll() is None:
             process.terminate(); process.wait(timeout=15)
