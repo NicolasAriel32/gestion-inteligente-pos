@@ -1,8 +1,8 @@
 # Identidad visual — Gestión Inteligente POS
 
 Dirección C aprobada por el propietario: comercial y enérgica, profesional y cercana.
-Alcance de esta entrega: configuración inicial, ingreso y gestión de empleados de F2.
-No incorpora catálogo, inventario, caja, ventas ni navegación hacia funciones inexistentes.
+Aplicada a configuración inicial, ingreso y empleados; extendida en F3 a catálogo,
+categorías y ajustes de inventario. Caja y ventas continúan pendientes, sin enlaces ficticios.
 
 ## Color y contraste
 
@@ -59,6 +59,13 @@ El monograma gi. es un recurso tipográfico local de interfaz; no implica regist
   mantiene el recorrido Tab/Shift+Tab entre sus acciones y devuelve foco al control que lo abrió. El backend sigue siendo responsable del permiso.
 - CredentialForm: formulario reutilizable para configuración, ingreso y empleados;
   bloqueo de doble envío, errores claros y conservación del flujo de teclado.
+- ConfirmDialog: base reutilizada por desactivación de empleados, categorías y productos.
+- Catálogo: lista paginada y editor en paralelo; se apilan bajo 900 px. Filtros con etiquetas
+  visibles, estado activo/stock bajo en texto, importes ARS y código conservado como texto.
+- Inventario: selección de producto, ajuste con motivo e historial real de antes/después.
+  EMPLOYEE consulta catálogo, sin costos ni controles administrativos. El backend lo verifica.
+- La navegación limpia avisos de otra sección. Un único envío pendiente bloquea formularios,
+  navegación y logout; errores y confirmaciones se anuncian y reciben foco.
 
 Username normalizado y roles siguen definidos por la API. El diseño no cambia los contratos,
 la autorización ni el manejo de sesiones/CSRF. No se añade almacenamiento de credenciales
@@ -77,4 +84,6 @@ link para saltar al contenido, títulos enfocados tras cambios de pantalla y di�
 ## Revisión
 
 Capturas reales y resultados en [FRONTEND_DESIGN_VALIDATION.md](../FRONTEND_DESIGN_VALIDATION.md).
-No fusionar esta propuesta hasta la revisión visual del propietario.
+El propietario autorizó la fusión del diseño original el 2026-10-22: PR #2, merge 058a92f.
+Las capturas adicionales de F3 están en docs/screenshots/f3 y su validación en
+[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).

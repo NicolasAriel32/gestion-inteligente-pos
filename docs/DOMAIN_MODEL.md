@@ -52,4 +52,22 @@ rol validado por CHECK e índice parcial que permite un solo ADMIN. No se crean 
 `bootstrap`: singleton id=1, token_hash nullable, expires_at y completed. El hash se elimina al consumirlo.
 `audit_log`: actor_id y entity_id FK a users, action, entity_type, event_data vacío por defecto
 (sin contenido libre recibido del cliente), created_at_utc. En F2 solo audita identidad.
-No se implementaron todavía las entidades comerciales del modelo objetivo.
+Las entidades comerciales implementadas se precisan a continuación; ventas y pagos
+continúan como modelo objetivo sin implementación.
+
+## Catálogo e inventario implementados en F3
+
+- categories incorpora name_key normalizado con casefold y UNIQUE, además de nombre y estado.
+- products implementa los campos del modelo; cantidades e importes entre 0 y 2^53−1,
+  comprobados en API y SQLite. Código nullable único como texto, sin perder ceros iniciales.
+- stock_movements registra carga INITIAL o ajuste ADJUSTMENT, motivo obligatorio,
+  actor, UTC, referencia PRODUCT/id, delta y stock antes/después. request_key UUID UNIQUE
+  identifica cada ajuste manual. Los valores SALE/VOID del CHECK se reservan para el
+  modelo objetivo; no hay casos de uso de venta ni anulación en F3.
+- audit_events es la auditoría general, con actor_id FK users y entity_id polimórfico.
+  Se copiaron los eventos históricos manteniendo IDs y contenido. audit_log conserva su
+  restricción original de identidad; las escrituras de identidad actualizan ambos registros
+  atómicamente. Consultar audit_events sin sumar audit_log.
+- Desactivar categoría no cambia el estado de productos. No se asignan categorías
+  inactivas a productos nuevos; un producto existente puede conservar su categoría.
+  No hay borrado físico ni ajustes de productos inactivos.

@@ -1,6 +1,6 @@
 # Gestión Inteligente POS
 
-Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **F2 validada: identidad y gestión de empleados locales; sin catálogo, inventario ni ventas.**
+Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **Identidad, catálogo e inventario locales implementados; caja y ventas todavía pendientes.**
 
 ## Decisiones de producto
 
@@ -40,10 +40,13 @@ Leer `AGENTS.md` y las especificaciones pertinentes **antes de escribir código*
 
 ## Estado actual
 
-**F1 y F2 completadas.** FastAPI, React/Vite y SQLite/Alembic validados localmente.
-F2 agrega inicialización protegida de ADMIN, login/logout, sesiones y gestión de empleados.
-Instalación y resultados: [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md); evidencia histórica de F1:
-[F1_DEVELOPMENT.md](F1_DEVELOPMENT.md). Sin instalador. F3 no iniciada.
+FastAPI, React/Vite y SQLite/Alembic funcionan localmente. F2 agrega inicialización
+protegida de ADMIN, sesiones y empleados. F3 incorpora categorías, productos, precios
+en centavos, desactivación y ajustes de stock auditados e idempotentes, exclusivamente
+por ADMIN. EMPLOYEE consulta productos activos, precios y existencias, sin costos.
+Instalación, comandos y resultados: [F3_DEVELOPMENT.md](F3_DEVELOPMENT.md),
+[F2_DEVELOPMENT.md](F2_DEVELOPMENT.md) y [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md).
+Sin ventas, caja, reportes ni instalador. F4 requiere autorización.
 
 ## Desarrollo local
 
@@ -77,13 +80,14 @@ no borrar SQLite ni recrear ADMIN para recuperar acceso.
 
 ## Prácticas aprendidas
 
-La revisión de F2 dejó un [registro de hallazgos](docs/ENGINEERING_FINDINGS.md) con causas,
-fixes y pruebas, y un [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) para las
-próximas fases y proyectos. La revalidación posterior suma 47 pruebas aprobadas.
+El [registro de hallazgos](docs/ENGINEERING_FINDINGS.md) conserva causas, fixes y pruebas
+de F2, diseño y F3. El [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) reúne
+las prácticas para próximas fases y proyectos.
 
-## Propuesta de identidad visual
+## Identidad visual aprobada
 
-La rama de diseño aplica Manrope local y negro sobre amarillo a las pantallas de acceso
-y empleados. Ver [sistema visual](docs/DESIGN_SYSTEM.md),
-[validación y capturas reales](FRONTEND_DESIGN_VALIDATION.md).
-Se entrega para revisión visual en un PR borrador; no incluye funcionalidades de F3.
+Manrope local y negro sobre amarillo, con superficies suaves y controles accesibles.
+El diseño de acceso/empleados fue fusionado por autorización del propietario (PR #2,
+merge 058a92f). F3 conserva esa identidad. Ver [sistema visual](docs/DESIGN_SYSTEM.md),
+[validación original](FRONTEND_DESIGN_VALIDATION.md) y
+[capturas reales de catálogo/inventario](docs/screenshots/f3/).

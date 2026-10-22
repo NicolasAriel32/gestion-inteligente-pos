@@ -37,11 +37,19 @@ async function stop(child?: ChildProcess) {
 }
 
 async function screenshot(page: Page, name: string) {
-  if (!captures) return
-  mkdirSync(captures, { recursive: true })
+  const inventoryScreen = name.startsWith('catalog-') || name.startsWith('inventory-')
+  const destination = inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
+  if (!destination) return
+  mkdirSync(destination, { recursive: true })
   // Las capturas solo se toman con campos secretos vacíos.
   expect(await page.locator('input[type="password"]').evaluateAll(inputs => inputs.every(input => !(input as HTMLInputElement).value))).toBe(true)
-  await page.screenshot({ path: join(captures, `${name}.png`), fullPage: true })
+  // Estabilizar la posición tras enfocar avisos y cambiar el ancho del viewport.
+  await page.evaluate(() => window.scrollTo(0, 0))
+  if (inventoryScreen) {
+    await expect(page.locator('.skip-link')).not.toBeFocused()
+    expect(await page.locator('.skip-link').evaluate(element => element.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0)
+  }
+  await page.screenshot({ path: join(destination, `${name}.png`), fullPage: true })
 }
 async function accessible(page: Page) {
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([])
@@ -59,10 +67,10 @@ async function screens(page: Page, name: string) {
   await page.setViewportSize({ width: 1366, height: 768 })
 }
 
-test('identidad local completa, permisos, reinicio y revocación sin red externa', async ({ browser }) => {
+test('identidad, catálogo e inventario locales, permisos y reinicio sin red externa', async ({ browser }) => {
   await assertFree(8765)
   await assertFree(5173)
-  const root = mkdtempSync(join(tmpdir(), 'pos-f2-e2e-'))
+  const root = mkdtempSync(join(tmpdir(), 'pos-f3-e2e-'))
   const env = { ...process.env, LOCALAPPDATA: root }
   let api: ChildProcess | undefined
   let vite: ChildProcess | undefined
@@ -176,6 +184,59 @@ test('identidad local completa, permisos, reinicio y revocación sin red externa
     await expect(worker.getByRole('heading', { name: 'Sesión de worker' })).toBeVisible()
     await expect(worker.getByRole('button', { name: 'Crear empleado', exact: true })).toHaveCount(0)
     expect(await worker.evaluate(async () => (await fetch('/api/employees')).status)).toBe(403)
+    // Catálogo e inventario: operaciones reales de F3, sin ventas ni datos precargados.
+    await page.getByRole('button', { name: 'Catálogo', exact: true }).click()
+    await expect(page.getByText('La cuenta de worker ya está creada.', { exact: true })).toHaveCount(0)
+    await page.getByLabel('Nombre de categoría', { exact: true }).fill('Bebidas')
+    await page.getByRole('button', { name: 'Crear categoría', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Editar categoría Bebidas', exact: true })).toBeVisible()
+    const productForm = page.getByRole('form', { name: 'Crear producto', exact: true })
+    await productForm.getByLabel('Nombre del producto', { exact: true }).fill('Agua mineral')
+    await productForm.getByLabel('Código', { exact: true }).fill('00042')
+    await productForm.getByRole('combobox').selectOption({ label: 'Bebidas' })
+    await productForm.getByLabel('Precio de venta (ARS)', { exact: true }).fill('125,50')
+    await productForm.getByLabel('Costo (ARS)', { exact: true }).fill('100,00')
+    await productForm.getByLabel('Stock mínimo', { exact: true }).fill('1')
+    await productForm.getByLabel('Stock inicial', { exact: true }).fill('2')
+    await productForm.getByLabel('Motivo de carga inicial', { exact: true }).fill('Carga inicial')
+    await productForm.getByRole('button', { name: 'Crear producto', exact: true }).click()
+    const productRow = page.getByRole('listitem').filter({ has: page.getByRole('heading', { name: 'Agua mineral', exact: true }) })
+    await expect(productRow).toContainText('00042')
+    await expect(productRow).toContainText('$ 125,50')
+    await page.getByRole('button', { name: 'Editar producto Agua mineral', exact: true }).click()
+    await page.getByRole('form', { name: 'Editar producto', exact: true }).getByLabel('Precio de venta (ARS)', { exact: true }).fill('130,25')
+    await page.getByRole('button', { name: 'Guardar producto', exact: true }).click()
+    await expect(productRow).toContainText('$ 130,25')
+    await screens(page, 'catalog')
+    await worker.getByRole('button', { name: 'Catálogo', exact: true }).click()
+    await expect(worker.getByRole('heading', { name: 'Agua mineral', exact: true })).toBeVisible()
+    await expect(worker.getByRole('button', { name: 'Crear producto', exact: true })).toHaveCount(0)
+    await expect(worker.getByRole('button', { name: 'Inventario', exact: true })).toHaveCount(0)
+    await expect(worker.getByText('Costo:', { exact: false })).toHaveCount(0)
+    expect(await worker.evaluate(async () => {
+      const session = await fetch('/api/auth/me').then(response => response.json())
+      return (await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': session.csrf_token }, body: JSON.stringify({ name: 'No permitido', price_cents: 1 }) })).status
+    })).toBe(403)
+    await page.getByRole('button', { name: 'Inventario', exact: true }).click()
+    await page.getByRole('button', { name: 'Ajustar stock de Agua mineral', exact: true }).click()
+    await expect(page.getByText('Stock consultado: 2 unidades.', { exact: false })).toBeVisible()
+    await page.getByLabel('Cambio de unidades', { exact: true }).fill('3')
+    await page.getByLabel('Motivo del ajuste', { exact: true }).fill('Ingreso de mercadería')
+    await page.getByRole('button', { name: 'Confirmar ajuste', exact: true }).click()
+    await expect(page.getByText('Stock consultado: 5 unidades.', { exact: false })).toBeVisible()
+    await page.getByLabel('Cambio de unidades', { exact: true }).fill('-6')
+    await page.getByLabel('Motivo del ajuste', { exact: true }).fill('Conteo físico')
+    await page.getByRole('button', { name: 'Confirmar ajuste', exact: true }).click()
+    await expect(page.getByRole('alert')).toHaveText('Stock insuficiente para este ajuste')
+    await page.getByLabel('Cambio de unidades', { exact: true }).fill('-1')
+    await page.getByRole('button', { name: 'Confirmar ajuste', exact: true }).click()
+    await expect(page.getByText('Stock consultado: 4 unidades.', { exact: false })).toBeVisible()
+    await expect(page.getByText('3 movimientos registrados.', { exact: true })).toBeVisible()
+    // Volver a elegir el mismo producto debe recargar, sin vaciar su historial.
+    await page.getByRole('button', { name: 'Ajustar stock de Agua mineral', exact: true }).click()
+    await expect(page.getByText('3 movimientos registrados.', { exact: true })).toBeVisible()
+    await expect(page.locator('.movement-list > li')).toHaveCount(3)
+    await screens(page, 'inventory')
     // Reinicio real del proceso Python manteniendo DB y cookies del navegador.
     await stop(api)
     api = startApi()
@@ -185,6 +246,19 @@ test('identidad local completa, permisos, reinicio y revocación sin red externa
     await expect(page.getByRole('listitem').filter({ has: page.getByText('worker', { exact: true }) }).getByText('Activo', { exact: true })).toBeVisible()
     await worker.reload()
     await expect(worker.getByRole('heading', { name: 'Sesión de worker' })).toBeVisible()
+    await page.getByRole('button', { name: 'Inventario', exact: true }).click()
+    await page.getByRole('button', { name: 'Ajustar stock de Agua mineral', exact: true }).click()
+    await expect(page.getByText('Stock consultado: 4 unidades.', { exact: false })).toBeVisible()
+    await expect(page.getByText('3 movimientos registrados.', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Catálogo', exact: true }).click()
+    await page.getByRole('button', { name: 'Desactivar producto Agua mineral', exact: true }).click()
+    await page.getByRole('button', { name: 'Desactivar producto', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Agua mineral', exact: true })).toHaveCount(0)
+    await page.getByLabel('Incluir inactivos', { exact: true }).check()
+    await expect(page.getByRole('button', { name: 'Reactivar producto Agua mineral', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Reactivar producto Agua mineral', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Desactivar producto Agua mineral', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Equipo', exact: true }).click()
     await page.getByRole('button', { name: 'Desactivar worker', exact: true }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Cancelar', exact: true })).toBeFocused()

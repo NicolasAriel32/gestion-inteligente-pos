@@ -58,6 +58,13 @@ class IdentityTransaction:
             now=datetime.now(UTC).isoformat(),
         )
 
+        self.execute(
+            """INSERT INTO audit_events(actor_id,action,entity_type,entity_id,created_at_utc)
+            VALUES (:actor,:action,'users',:target,:now)""",
+            actor=actor.id, action=action, target=target or actor.id,
+            now=datetime.now(UTC).isoformat(),
+        )
+
     def session_user(self, token_hash: str, now: int) -> User:
         row = self.row(
             """SELECT u.* FROM sessions s JOIN users u ON s.user_id=u.id

@@ -41,7 +41,7 @@ export function Panel({ children, className = '', ...props }: { children: ReactN
   return <section className={`panel ${className}`} {...props}>{children}</section>
 }
 
-export function ConfirmDeactivation({ username, busy, onCancel, onConfirm }: { username: string; busy: boolean; onCancel: () => void; onConfirm: () => void }) {
+export function ConfirmDialog({ title: label, description: content, confirmLabel, busy, onCancel, onConfirm }: { title: string; description: string; confirmLabel: string; busy: boolean; onCancel: () => void; onConfirm: () => void }) {
   const ref = useRef<HTMLDialogElement>(null)
   const returnFocus = useRef(document.activeElement instanceof HTMLElement ? document.activeElement : null)
   const title = useId()
@@ -67,11 +67,15 @@ export function ConfirmDeactivation({ username, busy, onCancel, onConfirm }: { u
     }
   }}>
     <div className="section-icon"><Icon name="lock" /></div>
-    <h2 id={title}>¿Desactivar a {username}?</h2>
-    <p id={description}>Esta persona ya no podrá ingresar. Sus registros se conservarán.</p>
+    <h2 id={title}>{label}</h2>
+    <p id={description}>{content}</p>
     <div className="confirm__actions">
       <Button variant="secondary" autoFocus disabled={busy} onClick={onCancel}>Cancelar</Button>
-      <Button busy={busy} onClick={onConfirm}>{busy ? 'Desactivando…' : 'Confirmar desactivación'}</Button>
+      <Button busy={busy} onClick={onConfirm}>{busy ? 'Procesando…' : confirmLabel}</Button>
     </div>
   </dialog>
+}
+
+export function ConfirmDeactivation(props: { username: string; busy: boolean; onCancel: () => void; onConfirm: () => void }) {
+  return <ConfirmDialog {...props} title={`¿Desactivar a ${props.username}?`} description="Esta persona ya no podrá ingresar. Sus registros se conservarán." confirmLabel="Confirmar desactivación" />
 }

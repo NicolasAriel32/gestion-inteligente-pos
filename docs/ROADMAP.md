@@ -1,9 +1,10 @@
 # ROADMAP — trabajo incremental SDD
 
-**Estado actual**: F1 y F2 completadas y validadas técnicamente el 2026-10-22.
-Identidad local, sesiones, permisos y gestión de empleados; evidencia en
-[F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md) y [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
-Sin catálogo, inventario, ventas ni instalador. F3 no iniciada.
+**Estado actual**: F1, F2 y F3 completadas y validadas técnicamente el 2026-10-22.
+Identidad local, empleados, catálogo e inventario; evidencia en
+[F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
+[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 se entrega en rama para revisión humana.
+Diseño original fusionado con autorización (058a92f). Sin ventas ni instalador; F4 no iniciada.
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
 
@@ -29,10 +30,14 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
   [Hallazgos y prevención](ENGINEERING_FINDINGS.md).
 
 ## F3 — Catálogo e inventario
-- [ ] Categorías, productos, desactivación.
-- [ ] Ajustes de stock con motivo y movimientos.
-- [ ] Validaciones CHECK y FK.
+- [x] Categorías, productos, desactivación.
+- [x] Ajustes de stock con motivo y movimientos.
+- [x] Validaciones CHECK y FK.
 - Aceptación: inventario consistente después de errores y reinicios.
+- Evidencia: 78 pruebas backend, 20 frontend y 1 flujo E2E aprobados (99; 0 fallidas).
+  Ruff, ESLint, TypeScript/Vite y migraciones sobre SQLite nuevo aprobados; concurrencia,
+  idempotencia, rollback, upgrade desde F2 y reinicio real verificados. Revisión visual de
+  la extensión F3 y validación Windows/piloto todavía pendientes; no implican F4 habilitada.
 
 ## F4 — Caja e historial
 - [ ] Carrito y cobro manual registrado.

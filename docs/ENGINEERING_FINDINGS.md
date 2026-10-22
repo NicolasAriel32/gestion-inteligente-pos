@@ -126,3 +126,86 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
   la prueba de carga y reducción de movimiento sigue comprobando los estilos efectivos.
 - Práctica transferible: evaluar estados intermedios de movimiento, foco y carga. Una
   auditoría de la paleta estática no demuestra accesibilidad de las transiciones.
+
+## H-F3-001 — Auditoría de identidad con FK incompatible con otras entidades
+
+- Prioridad: P2. Estado: corregido y validado en F3.
+- Reproducción: audit_log de F2 exige entity_id FK users; una categoría con id=1 y un
+  único ADMIN histórico id=7 no puede registrarse como entidad de catálogo en esa tabla.
+- Causa: una referencia que parecía general quedó restringida a usuarios en el esquema.
+- Fix informado antes de implementar: migración aditiva 0003 agrega audit_events, copia
+  IDs/datos anteriores y conserva audit_log. Identidad escribe ambos en la misma transacción;
+  catálogo usa el registro general. No sumar ambos al consultar eventos.
+- Regresión: test_upgrade_preserves_identity_sessions_and_audit preserva exactamente F2,
+  usa una sesión anterior y crea la categoría id=1 con actor id=7. Fallo intermedio de
+  migración revierte el esquema y admite reintento. Fallo de auditoría revierte cada operación.
+- Práctica transferible: revisar FKs de referencias polimórficas antes de ampliar dominios.
+  Probar con IDs distintos, no solo fixtures donde todas las entidades tienen id=1.
+- Límite: se mantiene duplicación compatible de eventos de identidad; futuras consultas
+  generales deben usar audit_events. No hay visor/exportación de auditoría en esta fase.
+
+## H-F3-002 — Conversión decimal con float introduce fracciones de centavo
+
+- Prioridad: P2. Estado: prevenido y validado antes de publicar F3.
+- Reproducción ejecutada en Node: 0.29 * 100 produce 28.999999999999996.
+  No se detectó una pérdida de dinero en una instalación; fue una comprobación preventiva.
+- Causa: representación binaria inexacta de decimales; truncar o aceptar rangos ilimitados
+  entre JSON/JavaScript/SQLite puede cambiar el importe.
+- Fix: parsear texto decimal con BigInt y convertir a Number únicamente dentro del rango
+  entero seguro. Formatear con división/resto enteros. API rechaza floats/bool y SQLite
+  impone tipo/rango. Se aceptan coma o punto decimal; no separadores de miles ambiguos.
+- Regresión: 14 pruebas frontend de importes/cantidades, ida y vuelta de límites y rechazos;
+  API prueba booleanos, fracciones, negativos y desbordamientos con DB real.
+- Práctica transferible: mantener dinero entero en toda la cadena y probar límites de
+  transporte además de límites de almacenamiento. Distinguir riesgo prevenido de fallo real.
+
+## H-F3-003 — Reelección del mismo producto vaciaba el historial
+
+- Prioridad: P2. Estado: corregido y validado.
+- Reproducción identificada al revisar el código: seleccionar otra vez el producto elegido
+  limpiaba movimientos, pero no cambiaba selectedId, por lo que no se ejecutaba la consulta.
+- Causa: el evento invalidaba datos visibles sin invalidar la dependencia del efecto.
+  Depender del objeto completo, que la consulta vuelve a reemplazar, podía producir un ciclo.
+- Fix: depender del ID estable y una revisión explícita; la selección incrementa revisión
+  y las respuestas tardías se ignoran al desmontar o cambiar de consulta.
+- Regresión: E2E vuelve a seleccionar el mismo producto y exige tres movimientos reales,
+  además de verificar stock/historial después de reiniciar Python.
+- Práctica transferible: probar selección repetida, recarga y respuestas tardías. Diseñar
+  explícitamente qué invalida la consulta; evitar depender de objetos reemplazados por ella.
+
+## H-F3-004 — Avisos de una sección aparecían en otra
+
+- Prioridad: P3. Estado: corregido y validado.
+- Reproducción: las primeras capturas reales de catálogo/inventario mostraban «La cuenta
+  de worker ya está creada» después de salir de Equipo.
+- Causa: los avisos globales de identidad sobrevivían a la navegación agregada en F3.
+- Fix: una función de navegación limpia mensajes y su solicitud de foco al cambiar sección.
+  Los mensajes de sesión y formularios conservan su tratamiento propio.
+- Regresión: E2E crea empleado, navega a Catálogo y exige ausencia del aviso anterior.
+- Práctica transferible: revisar duración y propietario de los mensajes al introducir
+  navegación. Usar capturas del flujo completo; una pantalla aislada no muestra estado residual.
+
+## H-F3-005 — Límites de movimientos incompletos en SQLite
+
+- Prioridad: P2. Estado: corregido y validado antes de publicar 0003.
+- Reproducción: la revisión del primer DDL encontró stock_before sin cota máxima. Una
+  escritura SQL directa podía combinar un antes fuera del rango seguro con un delta negativo
+  y un después válido; la API ya rechazaba esos valores.
+- Causa: se comprobó el resultado, pero no todo el registro que luego recibe JavaScript.
+- Fix: acotar también antes y delta en CHECK, además de los DTO y el stock del producto.
+- Regresión: test_sqlite_checks_and_foreign_keys_are_real intenta escrituras directas,
+  fracciones, desbordamientos, stock negativo y FK inexistentes; todas se rechazan.
+- Práctica transferible: revisar cada campo persistido que atraviesa un contrato numérico,
+  especialmente históricos. La validación HTTP no demuestra integridad de la base.
+
+## H-F3-006 — Filtros demasiado estrechos en pantalla pequeña
+
+- Prioridad: P3. Estado: corregido y validado.
+- Reproducción: la primera captura de inventario a 390 px mostraba categoría y dos
+  casillas en la misma fila; etiqueta y selector quedaban innecesariamente estrechos.
+- Causa: flex distribuía el espacio por igual sin una disposición específica para móvil.
+- Fix: a 600 px o menos, selector de categoría en fila completa y casillas con ancho mínimo.
+- Regresión: E2E y capturas reales a 390 px, controles etiquetados, axe y ausencia de
+  desbordamiento horizontal también a 320 px.
+- Práctica transferible: revisar comodidad y legibilidad en capturas reales; no basta con
+  que una pantalla no tenga scroll horizontal o pase una auditoría automatizada.

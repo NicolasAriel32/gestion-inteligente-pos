@@ -25,6 +25,8 @@ No guardar DB en Program Files ni en el binario. Si una instalación debe funcio
 
 ## Modelo lógico
 Entidades y relaciones detalladas en DOMAIN_MODEL.md: users, categories, products, sales, sale_items, payments, stock_movements, audit_log. No borrado físico de registros históricos.
+En F3, audit_events es el registro general y audit_log queda como compatibilidad de
+identidad. Sales, sale_items y payments todavía no existen en la base implementada.
 
 ## Registrar venta (una transacción)
 1. Autenticar/autorizar empleado; validar solicitud y clave idempotente.
@@ -84,3 +86,21 @@ no se habilita health antes de validar. No hay reparación automática de instal
 parcialmente migradas. La autogeneración de Alembic queda bloqueada hasta disponer de
 metadatos completos; continuar con migraciones manuales revisadas.
 Evidencia: [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).
+
+## Verificación F3 — 2026-10-22
+
+0003_catalog_inventory agrega categorías, productos, movimientos y auditoría general.
+No reconstruye ni elimina tablas anteriores. Upgrade desde F2 conserva exactamente
+usuarios, hashes, bootstrap, sesiones y eventos existentes; una interrupción revierte
+todo el DDL y permite reintentar. El arranque exige 0003 y sus tablas/columnas.
+
+Los ajustes validan actor, existencia, estado y resultado bajo BEGIN IMMEDIATE. Producto,
+movimiento y auditoría se confirman juntos. UUID único: mismo actor/datos devuelve el
+movimiento previo, datos diferentes con la misma clave producen 409. La UI conserva la
+clave al fallar una respuesta; no hay reintento automático. No borrar ni migrar una base
+comercial para probar: todas las verificaciones de esta fase usan SQLite temporal.
+
+CHECK valida enteros, stock no negativo, importes seguros y coherencia antes+delta=después;
+FK protege categoría/producto/actor y código no nulo es UNIQUE. Concurrencia real cubre
+dos ajustes de la última unidad y dos envíos de la misma clave. No prueba aún ventas,
+backups/restauración ni instalación Windows. Resultados en F3_DEVELOPMENT.md.

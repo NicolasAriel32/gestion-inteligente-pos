@@ -27,6 +27,7 @@ def build_engine(path: Path | None = None) -> Engine:
     engine = create_engine(f"sqlite:///{path}", connect_args={"timeout": 5})
     @event.listens_for(engine, "connect")
     def sqlite_config(connection: sqlite3.Connection, _: object) -> None:
+        connection.create_function("casefold", 1, str.casefold, deterministic=True)
         cursor = connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA busy_timeout=5000")
