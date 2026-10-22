@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright'
 import type { Page } from '@playwright/test'
 import type { ChildProcess } from 'node:child_process'
 import { spawn, spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -38,7 +38,8 @@ async function stop(child?: ChildProcess) {
 
 async function screenshot(page: Page, name: string) {
   const inventoryScreen = name.startsWith('catalog-') || name.startsWith('inventory-')
-  const destination = inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
+  const salesScreen = ['checkout-', 'receipt-', 'history-', 'void-'].some(prefix => name.startsWith(prefix))
+  const destination = salesScreen ? process.env.POS_F4_CAPTURE_DIR ?? captures : inventoryScreen ? process.env.POS_F3_CAPTURE_DIR ?? captures : captures
   if (!destination) return
   mkdirSync(destination, { recursive: true })
   // Las capturas solo se toman con campos secretos vacíos.
@@ -67,10 +68,33 @@ async function screens(page: Page, name: string) {
   await page.setViewportSize({ width: 1366, height: 768 })
 }
 
-test('identidad, catálogo e inventario locales, permisos y reinicio sin red externa', async ({ browser }) => {
+async function ticketPdf(page: Page, name: string) {
+  await page.emulateMedia({ media: 'print' })
+  const paper = page.locator('.receipt-paper')
+  await expect(paper).toContainText('COMPROBANTE NO FISCAL')
+  await expect(page.locator('.topbar')).toBeHidden()
+  await expect(page.locator('.workspace-nav')).toBeHidden()
+  expect(await paper.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  expect(await paper.evaluate(element => getComputedStyle(element).color)).toBe('rgb(0, 0, 0)')
+  const printClient = await page.context().newCDPSession(page)
+  const pdf = await printClient.send('Page.printToPDF', { paperWidth: 58 / 25.4, paperHeight: 200 / 25.4, marginTop: 3 / 25.4, marginBottom: 3 / 25.4, marginLeft: 3 / 25.4, marginRight: 3 / 25.4, printBackground: false, displayHeaderFooter: false })
+  const pdfBytes = Buffer.from(pdf.data, 'base64')
+  expect(pdfBytes.subarray(0, 4).toString()).toBe('%PDF')
+  const mediaBox = pdfBytes.toString('latin1').match(/\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)/)
+  expect(Number(mediaBox?.[1]) / 72 * 25.4).toBeCloseTo(58, 0)
+  if (process.env.POS_F4_CAPTURE_DIR) {
+    mkdirSync(process.env.POS_F4_CAPTURE_DIR, { recursive: true })
+    writeFileSync(join(process.env.POS_F4_CAPTURE_DIR, `${name}.pdf`), pdfBytes)
+    await paper.screenshot({ path: join(process.env.POS_F4_CAPTURE_DIR, `${name}.png`) })
+  }
+  await printClient.detach()
+  await page.emulateMedia({ media: 'screen' })
+}
+
+test('identidad, inventario y caja locales, permisos, reintentos, impresión y reinicio sin red externa', async ({ browser }) => {
   await assertFree(8765)
   await assertFree(5173)
-  const root = mkdtempSync(join(tmpdir(), 'pos-f3-e2e-'))
+  const root = mkdtempSync(join(tmpdir(), 'pos-f4-e2e-'))
   const env = { ...process.env, LOCALAPPDATA: root }
   let api: ChildProcess | undefined
   let vite: ChildProcess | undefined
@@ -258,6 +282,117 @@ test('identidad, catálogo e inventario locales, permisos y reinicio sin red ext
     await expect(page.getByRole('button', { name: 'Reactivar producto Agua mineral', exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Reactivar producto Agua mineral', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Desactivar producto Agua mineral', exact: true })).toBeVisible()
+    // Caja F4: revisión del servidor, precio cambiado y respuesta perdida tras commit real.
+    await page.getByRole('button', { name: 'Caja', exact: true }).click()
+    await page.getByRole('button', { name: 'Agregar Agua mineral al carrito', exact: true }).click()
+    await page.getByLabel('Cantidad de Agua mineral', { exact: true }).fill('2')
+    await page.getByRole('combobox', { name: 'Medio de pago declarado', exact: true }).selectOption('TRANSFER')
+    await page.getByRole('button', { name: 'Revisar importe', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Revisá antes de confirmar', exact: true })).toBeFocused()
+    await expect(page.locator('.quote-total')).toContainText('$ 260,50')
+    await screens(page, 'checkout')
+    expect(await page.evaluate(async () => {
+      const me = await fetch('/api/auth/me').then(response => response.json())
+      return (await fetch('/api/products/1', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': me.csrf_token }, body: JSON.stringify({ price_cents: 14025 }) })).status
+    })).toBe(200)
+    await page.getByRole('button', { name: 'Confirmar venta y registrar cobro', exact: true }).click()
+    await expect(page.getByRole('alert')).toContainText('El catálogo cambió')
+    expect(await page.evaluate(() => sessionStorage.getItem('pos.checkout.pending.v1.1'))).toBeNull()
+    await page.getByRole('button', { name: 'Revisar importe', exact: true }).click()
+    await expect(page.locator('.quote-total')).toContainText('$ 280,50')
+    const saleRequests: unknown[] = []
+    await page.route('**/api/sales', async route => {
+      if (route.request().method() !== 'POST') return route.continue()
+      saleRequests.push(route.request().postDataJSON())
+      if (saleRequests.length === 1) {
+        const committed = await route.fetch()
+        expect(committed.status()).toBe(201)
+        return route.abort('failed')
+      }
+      return route.continue()
+    })
+    await page.getByRole('button', { name: 'Confirmar venta y registrar cobro', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Reintentar la misma venta', exact: true })).toBeEnabled()
+    await screens(page, 'checkout-pending')
+    await page.reload()
+    await page.getByRole('button', { name: 'Caja', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Agregar Agua mineral al carrito', exact: true })).toHaveCount(0)
+    // Desmontar Caja y reautenticar no descarta una respuesta comercial incierta.
+    // La sección activa no es un contrato de sesión: volver a Caja explícitamente.
+    await page.getByRole('button', { name: 'Equipo', exact: true }).click()
+    await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
+    await page.getByLabel('Usuario', { exact: true }).fill('owner')
+    await page.getByLabel('Contraseña', { exact: true }).fill('E2e-password-owner-42')
+    await page.getByRole('button', { name: 'Ingresar', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Caja', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Caja', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Comprobar una venta pendiente', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Reintentar la misma venta', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Venta #1 · Registrada', exact: true })).toBeVisible()
+    expect(saleRequests).toHaveLength(2)
+    expect(saleRequests[0]).toEqual(saleRequests[1])
+    expect(await page.evaluate(async () => (await fetch('/api/sales').then(response => response.json())).total)).toBe(1)
+    await screens(page, 'receipt')
+    await page.evaluate(() => { window.print = () => { document.body.dataset.printCount = String(Number(document.body.dataset.printCount ?? 0) + 1) } })
+    await page.getByRole('button', { name: 'Imprimir ticket de 58 mm', exact: true }).click()
+    expect(await page.evaluate(() => document.body.dataset.printCount)).toBe('1')
+    expect(saleRequests).toHaveLength(2)
+    // PDF real de Chromium a papel 58 mm; no equivale a prueba física de impresora.
+    await expect(page.locator('.receipt-paper')).toContainText('Transferencia')
+    await ticketPdf(page, 'ticket-58mm')
+    const longName = 'Alfajor con chocolate y baño de azúcar '.repeat(4).slice(0, 160).trim()
+    expect(await page.evaluate(async ({ name }) => {
+      const me = await fetch('/api/auth/me').then(response => response.json())
+      return (await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': me.csrf_token }, body: JSON.stringify({ name, code: '0'.repeat(63) + '1', price_cents: 19999, initial_stock: 1, initial_reason: 'Carga para prueba de ticket' }) })).status
+    }, { name: longName })).toBe(201)
+    // El empleado vende y ve únicamente su historial; la API rechaza venta ajena/anulación.
+    await worker.getByRole('button', { name: 'Caja', exact: true }).click()
+    await worker.getByRole('button', { name: `Agregar ${longName} al carrito`, exact: true }).click()
+    await worker.getByRole('button', { name: 'Revisar importe', exact: true }).click()
+    await worker.getByRole('button', { name: 'Confirmar venta y registrar cobro', exact: true }).click()
+    await expect(worker.getByRole('heading', { name: 'Venta #2 · Registrada', exact: true })).toBeVisible()
+    await ticketPdf(worker, 'ticket-58mm-long')
+    await worker.getByRole('button', { name: 'Historial', exact: true }).click()
+    await expect(worker.locator('.history-list > li')).toHaveCount(1)
+    await expect(worker.getByRole('button', { name: 'Ver venta 1', exact: true })).toHaveCount(0)
+    expect(await worker.evaluate(async () => (await fetch('/api/sales/1')).status)).toBe(403)
+    expect(await worker.evaluate(async () => {
+      const me = await fetch('/api/auth/me').then(response => response.json())
+      return (await fetch('/api/sales/2/void', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': me.csrf_token }, body: JSON.stringify({ reason: 'No autorizado' }) })).status
+    })).toBe(403)
+    await worker.getByRole('button', { name: 'Ver venta 2', exact: true }).click()
+    await expect(worker.getByRole('form', { name: 'Anular venta', exact: true })).toHaveCount(0)
+    await screens(worker, 'history-employee')
+    await page.getByRole('button', { name: 'Historial', exact: true }).click()
+    await page.getByRole('combobox', { name: 'Filtrar por persona', exact: true }).selectOption({ label: 'worker' })
+    await expect(page.locator('.history-list > li')).toHaveCount(1)
+    await page.getByRole('button', { name: 'Ver venta 2', exact: true }).click()
+    await page.getByLabel('Motivo de anulación', { exact: true }).fill('Error de carga')
+    await page.getByRole('button', { name: 'Revisar anulación', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Cancelar', exact: true })).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: 'Revisar anulación', exact: true })).toBeFocused()
+    await page.getByRole('button', { name: 'Revisar anulación', exact: true }).press('Enter')
+    await accessible(page)
+    await screenshot(page, 'void-confirmation-desktop')
+    await page.getByRole('button', { name: 'Confirmar anulación de venta', exact: true }).press('Enter')
+    await expect(page.getByRole('heading', { name: 'Venta #2 · Anulada', exact: true })).toBeVisible()
+    await page.getByRole('combobox', { name: 'Estado de venta', exact: true }).selectOption('VOIDED')
+    await page.getByRole('button', { name: 'Ver venta 2', exact: true }).click()
+    await ticketPdf(page, 'ticket-58mm-voided')
+    await screens(page, 'history')
+    // Segundo reinicio: persisten ventas, pagos, estado de anulación y stock.
+    await stop(api)
+    api = startApi()
+    await ready('http://127.0.0.1:8765/api/health', api)
+    await page.reload()
+    await page.getByRole('button', { name: 'Historial', exact: true }).click()
+    await expect(page.locator('.history-list > li')).toHaveCount(2)
+    await page.getByRole('button', { name: 'Ver venta 2', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Venta #2 · Anulada', exact: true })).toBeVisible()
+    expect(await page.evaluate(async () => (await fetch('/api/products/1').then(response => response.json())).stock_quantity)).toBe(2)
     await page.getByRole('button', { name: 'Equipo', exact: true }).click()
     await page.getByRole('button', { name: 'Desactivar worker', exact: true }).click()
     await expect(page.getByRole('dialog')).toBeVisible()

@@ -1,6 +1,10 @@
 # Gestión Inteligente POS
 
-Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino. **Identidad, catálogo e inventario locales implementados; caja y ventas todavía pendientes.**
+Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
+**Versión 0.4.0: identidad, catálogo, inventario, caja e historial locales implementados.**
+F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
+Versiones de producto, esquema y evidencias: [VERSIONS.md](docs/VERSIONS.md).
+Siguiente fase preparada, todavía sin iniciar: [instrucción F5](docs/NEXT_STEP_F5.md).
 
 ## Decisiones de producto
 
@@ -43,10 +47,13 @@ Leer `AGENTS.md` y las especificaciones pertinentes **antes de escribir código*
 FastAPI, React/Vite y SQLite/Alembic funcionan localmente. F2 agrega inicialización
 protegida de ADMIN, sesiones y empleados. F3 incorpora categorías, productos, precios
 en centavos, desactivación y ajustes de stock auditados e idempotentes, exclusivamente
-por ADMIN. EMPLOYEE consulta productos activos, precios y existencias, sin costos.
-Instalación, comandos y resultados: [F3_DEVELOPMENT.md](F3_DEVELOPMENT.md),
+por ADMIN. F4 agrega ventas atómicas/idempotentes, pagos declarados, historial,
+anulación ADMIN y ticket no fiscal de 58 mm. EMPLOYEE vende y consulta sus ventas,
+productos activos, precios y existencias, sin costos ni administración del catálogo.
+Instalación, comandos y resultados: [F4_DEVELOPMENT.md](F4_DEVELOPMENT.md),
+[F3_DEVELOPMENT.md](F3_DEVELOPMENT.md),
 [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md) y [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md).
-Sin ventas, caja, reportes ni instalador. F4 requiere autorización.
+Sin reportes ni instalador. F5 no iniciada. No confundir esta entrega con piloto aprobado.
 
 ## Desarrollo local
 
@@ -81,13 +88,27 @@ no borrar SQLite ni recrear ADMIN para recuperar acceso.
 ## Prácticas aprendidas
 
 El [registro de hallazgos](docs/ENGINEERING_FINDINGS.md) conserva causas, fixes y pruebas
-de F2, diseño y F3. El [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) reúne
+de F2, diseño, F3 y F4. El [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) reúne
 las prácticas para próximas fases y proyectos.
 
 ## Identidad visual aprobada
 
 Manrope local y negro sobre amarillo, con superficies suaves y controles accesibles.
 El diseño de acceso/empleados fue fusionado por autorización del propietario (PR #2,
-merge 058a92f). F3 conserva esa identidad. Ver [sistema visual](docs/DESIGN_SYSTEM.md),
+merge 058a92f). F3 fue aprobada y fusionada en 3848d55; F4 conserva esa identidad.
+Ver [sistema visual](docs/DESIGN_SYSTEM.md),
 [validación original](FRONTEND_DESIGN_VALIDATION.md) y
 [capturas reales de catálogo/inventario](docs/screenshots/f3/).
+
+## Caja y tickets
+
+Agregá productos, revisá el importe y elegí un medio de pago informado manualmente.
+Confirmar registra venta, pago y stock juntos. Si una respuesta se pierde, la aplicación
+conserva el intento y ofrece recuperar la misma venta, incluso después de recargar o
+volver a ingresar. No generar otra venta para recuperar un comprobante.
+
+Historial permite consultar/reimprimir; ADMIN puede anular con motivo, devolviendo las
+unidades una sola vez. El ticket de 58 mm se imprime desde el diálogo del navegador
+con el controlador de Windows. Cancelar la impresión no cancela la venta.
+[Preparación y límites Global/Waggs](docs/PRINTING.md) y
+[capturas/PDF reales](docs/screenshots/f4/). Compatibilidad física pendiente de modelo y prueba.

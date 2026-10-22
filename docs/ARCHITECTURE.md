@@ -1,16 +1,18 @@
 # ARCHITECTURE — arquitectura del MVP local
 
-- Versión: 0.1
-- Estado: diseño objetivo sujeto a validación técnica
+- Versión de referencia: 0.4.0 (2026-10-22)
+- Estado: núcleo F1–F4 validado localmente; distribución Windows y partes futuras pendientes.
 - Referencias: PROJECT_SPEC.md, BUSINESS_RULES.md y DECISIONS.md
 
-## Despliegue
-Un equipo Windows ejecuta:
+## Despliegue objetivo Windows (F6)
+La distribución final en un equipo Windows deberá ejecutar:
 - Frontend estático compilado de **React + TypeScript + Vite**.
 - **FastAPI** local que sirve frontend y API REST; por defecto 127.0.0.1:8765 (solo loopback).
 - **SQLite** en carpeta privada de datos; el frontend **nunca** accede al archivo directamente.
 
-No se necesita conexión de red para operaciones esenciales. La distribución final buscará empaquetar todos los runtimes necesarios, sujeta a pruebas en Windows.
+El desarrollo actual ejecuta FastAPI y Vite por separado en loopback; véase README.
+No se necesita internet para las operaciones implementadas. La distribución final buscará
+empaquetar todos los runtimes necesarios, sujeta a pruebas en Windows.
 
 ## Capas y dependencias
 - Presentation: componentes React, vistas, estados de UI.
@@ -39,7 +41,9 @@ employees (GET/POST y PATCH de desactivación), además de auth/setup (GET/POST)
 Implementados en F3: GET/POST /api/categories, PATCH /api/categories/{id},
 GET/POST /api/products, GET/PATCH /api/products/{id}, POST /api/stock/adjustments y
 GET /api/stock/movements. Contratos tipados y límites en OpenAPI; detalle en
-[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). Ventas, reportes y respaldos siguen pendientes.
+[F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). Implementados en F4: POST /api/sales/quote,
+GET/POST /api/sales, GET /api/sales/{id} y POST /api/sales/{id}/void.
+Reportes y respaldos siguen pendientes. Contratos de caja: F4_DEVELOPMENT.md.
 Contratos y errores F2: [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
 
 ## Seguridad local
@@ -86,3 +90,20 @@ Los ajustes usan UUID idempotente, BEGIN IMMEDIATE y auditoría atómica, sin re
 automáticos. Interfaz decimal exacta; API y DB conservan centavos enteros.
 audit_events es el registro general; audit_log permanece como compatibilidad de identidad
 sin modificar ni borrar eventos existentes. No se añadieron dependencias ni servicios.
+
+## Caja e historial F4
+
+Ventas por capas con SalesService, puerto transaccional y adaptador SQLite. Cotización
+del servidor sin reserva; confirmación recalculada bajo BEGIN IMMEDIATE, rechazo si cambió
+el contenido económico y UUID idempotente. Pedido normalizado vinculado al actor; no se
+aceptan precios, totales, estado ni vendedor desde el cliente.
+Venta/pago/ítems/inventario/movimientos/auditoría confirman o revierten juntos.
+EMPLOYEE ve solo sus ventas, ADMIN todas y anula con motivo. La anulación repone unidades
+una sola vez y conserva instantáneas. No hay endpoints para editar/borrar historia.
+
+La interfaz persiste un intento confirmado por usuario en sessionStorage antes del envío;
+no guarda credenciales ni identificadores de sesión/CSRF. Una respuesta incierta bloquea
+otro cobro hasta recuperar el mismo UUID. Se valida el comprobante antes de liberar el intento.
+Ticket React y CSS print local de 48 mm de contenido para papel nominal de 58 mm, con
+controlador Windows/diálogo del navegador. Sin conexión directa USB/ESC-POS ni éxito físico
+inferido de window.print; esa compatibilidad queda pendiente de equipo real.

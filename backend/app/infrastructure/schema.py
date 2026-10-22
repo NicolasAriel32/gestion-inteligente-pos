@@ -3,8 +3,11 @@
 from sqlalchemy import Engine, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
-EXPECTED_REVISION = "0003_catalog_inventory"
+EXPECTED_REVISION = "0004_checkout_history"
 REQUIRED_COLUMNS = {
+    "sales": {"id", "idempotency_key", "request_hash", "user_id", "username_snapshot", "status", "total_cents", "created_at_utc", "voided_at_utc", "voided_by", "void_reason"},
+    "sale_items": {"id", "sale_id", "product_id", "product_name_snapshot", "product_code_snapshot", "unit_price_cents", "quantity", "subtotal_cents"},
+    "payments": {"id", "sale_id", "method", "amount_cents"},
     "categories": {"id", "name", "name_key", "is_active"},
     "products": {
         "id",

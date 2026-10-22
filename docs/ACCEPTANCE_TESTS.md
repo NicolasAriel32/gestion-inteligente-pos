@@ -1,7 +1,8 @@
 # ACCEPTANCE_TESTS — criterios de aceptación trazables
 
-Versión 0.1. La matriz define el objetivo completo. Solo los casos señalados en las
-secciones de evidencia cuentan como ejecutados; ventas, reportes y Windows siguen pendientes.
+Versión de referencia 0.4.0 (2026-10-22). La matriz define el objetivo completo.
+Solo los casos señalados en las
+secciones de evidencia cuentan como ejecutados; reportes, impresora física y Windows siguen pendientes.
 
 ## Conjunto mínimo (automático + piloto)
 | Test | Reglas | Escenario y resultado esperado |
@@ -76,3 +77,27 @@ El resto de la matriz comercial y Windows continúa pendiente.
 - Idempotencia de ajuste, datos inválidos, CHECK/FK y desbordamientos probados con SQLite real.
 
 Comandos, resultados y límites: [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
+
+## Evidencia F4 — 2026-10-22
+
+- AT-001/002/006/007/009: stock insuficiente, venta consistente, última unidad concurrente,
+  UUID concurrente/repetido y rollback tras fallos en producto, movimiento, pago o auditoría,
+  usando SQLite real. Venta versus ajuste y anulación versus ajuste también serializan.
+- AT-004: dos anulaciones concurrentes con el mismo motivo devuelven el mismo estado y
+  una reposición; otro motivo produce 409. Fallo de auditoría/overflow no deja reversión parcial.
+- AT-008/013: instantáneas conservadas tras cambiar nombre/código/precio o desactivar;
+  precio enviado por cliente rechazado y cotización obsoleta exige revisión explícita.
+- AT-011: SALE_COMPLETED/SALE_VOIDED con actor y UTC, sin credenciales ni sesiones.
+- AT-012: flujo completo de caja/historial en Chromium local, cero solicitudes externas,
+  respuesta perdida tras commit y recuperación del mismo UUID después de recargar/reingresar.
+- AT-016: EMPLOYEE vende y consulta las suyas; acceso a venta ajena/filtro de otro usuario
+  y anulación devuelve 403. Desactivación/expiración elimina acceso efectivo.
+- AT-017: cuatro medios manuales con un pago por el total; UI/comprobante explican que
+  transferencia/tarjeta son declaradas y no una confirmación externa.
+- AT-018: segundo reinicio real de Python conserva ventas, pagos, anulación y stock.
+- Documento de 58 mm: tres PDF reales (normal, texto/código largo y anulado), CSS print
+  y reimpresión sin nuevo POST comprobados; no constituye prueba física de Global/Waggs.
+
+119 backend + 34 frontend + 1 E2E = 154 aprobadas, cero fallidas finales. El propietario
+autorizó integrar F4 conservando pendiente la validación física de impresora. AT-005/015 son F5; AT-019/020,
+respaldo y Windows, siguen pendientes. [Evidencia completa](../F4_DEVELOPMENT.md).

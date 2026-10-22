@@ -1,6 +1,6 @@
 # INSTALLATION — instalación, uso y actualizaciones
 
-- Versión: 0.1
+- Versión de referencia: 0.4.0 (2026-10-22)
 - Modalidad aprobada: aplicación local y sin internet
 - Destino objetivo: Windows 11 de 64 bits; Windows 10 requiere evaluación explícita por fin de soporte general.
 
@@ -64,3 +64,13 @@ existentes, hacer respaldo consistente y detener la aplicación; ejecutar upgrad
 explícitamente. F3 requiere 0003_catalog_inventory y rechaza esquemas anteriores al iniciar.
 No hay migración automática ni downgrade destructivo. Para validar, usar LOCALAPPDATA
 temporal, como se documenta en [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
+
+## Desarrollo F4 e impresoras
+
+F4 requiere upgrade explícito a 0004_checkout_history y rechaza revisiones anteriores.
+No aplicar migraciones sobre datos comerciales para probar; usar una base temporal.
+Las instrucciones de desarrollo de README se conservan, sin dependencias nuevas.
+Para imprimir, instalar y probar el controlador del modelo, seleccionar papel de 58 mm
+y usar el diálogo local del navegador. [Procedimiento y límites](PRINTING.md).
+Este entorno Linux validó HTML/PDF y flujo; no validó el controlador Windows ni una
+impresora física. No equivale a instalador ni a certificación de compatibilidad por marca.

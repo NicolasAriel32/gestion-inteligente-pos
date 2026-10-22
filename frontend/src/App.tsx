@@ -7,6 +7,13 @@ import { Button, ConfirmDeactivation, Icon, Notice, Panel } from './ui'
 import './style.css'
 
 const CatalogWorkspace = lazy(() => import('./CatalogWorkspace'))
+const SalesWorkspace = lazy(() => import('./SalesWorkspace'))
+const sectionCopy = {
+  catalog: ['CATÁLOGO', 'Productos para tu negocio.', 'Precios claros y productos organizados.'],
+  inventory: ['INVENTARIO', 'Cada unidad, en orden.', 'Consultá existencias y registrá cada cambio con su motivo.'],
+  checkout: ['CAJA', 'Una venta, bien registrada.', 'Elegí productos, revisá el importe y registrá el pago informado.'],
+  history: ['HISTORIAL', 'Cada venta tiene su historia.', 'Consultá comprobantes y seguí el estado de tus ventas.'],
+} as const
 
 type View = { initialized: boolean; session: Session | null; staff: User[] }
 async function readView(): Promise<View> {
@@ -16,7 +23,7 @@ async function readView(): Promise<View> {
 }
 
 export default function App() {
-  const [section, setSection] = useState<'team' | 'catalog' | 'inventory'>('team')
+  const [section, setSection] = useState<'team' | 'catalog' | 'inventory' | 'checkout' | 'history'>('team')
   const [view, setView] = useState<View | null>(null)
   const [health, setHealth] = useState('Comprobando conexión local…')
   const [error, setError] = useState('')
@@ -29,6 +36,7 @@ export default function App() {
   const staff = view?.staff ?? []
   const session = view?.session
   const stage = !view ? 'loading' : !view.initialized ? 'setup' : session ? 'session' : 'login'
+  const copy = section === 'team' ? session?.user.role === 'ADMIN' ? ['PERSONAS Y ACCESOS', 'Un buen equipo empieza acá.', 'Gestioná quién puede ingresar. Cada persona, con su propia cuenta.'] : ['MI CUENTA', `Hola, ${session?.user.username ?? ''}.`, 'Tu sesión está iniciada y tu acceso está listo.'] : sectionCopy[section]
   useEffect(() => {
     let active = true
     getHealth().then(() => { if (active) setHealth('Servidor local conectado') })
@@ -43,6 +51,10 @@ export default function App() {
   function navigate(next: typeof section) {
     if (next === section) return
     setError(''); setNotice(''); setNoticeFocus(false); setSection(next)
+  }
+  function expireSession() {
+    setView(current => current ? { ...current, session: null, staff: [] } : current)
+    setSection('team'); setNotice('Tu sesión terminó. Volvé a ingresar.')
   }
   async function authenticated(action: () => Promise<unknown>) {
     try { await action(); await refresh() }
@@ -76,18 +88,20 @@ export default function App() {
     <main id="main" tabIndex={-1} className={session ? 'workspace' : 'welcome'}>
       {session ? <>
         <div className="workspace__heading">
-          <div><span className="eyebrow">{section === 'catalog' ? 'CATÁLOGO' : section === 'inventory' ? 'INVENTARIO' : session.user.role === 'ADMIN' ? 'PERSONAS Y ACCESOS' : 'MI CUENTA'}</span>
-            <h1 ref={heading} tabIndex={-1}>{section === 'catalog' ? 'Productos para tu negocio.' : section === 'inventory' ? 'Cada unidad, en orden.' : session.user.role === 'ADMIN' ? 'Un buen equipo empieza acá.' : `Hola, ${session.user.username}.`}</h1>
-            <p>{section === 'catalog' ? 'Precios claros y productos organizados.' : section === 'inventory' ? 'Consultá existencias y registrá cada cambio con su motivo.' : session.user.role === 'ADMIN' ? 'Gestioná quién puede ingresar. Cada persona, con su propia cuenta.' : 'Tu sesión está iniciada y tu acceso está listo.'}</p></div>
+          <div><span className="eyebrow">{copy[0]}</span>
+            <h1 ref={heading} tabIndex={-1}>{copy[1]}</h1>
+            <p>{copy[2]}</p></div>
           <div className="account"><span className="avatar" aria-hidden="true">{session.user.username.slice(0, 2).toUpperCase()}</span><div><h2>Sesión de {session.user.username}</h2><span>{session.user.role === 'ADMIN' ? 'Administrador' : 'Empleado'}</span></div></div>
         </div>
         <nav className="workspace-nav" aria-label="Secciones">
           <Button disabled={busy} variant={section === 'team' ? 'primary' : 'secondary'} aria-current={section === 'team' ? 'page' : undefined} onClick={() => navigate('team')}>{session.user.role === 'ADMIN' ? 'Equipo' : 'Mi cuenta'}</Button>
           <Button disabled={busy} variant={section === 'catalog' ? 'primary' : 'secondary'} aria-current={section === 'catalog' ? 'page' : undefined} onClick={() => navigate('catalog')}>Catálogo</Button>
           {session.user.role === 'ADMIN' && <Button disabled={busy} variant={section === 'inventory' ? 'primary' : 'secondary'} aria-current={section === 'inventory' ? 'page' : undefined} onClick={() => navigate('inventory')}>Inventario</Button>}
+          <Button disabled={busy} variant={section === 'checkout' ? 'primary' : 'secondary'} aria-current={section === 'checkout' ? 'page' : undefined} onClick={() => navigate('checkout')}>Caja</Button>
+          <Button disabled={busy} variant={section === 'history' ? 'primary' : 'secondary'} aria-current={section === 'history' ? 'page' : undefined} onClick={() => navigate('history')}>Historial</Button>
         </nav>
         {error && <Notice tone="error" focus>{error}</Notice>}{notice && <Notice focus={noticeFocus}>{notice}</Notice>}
-        {section !== 'team' ? <Suspense fallback={<Panel><p className="catalog-empty" role="status">Cargando herramientas…</p></Panel>}><CatalogWorkspace key={section} mode={section} session={session} onBusyChange={setBusy} onExpired={() => { setView(current => current ? { ...current, session: null, staff: [] } : current); setSection('team'); setNotice('Tu sesión terminó. Volvé a ingresar.') }} /></Suspense> : session.user.role === 'ADMIN' ? <div className="team-layout">
+        {section === 'checkout' || section === 'history' ? <Suspense fallback={<Panel><p className="catalog-empty" role="status">Cargando herramientas…</p></Panel>}><SalesWorkspace key={session.user.id} mode={section} session={session} onBusyChange={setBusy} onExpired={expireSession} /></Suspense> : section !== 'team' ? <Suspense fallback={<Panel><p className="catalog-empty" role="status">Cargando herramientas…</p></Panel>}><CatalogWorkspace key={section} mode={section} session={session} onBusyChange={setBusy} onExpired={expireSession} /></Suspense> : session.user.role === 'ADMIN' ? <div className="team-layout">
           <Panel className="team-panel" aria-labelledby="team-title">
             <div className="panel-heading"><div className="section-icon"><Icon name="users" /></div><div><h2 id="team-title">Empleados</h2><p>Las cuentas de tu equipo.</p></div><span className="count" aria-label={`${staff.length} empleados`}>{staff.length}</span></div>
             {staff.length === 0 ? <div className="empty-state"><div className="empty-state__symbol"><Icon name="users" /></div><h3>Tu equipo empieza con una persona.</h3><p>Creá la primera cuenta desde el formulario.<br />Cada empleado tendrá su propio acceso.</p></div> : <ul className="employee-list">{staff.map(employee => <li key={employee.id}>
@@ -102,7 +116,7 @@ export default function App() {
             await authenticated(() => identity.createEmployee(value, session.csrf_token))
             setNotice(`La cuenta de ${value.username.toLowerCase()} ya está creada.`)
           }} /></Panel>
-        </div> : <Panel className="employee-welcome"><div className="section-icon"><Icon name="check" /></div><h2>Ya estás adentro.</h2><p>Podés consultar productos y existencias desde Catálogo. Los cambios los realiza el administrador.</p></Panel>}
+        </div> : <Panel className="employee-welcome"><div className="section-icon"><Icon name="check" /></div><h2>Ya estás adentro.</h2><p>Podés vender desde Caja, consultar tus ventas en Historial y ver productos en Catálogo. Los cambios de catálogo los realiza el administrador.</p></Panel>}
       </> : <>
         <div className="welcome__story">
           <span className="eyebrow">GESTIÓN SIMPLE. TODOS LOS DÍAS.</span>

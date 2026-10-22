@@ -1,6 +1,7 @@
 # DECISIONS — decisiones arquitectónicas y de producto
 
-Formato: ID, fecha, estado, decisión, motivo, consecuencias. Distinguir **aprobado** de **propuesto**. Fecha documental: 2026-10-21.
+Versión de referencia: 0.4.0. Actualización: 2026-10-22; decisiones originales: 2026-10-21.
+Formato: ID, fecha, estado, decisión, motivo, consecuencias. Distinguir **aprobado**, **implementado** y **propuesto**.
 
 ## Aceptadas por el propietario
 ### ADR-001 — Una caja local sin conexión obligatoria (ACEPTADA)
@@ -15,23 +16,24 @@ No usar Lovable en el proyecto. Controlamos el código y las decisiones de arqui
 ### ADR-004 — Roles y núcleo funcional (ACEPTADA)
 Dos roles (ADMIN/EMPLOYEE), catálogo, inventario, venta, historial, productos más vendidos, horas pico y dashboard. Operaciones críticas con permisos backend.
 
-## Propuestas técnicas para validar durante F1
-### ADR-005 — React/TypeScript/Vite + FastAPI (PROPUESTA)
-Frontend web estático servido por backend Python local. Beneficio: separa UI de negocio y permite empaquetado Windows. Pendiente: medir arranque y distribución.
+## Tecnología implementada y propuestas de distribución
+### ADR-005 — React/TypeScript/Vite + FastAPI (IMPLEMENTADA Y VALIDADA EN DESARROLLO)
+Núcleo local F1–F4 implementado y probado. En desarrollo FastAPI y Vite corren por separado;
+frontend estático servido por backend y empaquetado Windows siguen como objetivo F6.
 
-### ADR-006 — SQLite/SQLAlchemy/Alembic (PROPUESTA)
+### ADR-006 — SQLite/SQLAlchemy/Alembic (IMPLEMENTADA Y VALIDADA F1–F4)
 Base local apropiada para una caja, sin MySQL instalado. Usar transacciones de escritura y backups consistentes. Futuro MySQL implica adaptación, migración y pruebas; no es automático.
 
 ### ADR-007 — PyInstaller + Inno Setup (PROPUESTA)
 Binarios e instalador Windows sin runtimes de desarrollo. Validar con PC limpia.
 
-### ADR-008 — Datos privados en LOCALAPPDATA (PROPUESTA)
+### ADR-008 — Datos privados en LOCALAPPDATA (IMPLEMENTADA; VALIDACIÓN WINDOWS PENDIENTE)
 Una cuenta Windows por instalación. Si cambia a uso multiusuario de Windows, revisar ACL, ruta y propiedad de datos.
 
 ### ADR-009 — MCP y automatización diferidos (ACEPTADA COMO ALCANCE)
 Preparar contratos de negocio para uso posterior por agentes; no implementar MCP o LLM en MVP.
 
-### ADR-010 — Un pago declarado por venta (PROPUESTA)
+### ADR-010 — Un pago declarado por venta (IMPLEMENTADA F4; POLÍTICA DE PILOTO PENDIENTE)
 Registrar efectivo, transferencia, débito o crédito; sin verificación externa de cobro ni pagos mixtos. Determinar política definitiva en piloto.
 
 ## Pendientes materiales
@@ -73,3 +75,27 @@ Se informó antes de implementar la ampliación aditiva de auditoría: audit_eve
 los eventos de F2 y permite referencias de catálogo/inventario, mientras audit_log sigue
 compatible con identidad. Ajustes serializados e idempotentes; dinero en centavos e
 interfaz decimal exacta. Alcance y contratos en [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
+
+### Concreción F4 — 2026-10-22
+
+El propietario aprobó fusionar PR #3 e implementar F4 respetando las especificaciones.
+Se conserva pago manual único, sin integración financiera, como define DOMAIN_MODEL.
+Comprobante no fiscal mediante impresión del navegador; requisitos de impresora física
+y política definitiva del piloto siguen pendientes, sin bloquear las operaciones locales.
+Cotización calculada por servidor y revisión explícita si cambia el catálogo; venta con
+UUID idempotente y recuperación del intento tras respuesta perdida. Anulación ADMIN
+total e idempotente. Diseño previo, riesgos y contratos: [F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md).
+
+El propietario añadió formato de ticket para térmicas económicas de 58 mm (Global/Waggs).
+Se concreta con controlador de Windows y diálogo local del navegador; compatibilidad
+física pendiente del modelo y prueba real. No se presume impresión silenciosa/ESC-POS.
+Un fallo de impresión conserva la venta y permite reimprimir: [PRINTING.md](PRINTING.md).
+
+### Integración F4 y versiones — 2026-10-22
+
+El propietario autorizó fusionar PR #4 a main, conservando la validación física de
+impresión como pendiente, y solicitó actualizar specs/versiones. Se alinean backend,
+API, frontend y lockfile en 0.4.0; esquema Alembic 0004_checkout_history sin cambios.
+No cambia arquitectura ni reglas comerciales. Los estados anteriores se actualizan
+según implementación/evidencia, sin certificar Windows, piloto ni impresora.
+F5 todavía no se implementa; su siguiente instrucción se documenta en NEXT_STEP_F5.md.

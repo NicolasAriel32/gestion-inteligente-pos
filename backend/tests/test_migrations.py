@@ -16,7 +16,7 @@ def test_baseline_persists_and_identity_upgrade_is_additive(tmp_path):
         subprocess.run(
             command + [revision], cwd=backend, env=env, check=True, capture_output=True, text=True
         )
-        expected = "0003_catalog_inventory" if revision == "head" else revision
+        expected = "0004_checkout_history" if revision == "head" else revision
         with sqlite3.connect(path) as db:
             assert db.execute("SELECT version_num FROM alembic_version").fetchone() == (expected,)
             assert db.execute("PRAGMA foreign_key_check").fetchall() == []
@@ -36,6 +36,9 @@ def test_baseline_persists_and_identity_upgrade_is_additive(tmp_path):
                     "categories",
                     "products",
                     "stock_movements",
+                    "sales",
+                    "sale_items",
+                    "payments",
                 }
 
 
@@ -79,7 +82,7 @@ def test_failed_identity_migration_rolls_back_ddl_and_can_retry(tmp_path, monkey
     command.upgrade(config, "head")
     with sqlite3.connect(path) as db:
         assert db.execute("SELECT version_num FROM alembic_version").fetchone() == (
-            "0003_catalog_inventory",
+            "0004_checkout_history",
         )
         assert db.execute("SELECT COUNT(*) FROM users").fetchone() == (0,)
 

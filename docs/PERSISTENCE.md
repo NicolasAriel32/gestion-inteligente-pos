@@ -1,7 +1,8 @@
 # PERSISTENCE — base de datos, transacciones y respaldos
 
-- Versión: 0.1
-- Propuesta: SQLite + SQLAlchemy + Alembic en una sola PC
+- Versión de referencia: 0.4.0 (2026-10-22)
+- Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema 0004_checkout_history.
+  Respaldo y restauración siguen como diseño F6, sin implementación validada.
 
 ## Ubicación
 En MVP con una misma cuenta de Windows:
@@ -26,7 +27,7 @@ No guardar DB en Program Files ni en el binario. Si una instalación debe funcio
 ## Modelo lógico
 Entidades y relaciones detalladas en DOMAIN_MODEL.md: users, categories, products, sales, sale_items, payments, stock_movements, audit_log. No borrado físico de registros históricos.
 En F3, audit_events es el registro general y audit_log queda como compatibilidad de
-identidad. Sales, sale_items y payments todavía no existen en la base implementada.
+identidad. F4 agrega sales, sale_items y payments sin reconstruir tablas anteriores.
 
 ## Registrar venta (una transacción)
 1. Autenticar/autorizar empleado; validar solicitud y clave idempotente.
@@ -104,3 +105,23 @@ CHECK valida enteros, stock no negativo, importes seguros y coherencia antes+del
 FK protege categoría/producto/actor y código no nulo es UNIQUE. Concurrencia real cubre
 dos ajustes de la última unidad y dos envíos de la misma clave. No prueba aún ventas,
 backups/restauración ni instalación Windows. Resultados en F3_DEVELOPMENT.md.
+
+## Caja e historial F4
+
+0004_checkout_history es aditiva y exige arranque compatible. Pruebas de upgrade desde
+F3 preservan exactamente usuarios/sesiones, catálogo, stock, movimientos y auditoría.
+Interrumpir el DDL revierte el dump completo y permite reintentar; no se modifican
+migraciones publicadas ni se ejecutan downgrades. Toda validación usa bases nuevas.
+
+Confirmar venta obtiene bloqueo antes de leer sesión/productos, recalcula precios,
+valida stock, crea cabecera/instantáneas/pago, descuenta stock y registra movimientos y
+auditoría juntos. La clave UUID y hash del pedido evitan duplicados y reutilización con
+otros datos/actor. Recuperar una venta existente ocurre antes de revalidar catálogo.
+Al anular se restaura la cantidad histórica exactamente una vez; overflow o fallo parcial
+revierte estado, stock, movimientos y auditoría. BEGIN IMMEDIATE serializa con ajustes F3.
+
+CHECK limita tipo/rango de cantidades e importes y valida subtotal. El pago valida suma
+antes de sellar ítems; FK y triggers preservan historia. Campos de anulación incluyen
+IS NOT NULL explícito: un CHECK que evalúa NULL no rechaza por sí solo en SQLite.
+No hay edición/borrado comercial de historia. Impresión es posterior al commit y solo lee;
+cancelar el diálogo o reimprimir no cambia datos. Evidencia y límites: F4_DEVELOPMENT.md.
