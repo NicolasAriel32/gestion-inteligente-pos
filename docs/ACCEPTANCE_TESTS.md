@@ -1,8 +1,8 @@
 # ACCEPTANCE_TESTS — criterios de aceptación trazables
 
-Versión de referencia 0.4.0 (2026-10-22). La matriz define el objetivo completo.
+Versión de referencia 0.5.0 (2026-10-22). La matriz define el objetivo completo.
 Solo los casos señalados en las
-secciones de evidencia cuentan como ejecutados; reportes, impresora física y Windows siguen pendientes.
+secciones de evidencia cuentan como ejecutados; impresora física, backups y Windows siguen pendientes.
 
 ## Conjunto mínimo (automático + piloto)
 | Test | Reglas | Escenario y resultado esperado |
@@ -101,3 +101,16 @@ Comandos, resultados y límites: [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
 119 backend + 34 frontend + 1 E2E = 154 aprobadas, cero fallidas finales. El propietario
 autorizó integrar F4 conservando pendiente la validación física de impresora. AT-005/015 son F5; AT-019/020,
 respaldo y Windows, siguen pendientes. [Evidencia completa](../F4_DEVELOPMENT.md).
+
+## Evidencia F5 — 2026-10-22
+
+AT-005/015 ejecutadas: VOIDED excluidas de KPIs/comparación/rankings/horas, calendario
+Buenos Aires y límites de día/mes/año/bisiesto, comparación del mismo corte horario.
+API EMPLOYEE 403 y anónimo 401. Histórico inmutable tras cambios/inactividad de catálogo
+y empleado. Agregados superiores a int64/JS seguro, redondeo y base cero comprobados;
+join multilínea no duplica cabeceras. Snapshot conserva coherencia ante anulación concurrente.
+Migración de índice F4→F5 preserva filas/sesión; fallo y reintento, arranque incompatible
+y plan de consulta cubriente comprobados. Flujo completo E2E F1–F5 con solicitudes externas
+bloqueadas, estados de carga/vacío/error/reintento, filtros, teclado, foco, contraste,
+movimiento reducido y capturas escritorio/móvil. Resultados reales en F5_DEVELOPMENT.md.
+AT-019/020 y validación física de impresión siguen pendientes; F6 no iniciada.

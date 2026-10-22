@@ -1,7 +1,7 @@
 # PERSISTENCE — base de datos, transacciones y respaldos
 
-- Versión de referencia: 0.4.0 (2026-10-22)
-- Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema 0004_checkout_history.
+- Versión de referencia: 0.5.0 (2026-10-22)
+- Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema 0005_reporting_indexes.
   Respaldo y restauración siguen como diseño F6, sin implementación validada.
 
 ## Ubicación
@@ -125,3 +125,15 @@ antes de sellar ítems; FK y triggers preservan historia. Campos de anulación i
 IS NOT NULL explícito: un CHECK que evalúa NULL no rechaza por sí solo en SQLite.
 No hay edición/borrado comercial de historia. Impresión es posterior al commit y solo lee;
 cancelar el diálogo o reimprimir no cambia datos. Evidencia y límites: F4_DEVELOPMENT.md.
+
+## Reporting F5
+
+0005 solo crea sales_report_date(status,created_at_utc,id,total_cents); no reconstruye
+ni edita tablas, filas o migraciones previas. Arranque exige revisión y columnas de ese
+índice. Upgrade desde F4 conserva todas las filas y sesión; interrupción del CREATE INDEX
+revierte índice/revisión y permite reintento sin reparar datos manualmente.
+BEGIN explícito de lectura antes de autorizar fija snapshot WAL. Prueba concurrente anula
+una venta entre KPIs y rankings y conserva una vista consistente; siguiente reporte ya
+excluye la anulada. Índice cubriente por estado/fecha y UNIQUE(sale_id,product_id) existente.
+Agregación Python exacta dentro de SQLite mediante pos_sum; salida decimal textual evita
+overflow int64 y transporte JS inseguro. Sin caches ni tablas resumen que puedan divergir.

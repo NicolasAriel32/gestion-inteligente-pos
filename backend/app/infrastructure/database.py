@@ -1,9 +1,23 @@
 import os
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import DeclarativeBase
+
+from app.domain.reporting import ZONE
+
+
+class ExactSum:
+    def __init__(self) -> None:
+        self.value = 0
+
+    def step(self, value: int) -> None:
+        self.value += value
+
+    def finalize(self) -> str:
+        return str(self.value)
 
 
 class Base(DeclarativeBase):
@@ -28,6 +42,8 @@ def build_engine(path: Path | None = None) -> Engine:
     @event.listens_for(engine, "connect")
     def sqlite_config(connection: sqlite3.Connection, _: object) -> None:
         connection.create_function("casefold", 1, str.casefold, deterministic=True)
+        connection.create_aggregate("pos_sum", 1, ExactSum)
+        connection.create_function("pos_hour", 1, lambda value: datetime.fromisoformat(value).astimezone(ZONE).hour, deterministic=True)
         cursor = connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA busy_timeout=5000")

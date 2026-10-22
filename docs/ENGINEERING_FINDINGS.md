@@ -378,3 +378,66 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
   resultados reales en VERSIONS.md. La primera ejecución fallida queda registrada.
 - Práctica transferible: sincronizar con estados positivos y pasos de navegación del
   usuario; separar contratos de sesión/operación de una selección visual transitoria.
+
+## H-F5-001 — Agregados desbordan aunque cada venta sea válida
+
+- Prioridad P1; prevenido y validado con SQLite real temporal, sin datos comerciales.
+- Reproducción: 1025 ventas por 2^53−1 centavos superan int64; SELECT SUM(total_cents)
+  devuelve «integer overflow». También unidades con precio cero pueden exceder int64.
+- Causa: el límite por venta F4 no limita el acumulado. SQLite total/REAL o JSON Number
+  perderían exactitud; acotar/truncar métricas ocultaría facturación.
+- Fix: pos_sum suma en enteros Python arbitrarios y devuelve texto decimal; DTO agregado
+  textual, BigInt en UI. Conteos, dinero y diferencias nunca pasan por float. Promedio y
+  porcentajes con cocientes enteros y redondeo final, comparando fracciones originales.
+- Regresión: test_exact_aggregates_beyond_sqlite_and_javascript_limits exige fallo del
+  SUM nativo y resultados exactos en resumen/ranking/horas; Vitest comprueba formateo >int64.
+- Práctica: probar límites de agregación además de cada fila y mantener representación
+  exacta en DB, transporte, cálculo y presentación.
+
+## H-F5-002 — Lecturas múltiples necesitan BEGIN físico
+
+- Prioridad P1; prevenido y verificado en SQLite WAL con anulación real concurrente.
+- Causa: sqlite3 legacy no abre transacción por SELECT; el contexto SQLAlchemy solo no
+  fija snapshot. Una anulación entre resumen/ranking podría producir pantallas incoherentes.
+- Fix: BEGIN de lectura explícito antes de autorizar; todas las métricas/comparaciones en
+  esa conexión, una respuesta; rollback al salir libera snapshot, sin bloquear escritores WAL.
+- Regresión: test_consistent_snapshot_when_void_commits_between_queries confirma anulación
+  por API entre métricas y ranking/horas. Reporte en curso conserva venta en todas sus
+  secciones; siguiente reporte la excluye. No se afirma que hubiese un incidente en F4.
+- Práctica: demostrar aislamiento con un escritor real entre consultas y distinguir
+  transacción lógica de comportamiento físico del driver.
+
+## H-F5-003 — Índice por usuario no cubre rango global
+
+- Prioridad P2; detectado al inspeccionar esquema antes de implementar migración F5.
+- Causa: sales_user_date tiene usuario como primera columna; reportes no filtran usuario.
+- Fix: 0005 agrega sales_report_date por estado/fecha, cubriendo cabeceras; conserva
+  UNIQUE(sale_id,product_id) para ítems. Sin editar migraciones previas ni historia.
+- Regresión: EXPLAIN QUERY PLAN exige SEARCH USING COVERING INDEX; upgrade conserva filas
+  y sesión F4, interrupción después de CREATE INDEX revierte dump completo y reintenta.
+  Arranque rechaza índice ausente, revisión anterior/futura y estructura incompleta.
+- Práctica: justificar índices con predicados/orden y plan real, incluyendo contrato de
+  arranque y costo de migración. El rango máximo 366 días no limita el volumen de ventas
+  dentro del período; no se afirma benchmark de una PC piloto aún no disponible.
+
+## H-F5-004 — Panel base no aporta espaciado interno
+
+- Prioridad P3; corregido tras primera captura real de F5.
+- Reproducción visual: KPIs, filtros y ranking pegados al borde; ranking se estiraba hasta
+  la altura de las 24 horas aun con un solo producto.
+- Causa: Panel solo define superficie/borde, cada módulo debe proporcionar padding.
+- Fix: padding 24/20 px en Reportes, grilla con alineación inicial y texto separado.
+- Regresión: E2E/capturas regeneradas a 1366/390 px, control de desborde a 320 px y axe;
+  revisión visual real de resultados finales. Pruebas automatizadas no sustituyen composición.
+- Práctica: inspeccionar el contrato CSS de componentes reutilizados y revisar estados
+  con pocos datos en escritorio/móvil, además de correr lint y accesibilidad.
+
+## H-F5-005 — Datos IANA no garantizados en Windows
+
+- Prioridad P2; prevenido por inspección de portabilidad de zoneinfo.
+- Causa: zoneinfo depende de base IANA del SO o paquete tzdata; Windows suele carecer de ella.
+- Fix: declarar tzdata como dependencia local; no descargar en runtime ni usar offsets
+  fijos que omitan historia de Buenos Aires.
+- Regresión: subproceso PYTHONTZPATH vacío carga Buenos Aires y offset -03:00 desde tzdata.
+- Práctica: distinguir datos auxiliares y biblioteca estándar, probar fallback empaquetable;
+  esto no certifica Windows ni el instalador F6.

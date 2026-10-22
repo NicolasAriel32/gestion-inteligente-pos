@@ -1,7 +1,7 @@
 # ARCHITECTURE — arquitectura del MVP local
 
-- Versión de referencia: 0.4.0 (2026-10-22)
-- Estado: núcleo F1–F4 validado localmente; distribución Windows y partes futuras pendientes.
+- Versión de referencia: 0.5.0 (2026-10-22)
+- Estado: núcleo F1–F5 validado localmente; distribución Windows y partes futuras pendientes.
 - Referencias: PROJECT_SPEC.md, BUSINESS_RULES.md y DECISIONS.md
 
 ## Despliegue objetivo Windows (F6)
@@ -43,7 +43,10 @@ GET/POST /api/products, GET/PATCH /api/products/{id}, POST /api/stock/adjustment
 GET /api/stock/movements. Contratos tipados y límites en OpenAPI; detalle en
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). Implementados en F4: POST /api/sales/quote,
 GET/POST /api/sales, GET /api/sales/{id} y POST /api/sales/{id}/void.
-Reportes y respaldos siguen pendientes. Contratos de caja: F4_DEVELOPMENT.md.
+F5 implementa GET /api/reports/summary con el reporte completo y consistente.
+Los endpoints separados top-products/peak-hours de la API prevista se consolidan en
+summary para que rankings, horas y KPIs compartan snapshot. Respaldos siguen pendientes.
+Contratos de caja: F4_DEVELOPMENT.md; reportes: F5_DEVELOPMENT.md.
 Contratos y errores F2: [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
 
 ## Seguridad local
@@ -107,3 +110,13 @@ otro cobro hasta recuperar el mismo UUID. Se valida el comprobante antes de libe
 Ticket React y CSS print local de 48 mm de contenido para papel nominal de 58 mm, con
 controlador Windows/diálogo del navegador. Sin conexión directa USB/ESC-POS ni éxito físico
 inferido de window.print; esa compatibilidad queda pendiente de equipo real.
+
+## Lecturas F5
+
+ReportingService → puerto ReportingPersistence → ReportingStore SQLite con BEGIN de
+lectura explícito antes de autorizar. Sesión/rol ADMIN y todas las consultas en un snapshot
+WAL. pos_sum usa enteros Python y devuelve texto decimal; nunca SUM/float para agregados.
+pos_hour usa zoneinfo Buenos Aires; tzdata proporciona IANA offline donde falta en SO.
+Índice 0005 por estado/fecha acota consultas; tablas previas e invariantes de escritura intactas.
+Vista React diferida, AbortController al reemplazar consulta/desmontar, carga/vacío/error y
+reintento explícito; importes BigInt sin Number. Sin servicios cloud ni gráficos remotos.

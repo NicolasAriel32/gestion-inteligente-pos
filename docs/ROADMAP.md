@@ -1,13 +1,13 @@
 # ROADMAP — trabajo incremental SDD
 
-**Versión de referencia**: 0.4.0 (2026-10-22); esquema 0004_checkout_history.
-**Estado actual**: F1–F4 implementadas y validadas técnicamente.
+**Versión de referencia**: 0.5.0 (2026-10-22); esquema 0005_reporting_indexes.
+**Estado actual**: F1–F5 implementadas y validadas técnicamente; F5 en revisión por PR borrador.
 Identidad local, empleados, catálogo e inventario; evidencia en
 [F1_DEVELOPMENT.md](../F1_DEVELOPMENT.md), [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md) y
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md). F3 aprobada y fusionada a main en 3848d55.
 El propietario autorizó integrar F4 mediante PR #4, manteniendo pendiente la prueba física
 de la impresora de 58 mm. La autorización de fusión no certifica ese hardware. Evidencia en
-[F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md). Sin reportes ni instalador; F5 no iniciada.
+[F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md). Reportes F5 implementados; sin instalador. Ver [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md).
 
 Cada etapa empieza con criterios de aceptación claros y termina con pruebas reproducibles y revisión humana. No intentar entregar todas las etapas de una vez.
 
@@ -54,13 +54,16 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
   de perder respuesta, reautenticación, reinicio y PDF de 58 mm comprobados.
 - Software aprobado para integración por el propietario en PR #4. No marcar validada la
   impresora: faltan modelo, controlador y prueba física. El cierre integral/piloto conserva
-  ese pendiente. F5 todavía no fue autorizada ni iniciada.
+  ese pendiente. F5 autorizada posteriormente por instrucción explícita del propietario.
 
 ## F5 — Dashboard y reportes
-- [ ] KPIs y comparación temporal.
-- [ ] Ranking por unidades/ingresos, horas pico con timezone local.
-- [ ] Filtros y estados sin datos.
+- [x] KPIs y comparación temporal.
+- [x] Ranking por unidades/ingresos, horas pico con timezone local.
+- [x] Filtros y estados sin datos.
 - Aceptación: reportes excluyen anuladas y coinciden con datos de prueba.
+
+Software F5 verificado localmente, revisión humana pendiente mediante PR borrador.
+Evidencia y límites: F5_DEVELOPMENT.md. F6 no iniciada ni autorizada.
 
 ## F6 — Respaldo, importación y distribución
 - [ ] Backup consistente y restauración probada.

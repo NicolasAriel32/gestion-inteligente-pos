@@ -1,6 +1,6 @@
 # INSTALLATION — instalación, uso y actualizaciones
 
-- Versión de referencia: 0.4.0 (2026-10-22)
+- Versión de referencia: 0.5.0 (2026-10-22)
 - Modalidad aprobada: aplicación local y sin internet
 - Destino objetivo: Windows 11 de 64 bits; Windows 10 requiere evaluación explícita por fin de soporte general.
 
@@ -74,3 +74,11 @@ Para imprimir, instalar y probar el controlador del modelo, seleccionar papel de
 y usar el diálogo local del navegador. [Procedimiento y límites](PRINTING.md).
 Este entorno Linux validó HTML/PDF y flujo; no validó el controlador Windows ni una
 impresora física. No equivale a instalador ni a certificación de compatibilidad por marca.
+
+## Desarrollo F5
+
+Ejecutar upgrade head explícitamente (0005_reporting_indexes); no migrar para probar
+sobre datos comerciales. Arranque verifica también índice de reportes. Actualizar las
+dependencias declaradas incorpora tzdata local para zoneinfo en Windows; no hay descarga
+al operar. Comandos de desarrollo conservados; evidencia aislada en F5_DEVELOPMENT.md.
+No hay instalador, backups o validación física de impresión nuevos en esta fase.

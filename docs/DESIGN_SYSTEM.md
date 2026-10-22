@@ -3,7 +3,7 @@
 Dirección C aprobada por el propietario: comercial y enérgica, profesional y cercana.
 Aplicada a configuración inicial, ingreso y empleados; extendida en F3 a catálogo,
 categorías y ajustes de inventario, y en F4 a Caja, Historial y comprobante no fiscal.
-Reportes continúan pendientes, sin enlaces ficticios.
+F5 extiende la identidad a Reportes con datos reales.
 
 ## Color y contraste
 
@@ -100,3 +100,12 @@ Las capturas adicionales de F3 están en docs/screenshots/f3 y su validación en
 [F3_DEVELOPMENT.md](../F3_DEVELOPMENT.md).
 F3 aprobada y fusionada (3848d55). Capturas/PDF adicionales y resultados de F4:
 [F4_DEVELOPMENT.md](../F4_DEVELOPMENT.md); validación física de impresión pendiente.
+
+## Reportes F5
+
+KPIs en grilla adaptable, superficies amarillas con espaciado interno y cifras tabulares.
+Ranking textual top 10, tabla semántica de 24 horas con barras decorativas; el valor
+exacto siempre se lee como texto. Selector distingue transacciones y facturación;
+los picos siempre usan tickets. Períodos comparados explícitos, estado vacío y errores
+con reintento/foco. Solo ADMIN; carga local diferida. Controles y tipografía conservados.
+Capturas reales/axe y revisión visual: [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md).

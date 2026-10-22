@@ -1,5 +1,9 @@
 # Instrucción para continuar con F5
 
+Nota de ejecución (2026-10-22): el propietario autorizó esta instrucción. Implementación
+y resultados en [F5_DEVELOPMENT.md](../F5_DEVELOPMENT.md); el texto original se conserva
+como alcance solicitado. No autoriza F6.
+
 Este archivo prepara el siguiente trabajo; no autoriza ni implementa F5 por sí mismo.
 El propietario debe enviar la instrucción para comenzar. Baseline: main con PR #4
 fusionado, versión 0.4.0 y esquema 0004_checkout_history. Ver VERSIONS.md.

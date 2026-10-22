@@ -3,7 +3,7 @@
 from sqlalchemy import Engine, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
-EXPECTED_REVISION = "0004_checkout_history"
+EXPECTED_REVISION = "0005_reporting_indexes"
 REQUIRED_COLUMNS = {
     "sales": {"id", "idempotency_key", "request_hash", "user_id", "username_snapshot", "status", "total_cents", "created_at_utc", "voided_at_utc", "voided_by", "void_reason"},
     "sale_items": {"id", "sale_id", "product_id", "product_name_snapshot", "product_code_snapshot", "unit_price_cents", "quantity", "subtotal_cents"},
@@ -80,6 +80,9 @@ def verify_schema(engine: Engine) -> None:
                 actual = {column["name"] for column in inspector.get_columns(table)}
                 if not expected <= actual:
                     raise SchemaCompatibilityError(message)
+            indexes = {i["name"]: i["column_names"] for i in inspector.get_indexes("sales")}
+            if indexes.get("sales_report_date") != ["status", "created_at_utc", "id", "total_cents"]:
+                raise SchemaCompatibilityError(message)
             revisions = connection.execute(text("SELECT version_num FROM alembic_version")).all()
             if revisions != [(EXPECTED_REVISION,)]:
                 raise SchemaCompatibilityError(message)
