@@ -1,0 +1,46 @@
+# BUSINESS_RULES — reglas verificables del POS
+
+Versión 0.1. Cada regla tiene ID estable; toda modificación debe actualizar pruebas y registro de decisiones.
+
+| ID | Regla | Garantía |
+| --- | --- | --- |
+| BR-001 | Sin stock suficiente no se vende | Rechazar venta sin cambios en DB |
+| BR-002 | Stock siempre no negativo | CHECK en DB + validación transaccional |
+| BR-003 | Empleado no gestiona catálogo ni stock | Autorización backend deniega |
+| BR-004 | Solo ADMIN anula ventas | Permisos verificados en servidor |
+| BR-005 | Cada venta se registra una vez | Idempotency_key UNIQUE y respuesta estable |
+| BR-006 | Precios y totales los define servidor | Ignorar montos manipulados en UI |
+| BR-007 | Venta atómica | Venta, ítems, pago, stock, movimientos todo-o-nada |
+| BR-008 | Anulación idempotente | Una reversión de stock por venta |
+| BR-009 | Historial inmutable | No borrar ventas ni alterar precios históricos |
+| BR-010 | Reportes solo de ventas COMPLETED | VOIDED excluidas de KPIs |
+| BR-011 | Productos usados se desactivan | No borrado físico que rompa historial |
+| BR-012 | Acciones sensibles auditadas | Usuario, acción, fecha y motivo cuando aplica |
+| BR-013 | No hay autorregistro público | Solo inicialización protegida y ADMIN crea empleados |
+| BR-014 | No sobreventa concurrente | Una sola validación-escritura serializable por SQLite |
+| BR-015 | Operación esencial sin internet | Ningún servicio remoto es dependencia del POS |
+| BR-016 | Pago declarado no equivale a pago verificado | Sin integración financiera automática |
+
+## Política de cantidades y dinero
+- Unidades: enteros positivos en venta; producto no fraccionable en MVP.
+- ARS: enteros de centavos, cálculo exacto. No usar float binario para importes.
+- Precio no negativo; total igual a suma de ítems; un medio de pago por venta.
+- Códigos como strings (preservar ceros a la izquierda).
+
+## Condiciones críticas
+- Producto inactivo no se puede añadir a nuevas ventas.
+- Producto activo debe tener precio actual válido.
+- Stock manual se modifica solo con motivo, usuario y movimiento.
+- Venta vacía no se acepta.
+- Fallo a mitad de transacción no deja operación parcial.
+- Cuando dos operadores/sesiones intentan consumir el último producto, solo las solicitudes compatibles con el stock disponible se confirman.
+
+## Reportes
+- Calendario en zona America/Argentina/Buenos_Aires.
+- “Hoy” considera fecha local; no fecha UTC directa.
+- Anulaciones excluidas de todas las métricas comerciales y ranking.
+- Ticket promedio = ingresos de ventas válidas / cantidad de ventas válidas; si no hay ventas, mostrar 0 o “sin ventas” con claridad.
+- Horario pico por número de tickets; permitir visualizar facturación por franja sin confundir ambas métricas.
+
+## Criterio humano
+Solo ADMIN valida anulaciones y restauraciones. Ningún agente de IA tiene permiso de ejecutar operaciones comerciales críticas en MVP. Excepciones de negocio nuevas requieren cambiar primero esta spec y sus pruebas.

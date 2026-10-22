@@ -1,0 +1,44 @@
+# ACCEPTANCE_TESTS — criterios de aceptación trazables
+
+Versión 0.1. La siguiente lista son **pruebas pendientes**, no resultados ejecutados.
+
+## Conjunto mínimo (automático + piloto)
+| Test | Reglas | Escenario y resultado esperado |
+| --- | --- | --- |
+| AT-001 | BR-001, BR-002 | Vender cantidad superior a stock: error y estado DB intacto |
+| AT-002 | BR-007 | Vender 2 unidades: venta, ítems, pago, dos unidades descontadas y movimiento coherente |
+| AT-003 | BR-003 | EMPLOYEE modifica precio por API: 403/denegación sin cambio |
+| AT-004 | BR-004, BR-008 | ADMIN anula venta dos veces: devolución exacta una vez |
+| AT-005 | BR-010 | Venta VOIDED no aparece en monto, tickets, ticket promedio ni ranking |
+| AT-006 | BR-014 | Dos ventas simultáneas compiten por última unidad: nunca stock negativo ni doble venta válida |
+| AT-007 | BR-005 | Repetir POST de venta con misma idempotency_key: una venta |
+| AT-008 | BR-006, BR-009 | Cambiar precio después: histórico conserva precio y nombre; UI manipulada no altera cobro |
+| AT-009 | BR-007 | Provocar excepción tras crear cabecera: rollback de todo (stock y filas) |
+| AT-010 | BR-013 | Primer ADMIN inicializado una sola vez; segundo intento rechazado |
+| AT-011 | BR-012 | Precio, ajustes, anulación, alta/baja de usuario dejan log atribuible |
+| AT-012 | BR-015 | Desconectar internet: login local y flujo de venta siguen operativos |
+| AT-013 | BR-011 | Desactivar producto histórico: ventas anteriores siguen consultables |
+| AT-014 | BR-002 | Ajuste de stock negativo: rechazo y movimiento no creado |
+| AT-015 | BR-010 | Horas pico y filtros “hoy” con fecha local Buenos Aires |
+| AT-016 | BR-003 | EMPLOYEE consulta ventas ajenas: denegación; ADMIN sí puede |
+| AT-017 | BR-016 | Método transferencia se registra como declaración, sin afirmar confirmación externa |
+| AT-018 | Persistencia | Reiniciar aplicación mantiene datos y esquema correcto |
+| AT-019 | Respaldo | Hacer backup con DB activa en WAL y restaurar copia consistente |
+| AT-020 | Instalación | Instalar en PC Windows limpia sin Python/Node, iniciar y detener correctamente |
+
+## Niveles de prueba
+- **Unitarias:** cálculos de importes, validaciones y reportes.
+- **Integración SQLite real:** BEGIN IMMEDIATE/concurrencia, FK/CHECK, idempotencia, anulación, rollback, backup API.
+- **API:** auth, roles, Host/origen, respuestas de error y permisos por endpoint.
+- **E2E interfaz:** login → catálogo → stock → caja → reportes → anulación.
+- **Distribución:** instalador, arranque, reinstalación, migración y restauración en Windows.
+
+No sustituir integración real por mocks cuando la regla depende de transacciones/bloqueos/SQL.
+
+## Datos y evidencias
+Usar fixtures reproducibles que incluyan: producto con stock 0/1/2, producto inactivo, usuario ADMIN/EMPLOYEE, venta anulada, dos ventas con mismo idempotency_key, período con cambio de día Buenos Aires. Sin datos comerciales reales en repositorio.
+
+Registrar comandos, resultados, fallos conocidos y evidencia del piloto. Una prueba solo está aprobada si se ejecutó contra implementación concreta y produjo el resultado esperado.
+
+## Definición de listo para piloto
+Todas las pruebas críticas de dinero, stock, roles, backup/restauración y concurrencia pasan; instalación validada en PC objetivo; dueño da aprobación explícita.

@@ -1,0 +1,62 @@
+# ARCHITECTURE — arquitectura del MVP local
+
+- Versión: 0.1
+- Estado: diseño objetivo sujeto a validación técnica
+- Referencias: PROJECT_SPEC.md, BUSINESS_RULES.md y DECISIONS.md
+
+## Despliegue
+Un equipo Windows ejecuta:
+- Frontend estático compilado de **React + TypeScript + Vite**.
+- **FastAPI** local que sirve frontend y API REST; por defecto 127.0.0.1:8765 (solo loopback).
+- **SQLite** en carpeta privada de datos; el frontend **nunca** accede al archivo directamente.
+
+No se necesita conexión de red para operaciones esenciales. La distribución final buscará empaquetar todos los runtimes necesarios, sujeta a pruebas en Windows.
+
+## Capas y dependencias
+- Presentation: componentes React, vistas, estados de UI.
+- HTTP/API: rutas FastAPI, esquemas Pydantic, autenticación/autorización, respuestas.
+- Application: casos de uso tipados (crear venta, anular venta, ajustar stock, estadísticas).
+- Domain: entidades, estados e invariantes sin acoplamiento a FastAPI/SQLite.
+- Infrastructure: repositorios SQLAlchemy, migraciones, rutas de archivos, respaldo.
+
+Dependencias hacia adentro: UI → API → Application → Domain; Infrastructure implementa puertos. No acoplar negocio al proveedor de base de datos.
+
+## Módulos
+auth, users, catalog, inventory, sales, reporting, audit, backup. Evitar servicios genéricos masivos y no introducir complejidad multiempresa prematuramente.
+
+## API prevista (contratos a formalizar vía OpenAPI)
+- POST /api/auth/login; POST /api/auth/logout; GET /api/auth/me
+- GET/POST/PATCH /api/products; GET/POST /api/categories
+- POST /api/stock/adjustments; GET /api/stock/movements
+- POST /api/sales; GET /api/sales; GET /api/sales/{id}; POST /api/sales/{id}/void
+- GET /api/reports/summary; GET /api/reports/top-products; GET /api/reports/peak-hours
+- GET/POST/PATCH /api/employees
+- POST /api/backups; procedimientos de restauración administrados y fuera de sesiones activas
+- GET /api/health (sin información sensible)
+
+Son contratos de diseño, no endpoints implementados. Definir errores y autorización por endpoint antes de crear cada módulo.
+
+## Seguridad local
+- Credenciales únicas; contraseñas Argon2id; sesiones con expiración.
+- Autorización backend en todos los endpoints.
+- Si se utilizan cookies: HttpOnly, SameSite adecuado, defensa CSRF; origen y Host permitidos explícitamente.
+- Escuchar exclusivamente 127.0.0.1; no aceptar orígenes arbitrarios ni interfaces de red.
+- Configurar Host/CORS para mitigar acceso no autorizado desde sitios externos y DNS rebinding.
+- Inicialización de ADMIN de uso único y protegida contra carreras.
+- Validar entrada tipada y prohibir SQL interpolado.
+- La seguridad de un equipo local también depende de permisos de Windows, mantenimiento y acceso físico.
+
+## Operaciones de negocio
+El backend fija precios, valida rol, maneja transacciones de inventario; idem-potencia con clave única por venta. SQLite no soporta SELECT FOR UPDATE: usar transacciones de escritura apropiadas (por ejemplo BEGIN IMMEDIATE), busy_timeout y pruebas de carrera. Véase PERSISTENCE.md.
+
+## Observabilidad y calidad
+- Logs locales rotativos, sin secretos ni datos sensibles innecesarios.
+- pytest para backend y pruebas de integración SQLite; pruebas frontend donde apliquen.
+- Documentar scripts de desarrollo, builds Windows y versiones de dependencias.
+- Proteger invariantes con restricciones DB + tests + validaciones de aplicación.
+
+## Evolución AI-native
+AGENTS.md, especificaciones, decisiones y pruebas hacen el repositorio accesible a Codex/Claude Code/Cursor. En el futuro las operaciones de Application podrían ofrecerse con MCP, con permisos distintos, confirmación humana y auditoría. No implementar MCP en el MVP.
+
+## Exclusiones técnicas iniciales
+Sin Lovable, Supabase, dependencia obligatoria de cloud, sincronización distribuida, Docker requerido en cliente ni MySQL cliente. MySQL quedará como alternativa futura con adaptación y pruebas de persistencia, no migración automática.
