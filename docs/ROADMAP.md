@@ -25,6 +25,9 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - [x] Auditoría básica.
 - Aceptación: EMPLOYEE no accede a funciones admin vía API.
 
+- Revisión posterior: H-F2-001/002/003 corregidos y revalidados; 47 pruebas aprobadas.
+  [Hallazgos y prevención](ENGINEERING_FINDINGS.md).
+
 ## F3 — Catálogo e inventario
 - [ ] Categorías, productos, desactivación.
 - [ ] Ajustes de stock con motivo y movimientos.

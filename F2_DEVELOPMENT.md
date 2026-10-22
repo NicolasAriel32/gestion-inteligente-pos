@@ -81,7 +81,7 @@ Dependencias agregadas:
 - Sin nuevas dependencias frontend de producción. Versiones exactas en package-lock.json.
   Dependencias previas del backend: ver F1_DEVELOPMENT.md; no se cambian sus rangos.
 
-## Verificaciones ejecutadas (2026-10-22)
+## Verificaciones iniciales (2026-10-22, antes de la revisión)
 
 Con el entorno virtual activado, desde backend:
 ```sh
@@ -200,3 +200,60 @@ No se utilizaron servicios cloud como dependencia operativa de la aplicación.
 - `frontend/tests/identity.test.ts`
 - `frontend/tsconfig.node.json`
 - `frontend/vitest.config.ts`
+
+
+## Correcciones posteriores a la revisión — 2026-10-22
+
+La validación inicial de 39 pruebas no cubría tres fallos reproducidos en la revisión.
+Se corrigieron sin modificar la migración 0002 publicada ni tocar datos existentes:
+
+| Hallazgo | Fix | Regresión |
+| --- | --- | --- |
+| H-F2-001: DDL parcial tras una interrupción | BEGIN IMMEDIATE físico y transactional_ddl=True; liberación de recursos en finally | Fallo intermedio, rollback de tablas/revisión y reintento exitoso |
+| H-F2-002: arranque con esquema incompatible | Validación previa de revisión exacta, tablas y columnas; rechazo antes de habilitar API | Base vacía, anterior, futura, tabla/columna ausentes y base válida |
+| H-F2-003: metadatos vacíos proponían borrados | target_metadata=None bloquea autogeneración; migraciones manuales | CLI rechaza --autogenerate sin modificar datos ni archivos |
+
+Causas, reproducciones, límites y prácticas preventivas:
+[ENGINEERING_FINDINGS.md](docs/ENGINEERING_FINDINGS.md).
+Checklist para reutilizar en otro proyecto: [PROJECT_REVIEW_CHECKLIST.md](docs/PROJECT_REVIEW_CHECKLIST.md).
+AGENTS.md exige consultar esos aprendizajes en futuras tareas pertinentes de este repositorio.
+
+Comandos ejecutados, desde backend con su entorno virtual:
+```sh
+python -m pytest tests/test_migrations.py tests/test_schema.py -q
+python -m pytest -q
+python -m ruff check .
+POS_FIX_DATA_ROOT=$(mktemp -d /tmp/pos-f2-fixes.XXXXXX)
+LOCALAPPDATA="$POS_FIX_DATA_ROOT" python -m alembic -c alembic.ini upgrade head
+LOCALAPPDATA="$POS_FIX_DATA_ROOT" python -m alembic -c alembic.ini current
+LOCALAPPDATA="$POS_FIX_DATA_ROOT" python -m alembic -c alembic.ini upgrade head
+python -m alembic -c alembic.ini upgrade head --sql
+python -m pip check
+```
+
+Desde frontend: `npm run test`, `npm run lint`, `npm run build` y
+`POS_TEST_CHROMIUM=/usr/bin/chromium npm run test:e2e`.
+
+Resultados reales finales:
+- Regresiones dirigidas: 9 aprobadas (incluidas en la suite completa).
+- Backend: 40 aprobadas, 0 fallidas; Ruff aprobado; pip check sin dependencias rotas.
+- Migraciones: upgrade y reaplicación correctos; current = 0002_identity (head).
+- SQL offline: generado con BEGIN/COMMIT, sin aplicarlo a ninguna base.
+- Frontend: 6 pruebas aprobadas; lint y build aprobados.
+- Chromium: 1 E2E aprobada, incluyendo reinicio real y comunicación sin solicitudes externas.
+- Total actualizado: **47 pruebas aprobadas, 0 fallidas**, sin sumar dos veces las dirigidas.
+- No se agregaron dependencias. Se configuró path_separator=os para evitar la advertencia
+  nueva de Alembic al ejecutar pruebas programáticas; persiste el warning previo de Starlette/HTTPX.
+
+Las migraciones siguen siendo manuales. El rechazo de --autogenerate es una protección
+intencional, no un comando de desarrollo habilitado. Para habilitarlo en el futuro se requiere
+un modelo completo y una comparación sin diferencias contra una base en head.
+
+El arranque no modifica la revisión ni repara estructuras. Si una instalación ya quedó
+parcialmente migrada con una versión anterior, detenerla y preparar un plan de recuperación
+con respaldo y revisión humana; estos fixes no borran automáticamente sus tablas residuales.
+F2 permanece completada tras esta revalidación. F3 no iniciada.
+
+Archivos de los fixes: AGENTS.md, backend/alembic.ini, backend/alembic/env.py,
+backend/app/main.py, backend/app/infrastructure/schema.py, backend/tests/test_health.py,
+backend/tests/test_migrations.py, backend/tests/test_schema.py y documentación enlazada.

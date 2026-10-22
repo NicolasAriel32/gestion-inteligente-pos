@@ -15,6 +15,7 @@ from app.domain.identity import IdentityError
 from app.infrastructure.database import build_engine
 from app.infrastructure.identity import IdentityStore
 from app.infrastructure.passwords import ArgonPasswords
+from app.infrastructure.schema import verify_schema
 
 ORIGINS = frozenset(
     f"http://{host}:{port}" for host in ("127.0.0.1", "localhost") for port in (8765, 5173)
@@ -25,11 +26,12 @@ def create_app(db_path: Path | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         engine = build_engine(db_path)
-        passwords = ArgonPasswords()
-        application.state.identity = IdentityService(
-            IdentityStore(engine), passwords, passwords.dummy
-        )
         try:
+            verify_schema(engine)
+            passwords = ArgonPasswords()
+            application.state.identity = IdentityService(
+                IdentityStore(engine), passwords, passwords.dummy
+            )
             yield
         finally:
             engine.dispose()

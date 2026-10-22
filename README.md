@@ -74,3 +74,9 @@ npm run dev -- --strictPort
 Abrir http://127.0.0.1:5173. Ambos servicios escuchan solo en loopback.
 No se necesita un servicio cloud. Recuperación de credenciales pendiente de decisión;
 no borrar SQLite ni recrear ADMIN para recuperar acceso.
+
+## Prácticas aprendidas
+
+La revisión de F2 dejó un [registro de hallazgos](docs/ENGINEERING_FINDINGS.md) con causas,
+fixes y pruebas, y un [checklist reutilizable](docs/PROJECT_REVIEW_CHECKLIST.md) para las
+próximas fases y proyectos. La revalidación posterior suma 47 pruebas aprobadas.

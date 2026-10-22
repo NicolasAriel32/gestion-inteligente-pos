@@ -74,3 +74,13 @@ sin reintentar escrituras automáticamente. No se ejecuta downgrade destructivo.
 Datos de prueba aislados; no se migraron ni eliminaron datos preexistentes.
 En POSIX, la aplicación y Alembic protegen carpetas propias con 0700 y SQLite con 0600.
 Windows usa ACL del perfil privado: su comprobación en PC objetivo queda para F6.
+
+## Garantías comprobadas después de revisar F2
+
+DDL y marcador de revisión se ejecutan en una misma transacción SQLite física
+(BEGIN IMMEDIATE). Un fallo intermedio se revierte y permite reintentar. El proceso
+rechaza iniciar si revisión, tablas o columnas requeridas no corresponden a su versión;
+no se habilita health antes de validar. No hay reparación automática de instalaciones
+parcialmente migradas. La autogeneración de Alembic queda bloqueada hasta disponer de
+metadatos completos; continuar con migraciones manuales revisadas.
+Evidencia: [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).

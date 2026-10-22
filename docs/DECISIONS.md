@@ -51,3 +51,10 @@ Sesiones opacas revocables en SQLite, Argon2id, inicialización con secreto loca
 uso único y CSRF se concretan en [F2_DEVELOPMENT.md](../F2_DEVELOPMENT.md).
 Se mantienen las decisiones de despliegue y roles existentes. La recuperación de
 credenciales continúa pendiente del propietario; F2 no introduce ningún bypass.
+
+### Correcciones de implementación F2 — 2026-10-22
+
+Se concreta la exigencia existente de migraciones seguras y rechazo de esquemas
+incompatibles: transacción física SQLite, contrato de arranque y bloqueo de autogeneración
+con metadatos incompletos. No cambia el stack ni las decisiones aceptadas. Las migraciones
+permanecen manuales. Ver [ENGINEERING_FINDINGS.md](ENGINEERING_FINDINGS.md).
