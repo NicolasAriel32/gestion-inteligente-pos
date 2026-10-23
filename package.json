@@ -1,0 +1,16 @@
+{
+  "name": "gestion-inteligente-pos-workers-preview",
+  "private": true,
+  "version": "0.5.1",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "npm run build:workers",
+    "build:workers": "npm --prefix frontend ci && npm --prefix frontend run build -- --mode workers",
+    "test:workers": "node --test cloudflare/worker.test.mjs",
+    "check:workers": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
+    "preview:workers": "wrangler dev --local",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": { "wrangler": "4.152.0" }
+}

@@ -10,6 +10,7 @@ import './style.css'
 const CatalogWorkspace = lazy(() => import('./CatalogWorkspace'))
 const ReportsWorkspace = lazy(() => import('./ReportsWorkspace'))
 const SalesWorkspace = lazy(() => import('./SalesWorkspace'))
+const workersPreview = import.meta.env.MODE === 'workers'
 const sectionCopy = {
   reports: ['REPORTES', 'Tu negocio, en números.', 'Ventas reales para acompañar tus decisiones.'],
   catalog: ['CATÁLOGO', 'Productos para tu negocio.', 'Precios claros y productos organizados.'],
@@ -28,7 +29,7 @@ async function readView(): Promise<View> {
 export default function App() {
   const [section, setSection] = useState<'team' | 'catalog' | 'inventory' | 'checkout' | 'history' | 'reports'>('team')
   const [view, setView] = useState<View | null>(null)
-  const [health, setHealth] = useState('Comprobando conexión local…')
+  const [health, setHealth] = useState(workersPreview ? 'Vista previa web' : 'Comprobando conexión local…')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [noticeFocus, setNoticeFocus] = useState(false)
@@ -41,6 +42,7 @@ export default function App() {
   const stage = !view ? 'loading' : !view.initialized ? 'setup' : session ? 'session' : 'login'
   const copy = section === 'team' ? session?.user.role === 'ADMIN' ? ['PERSONAS Y ACCESOS', 'Un buen equipo empieza acá.', 'Gestioná quién puede ingresar. Cada persona, con su propia cuenta.'] : ['MI CUENTA', `Hola, ${session?.user.username ?? ''}.`, 'Tu sesión está iniciada y tu acceso está listo.'] : sectionCopy[section]
   useEffect(() => {
+    if (workersPreview) return
     let active = true
     getHealth().then(() => { if (active) setHealth('Servidor local conectado') })
       .catch(() => { if (active) setHealth('Servidor local no disponible') })
@@ -124,15 +126,15 @@ export default function App() {
       </> : <>
         <div className="welcome__story">
           <span className="eyebrow">GESTIÓN SIMPLE. TODOS LOS DÍAS.</span>
-          <h1 ref={heading} tabIndex={-1}>{stage === 'setup' ? <>El primer paso,<br /><span>bien acompañado.</span></> : <>Qué bueno verte.<br /><span>Sigamos.</span></>}</h1>
-          <p className="welcome__intro">{stage === 'setup' ? 'Dejá listo el acceso a tu negocio. Empezamos por tu cuenta de administrador.' : 'Un lugar para vos y tu equipo. Ingresá con tu cuenta y continuá con tranquilidad.'}</p>
+          <h1 ref={heading} tabIndex={-1}>{workersPreview ? <>Tu negocio,<br /><span>cerca tuyo.</span></> : stage === 'setup' ? <>El primer paso,<br /><span>bien acompañado.</span></> : <>Qué bueno verte.<br /><span>Sigamos.</span></>}</h1>
+          <p className="welcome__intro">{workersPreview ? 'Esta es una vista previa de Gestión Inteligente POS. La aplicación completa funciona en tu PC.' : stage === 'setup' ? 'Dejá listo el acceso a tu negocio. Empezamos por tu cuenta de administrador.' : 'Un lugar para vos y tu equipo. Ingresá con tu cuenta y continuá con tranquilidad.'}</p>
           <div className="welcome__benefits"><span><Icon name="users" />Una cuenta por persona</span><span><Icon name="lock" />Tus datos, en tu equipo</span><span><Icon name="check" />Sin conexión obligatoria</span></div>
           <p className="welcome__signature">Cerca de tu negocio.<br /><strong>Listo para tu día.</strong></p>
         </div>
         <div className="welcome__form-area">
           {notice && <Notice focus={noticeFocus}>{notice}</Notice>}
           {error && <Notice tone="error" focus>{error}</Notice>}
-          {!view ? <Panel><div className="loading">{error ? <Icon name="alert" /> : <span className="spinner" aria-hidden="true" />}<h2>{error ? 'No pudimos conectar' : 'Preparando tu acceso…'}</h2>{error && <Button onClick={() => { setError(''); void refresh().catch(() => setError('La aplicación local sigue sin responder. Volvé a intentar.')) }}>Volver a intentar</Button>}</div></Panel> : <Panel><CredentialForm key={stage} kind={stage === 'setup' ? 'setup' : 'login'} title={stage === 'setup' ? 'Crear administrador' : 'Ingresar'} submit={async (value, token) => {
+          {workersPreview ? <Panel><div className="loading"><Icon name="check" /><h2>Vista previa publicada</h2><p>El acceso a usuarios, productos, ventas y reportes está disponible en la aplicación de tu PC.</p><p>Esta prueba web no guarda operaciones ni permite iniciar sesión. Podés consultar las guías desde el botón de ayuda <strong>?</strong>.</p></div></Panel> : !view ? <Panel><div className="loading">{error ? <Icon name="alert" /> : <span className="spinner" aria-hidden="true" />}<h2>{error ? 'No pudimos conectar' : 'Preparando tu acceso…'}</h2>{error && <Button onClick={() => { setError(''); void refresh().catch(() => setError('La aplicación local sigue sin responder. Volvé a intentar.')) }}>Volver a intentar</Button>}</div></Panel> : <Panel><CredentialForm key={stage} kind={stage === 'setup' ? 'setup' : 'login'} title={stage === 'setup' ? 'Crear administrador' : 'Ingresar'} submit={async (value, token) => {
             setError('')
             if (stage === 'setup') {
               await identity.initialize(value, token)
@@ -140,7 +142,7 @@ export default function App() {
             } else { await identity.login(value); setNotice('') }
             await refresh()
           }} /></Panel>}
-          <p className="recovery-note">{stage === 'setup' ? 'Esta configuración se realiza una sola vez por instalación.' : '¿No recordás tu contraseña? La recuperación todavía no está disponible. Conservá los datos de este equipo.'}</p>
+          <p className="recovery-note">{workersPreview ? 'Prueba temporal de publicación. No ingreses datos comerciales en esta vista previa.' : stage === 'setup' ? 'Esta configuración se realiza una sola vez por instalación.' : '¿No recordás tu contraseña? La recuperación todavía no está disponible. Conservá los datos de este equipo.'}</p>
         </div>
       </>}
     </main>

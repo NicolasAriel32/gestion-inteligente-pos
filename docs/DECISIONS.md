@@ -120,3 +120,14 @@ búsqueda y temas; no requiere servicios, IA ni conexión. Muestra pasos según 
 funciones pendientes sin presentarlas disponibles. No realiza acciones comerciales ni
 reemplaza permisos backend. Es una mejora de uso separada de F6; F6 no está iniciada.
 Diseño previo/criterios/resultados en USER_HELP_DEVELOPMENT.md.
+
+### ADR-014 — Prueba reversible de interfaz en Workers (AUTORIZADA PARA EXPERIMENTO, 2026-10-22)
+
+El propietario autorizó configurar una rama temporal con un commit reversible para
+probar la publicación en Cloudflare Workers y después retomar la descarga para PC.
+Solo se publican assets compilados de React en `frontend/dist`, en modo explícito
+`workers`, con una vista identificada y sin solicitud de credenciales ni operaciones.
+Un adaptador responde JSON 503 a `/api` y `/api/*`; no reemplaza FastAPI ni simula datos.
+No se modifica la modalidad local aceptada en ADR-001, ni se expone el backend local,
+ni se agrega una dependencia cloud al POS. La rama `main` y su commit base quedan
+intactos. Configuración del panel, validación y reversión: [WORKERS_PREVIEW.md](WORKERS_PREVIEW.md).

@@ -1,5 +1,8 @@
 # Gestión Inteligente POS
 
+**Rama de prueba temporal para Cloudflare Workers:** [alcance, publicación y retorno a PC](docs/WORKERS_PREVIEW.md).
+La prueba publica una vista previa de la interfaz; las operaciones comerciales siguen siendo locales.
+
 Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
 **Versión 0.5.1: identidad, catálogo, inventario, caja, historial y reportes ADMIN locales.**
 F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
