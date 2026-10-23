@@ -519,3 +519,43 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
 - Regresión: E2E final 32.5 s, PNG reales a 1366/390 px revisados y checks de desborde.
 - Práctica: elegir el área de captura según el componente y comprobar que la evidencia
   representa lo que el usuario ve; un modal desplazable no es una página larga.
+
+
+## H-FIS-001 — Restaurar datos locales no revierte autorizaciones externas
+
+- Estado: riesgo de diseño identificado; integración fiscal todavía no implementada.
+- Causa: SQLite y ARCA mantienen estados diferentes; restaurar una copia puede borrar
+  intenciones/resultados locales de comprobantes que el servicio ya autorizó.
+- Prevención especificada: identidad fiscal durable, conciliación antes de emitir,
+  consulta tras respuesta incierta y documentos compensatorios; no prometer rollback
+  distribuido ni reutilizar numeración. Ningún cambio sobre datos o runtime actual.
+- Regresión exigida: AT-FIS-03/04/06/08, pendientes de implementación/homologación.
+- Práctica: separar efectos comerciales/fiscales y revisar garantías de restauración
+  antes de conectar cualquier operación irreversible externa. Fuentes y alcance en
+  FISCAL_INVOICING.md; el requisito es del propietario, no una certificación legal del POS.
+
+
+## H-FIS-002 — Cache de WSAA es estado externo, separado de SQLite
+
+- Causa: WSAA puede rechazar otro TA si existe uno vigente (coe.alreadyAuthenticated).
+  Borrar cache al reiniciar/restaurar o reconfigurar la misma identidad no revoca ese TA.
+- Fix implementado: cache privado durable ligado a homologación/wsfe/CUIT/fingerprint,
+  expiración con margen y contraseña local exigida incluso al reutilizarlo. No incluido
+  en backup comercial ni exportado a UI. Otro CUIT/certificado no lo reutiliza.
+- Regresión: test_signed_cms_and_durable_bound_ticket comprueba firma, reinicio, misma
+  identidad y otra CUIT; test API restaura SQLite y comprueba configuración preservada.
+  Fixtures sintéticos; la respuesta real WSAA con certificado sigue pendiente.
+- Práctica: separar estado de autorización externa del snapshot comercial; documentar
+  recuperación y no solucionar errores borrando credenciales/cache automáticamente.
+
+## H-FIS-003 — Los documentos oficiales pueden anticipar cambios
+
+- Hallazgo: PDF WSFEv1 4.8 descargado de homologación contiene fecha 01/12/2026 posterior
+  a la ejecución (2026-10-23 UTC); página general todavía lista 4.7. WSAA 1.2.2 menciona
+  SHA1 y manual desarrollador muestra cms sin digest fijo.
+- Tratamiento: contrastar consultas estables contra WSDL vivo y guardar hashes/fuentes;
+  no implementar impuestos futuros por esa publicación. CMS RSA/SHA256 verificado local,
+  aceptación real pendiente de certificado autorizado. Sin fallback oculto a SHA1.
+- Evidencia: descargas/manuales/WSDL y FEDummy real en ARCA_DEVELOPMENT.md. No equivale
+  a homologación de facturas ni valida criterios fiscales comerciales pendientes.
+- Práctica: diferenciar implementación local, contrato publicado y aceptación observada.

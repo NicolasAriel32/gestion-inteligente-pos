@@ -537,6 +537,14 @@ test('identidad, inventario y caja locales, permisos, reintentos, impresión y r
     // F6: importación confirmada/recuperada, respaldo real y restauración con reautenticación.
     await page.getByRole('button', { name: 'Herramientas', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Respaldos de tu negocio', exact: true })).toBeVisible()
+    // Estado fiscal local sin certificado: no inicia llamadas externas ni promete emisión.
+    await expect(page.getByRole('heading', { name: 'ARCA · conexión de prueba', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Verificar acceso y puntos de venta', exact: true })).toBeDisabled()
+    await expect(page.locator('.fiscal-panel')).toContainText('todavía no emite facturas')
+    await page.route('**/api/fiscal/connection', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'ARCA de prueba sin conexión; la gestión local sigue disponible.' }) }))
+    await page.getByRole('button', { name: 'Comprobar conexión ARCA', exact: true }).click()
+    await expect(page.getByRole('alert')).toContainText('gestión local sigue disponible')
+    await page.unroute('**/api/fiscal/connection')
     const csv = 'nombre;codigo;precio;stock_inicial;stock_minimo\nProducto CSV;00991;1,25;3;1\n'
     await page.getByLabel('Archivo CSV', { exact: true }).setInputFiles({ name: 'productos.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
     await expect(page.getByRole('heading', { name: 'Vista previa: 1 producto válido', exact: true })).toBeVisible()

@@ -133,17 +133,53 @@ def prepare(path: Path, approved: bool = False) -> None:
     print('Preparación completada. Ya podés iniciar la aplicación.')
 
 
+def configure_arca(path: Path) -> None:
+    from app.infrastructure.arca_credentials import CredentialFiles, local_bytes
+    from app.infrastructure.catalog import CatalogTransaction
+    from app.infrastructure.identity import IdentityStore
+
+    files = BackupFiles(path)
+    if files.journal.exists():
+        raise IdentityError(409, 'Primero recuperá la restauración interrumpida')
+    engine = build_engine(path)
+    try:
+        verify_schema(engine)
+        actor = MaintenanceStore.credentials(path, input('Usuario ADMIN: ').strip().lower(), getpass.getpass('Contraseña ADMIN: '))
+        print('Solo homologación: no habilita facturas ni conecta con producción. No uses credenciales de producción.')
+        if input('Escribí CONFIGURAR ARCA para guardar o reemplazar el certificado de prueba: ') != 'CONFIGURAR ARCA':
+            raise IdentityError(409, 'Configuración cancelada')
+        cuit = input('CUIT representado (11 dígitos): ').strip()
+        cert_path = Path(input('Ruta completa del certificado PEM de homologación: ').strip().strip('"'))
+        key_path = Path(input('Ruta completa de la clave privada PEM: ').strip().strip('"'))
+        if not cert_path.is_absolute() or not key_path.is_absolute():
+            raise IdentityError(422, 'Usá rutas completas a los archivos locales')
+        source_password = getpass.getpass('Contraseña del archivo de clave (vacío si no está cifrado): ')
+        storage_password = getpass.getpass('Nueva contraseña local para proteger la copia (12–128 caracteres): ')
+        if storage_password != getpass.getpass('Repetí la nueva contraseña local: '):
+            raise IdentityError(422, 'Las contraseñas no coinciden')
+        credentials = CredentialFiles(files.root)
+        with IdentityStore(engine).transaction(write=True) as tx:
+            CatalogTransaction(tx.connection).event(actor, 'FISCAL_CONFIGURATION_STARTED', 'fiscal', 0, {'environment': 'homologation'})
+        metadata = credentials.configure(cuit, local_bytes(cert_path), local_bytes(key_path), source_password, storage_password, time.time())
+        with IdentityStore(engine).transaction(write=True) as tx:
+            CatalogTransaction(tx.connection).event(actor, 'FISCAL_CONFIGURATION_SAVED', 'fiscal', 0, {'environment': 'homologation', 'fingerprint': metadata['certificate_fingerprint']})
+        print('Certificado de homologación guardado. Verificá acceso desde Herramientas → ARCA. La contraseña local no se guarda.')
+    finally:
+        engine.dispose()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--prepare', action='store_true')
     parser.add_argument('--recover-restore', action='store_true')
     parser.add_argument('--renew-setup', action='store_true')
+    parser.add_argument('--configure-arca', action='store_true', help='Configurar certificado de homologación local (ADMIN, sin red)')
     parser.add_argument('--no-browser', action='store_true')
     args = parser.parse_args(argv)
     path = get_db_path().resolve()
     lock = InstanceLock(path.parent.parent / 'config' / 'instance.lock')
     if not lock.acquire():
-        if args.prepare or args.recover_restore or args.renew_setup:
+        if args.prepare or args.recover_restore or args.renew_setup or args.configure_arca:
             print('Cerrá la aplicación antes de realizar mantenimiento.')
             return 1
         try:
@@ -155,6 +191,9 @@ def main(argv: list[str] | None = None) -> int:
         print('La aplicación ya está iniciada o preparando su arranque.')
         return 0
     try:
+        if args.configure_arca:
+            configure_arca(path)
+            return 0
         if args.prepare:
             prepare(path)
             return 0

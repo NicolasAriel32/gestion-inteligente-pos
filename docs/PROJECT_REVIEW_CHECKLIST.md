@@ -108,3 +108,16 @@ Las casillas son plantilla reutilizable; el estado de entrega lo define ROADMAP.
 - [ ] Distinguir guías por rol y explicación de permisos; no presentar funciones futuras disponibles.
 - [ ] Comprobar que consultar ayuda no envía escrituras ni pierde formularios/intentos pendientes.
 - [ ] Probar búsqueda/filtro/vacío, teclado/foco, scroll interno y capturas del viewport del diálogo.
+
+
+## Integración fiscal (objetivo obligatorio, pendiente de implementación)
+
+- [ ] Confirmar emisor/régimen, clases, impuestos y contingencia contra normativa vigente.
+- [ ] Separar venta, pago y estado fiscal; no afirmar autorización a partir de un PDF.
+- [ ] Probar timeout/concurrencia/reinicio con consulta antes de reenviar o asignar número.
+- [ ] Separar homologación/producción y mantener claves fuera de navegador/logs/repositorio.
+- [ ] Validar notas de crédito y conciliación después de restaurar copias anteriores.
+- [ ] Conservar arranque/gestión offline; no presentar una cola local como contingencia fiscal.
+- [ ] Registrar resultados reales de homologación y aprobación antes de habilitar producción.
+
+Detalle: FISCAL_INVOICING.md; estas casillas son requisitos, no verificaciones aprobadas.

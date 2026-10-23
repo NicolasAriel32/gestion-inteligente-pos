@@ -1,7 +1,12 @@
 # Gestión Inteligente POS
 
 Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
-**Versión 0.5.1: identidad, catálogo, inventario, caja, historial y reportes ADMIN locales.**
+**Candidato 0.5.1: identidad, catálogo, inventario, caja, historial, reportes, respaldos,
+importación CSV y conexión ARCA de homologación.** No emite facturas fiscales.
+Descargar el programa Windows desde el artefacto **POS-Windows-main** de una ejecución
+correcta de [Actions](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/workflows/windows-candidate.yml)
+en main. **Code → Download ZIP contiene fuentes**, no el programa instalado.
+Instalador/LEEME en raíz, manifest de commit/ref y hashes incluidos. [Detalle](docs/MAIN_DISTRIBUTION.md).
 F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
 Versiones de producto, esquema y evidencias: [VERSIONS.md](docs/VERSIONS.md).
 Diseño, contratos y resultados de F5: [F5_DEVELOPMENT.md](F5_DEVELOPMENT.md).
@@ -9,12 +14,14 @@ Diseño, contratos y resultados de F5: [F5_DEVELOPMENT.md](F5_DEVELOPMENT.md).
 ## Decisiones de producto
 
 - MVP: un comercio, una sucursal, una caja y una PC.
-- Funciona sin internet para las operaciones comerciales principales.
+- Gestión local sin internet; autorización fiscal y contingencia según el régimen aplicable.
 - Roles: **ADMIN** (dueño) y **EMPLOYEE** (empleado).
 - Módulos: autenticación, productos, inventario, caja, historial de ventas, panel de indicadores y empleados.
 - Idioma español argentino, moneda ARS, reportes en `America/Argentina/Buenos_Aires`.
 - Las ventas no pueden producir stock negativo ni duplicarse por reintentos.
-- No incluye facturación fiscal ARCA, pasarelas de pago, varias cajas ni agentes autónomos en el MVP.
+- Facturación fiscal ARCA obligatoria para la entrega comercial, **todavía no implementada**:
+  [alcance y criterios](docs/FISCAL_INVOICING.md). El software actual emite tickets no fiscales.
+- Pasarelas de pago, varias cajas y agentes autónomos continúan fuera del MVP.
 
 ## Arquitectura objetivo (sujeta a validación técnica)
 
@@ -55,7 +62,9 @@ Instalación, comandos y resultados: [F4_DEVELOPMENT.md](F4_DEVELOPMENT.md),
 [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md) y [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md).
 F5 agrega KPIs, comparación con período anterior, ranking por unidades/ingresos y ventas
 por hora de Buenos Aires; excluye anuladas y mantiene instantáneas históricas.
-Sin instalador ni piloto aprobado. F6 requiere autorización independiente.
+F6 y conexión ARCA tienen integración autorizada en main mediante PR #7/#9; Windows 11
+limpio y piloto comercial siguen pendientes. Facturación fiscal obligatoria: emisión
+todavía sin implementación, conexión de homologación disponible en este candidato.
 
 ## Desarrollo local
 
@@ -158,6 +167,20 @@ Build y smoke nativos aprobados en Windows Server 2025; [artefacto candidato y c
 Sigue pendiente Windows 11 limpio. La instalación compatible seguirá arrancando sin
 actualizar aunque exista otra versión; actualizar es decisión manual del propietario
 y podrá hacerse con una herramienta externa separada (ADR-015).
+
+## ARCA: conexión de homologación en esta rama
+
+ADMIN → Herramientas → ARCA comprueba infraestructura y consulta puntos de venta con
+WSAA/WSFEv1. **Todavía no emite facturas ni conecta a producción**. Configuración local
+offline: `python -m app.runtime --configure-arca` desde backend con el entorno activado,
+o acceso «Configurar ARCA homologación» del candidato Windows. La clave se copia cifrada;
+no se necesitan OpenSSL/Python/Node externos en el cliente empaquetado. Cryptography
+50.0.2 se agrega como dependencia de runtime y se incluye con PyInstaller/licencias.
+
+[Guía y custodia](docs/ARCA_HOMOLOGATION.md) · [Diseño y evidencia](ARCA_DEVELOPMENT.md).
+La conexión real FEDummy respondió OK; autenticación real requiere certificado de prueba
+local del titular y sigue pendiente. Arranque/gestión local sin internet y actualizaciones
+manuales preservados. Este incremento no cierra F6, no inicia F7 ni habilita uso fiscal.
 
 ## Ayuda integrada
 

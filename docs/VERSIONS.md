@@ -14,7 +14,7 @@ La versión del software no certifica esas validaciones.
 | API / OpenAPI | 0.5.1 en backend/app/main.py, FastAPI.version |
 | Paquete frontend | 0.5.1 en frontend/package.json |
 | Lockfile, raíz y packages[""] | 0.5.1 en frontend/package-lock.json |
-| Esquema SQLite | main: 0005_reporting_indexes; candidato F6: 0006_local_operations |
+| Esquema SQLite | candidato integrado F6/ARCA: 0006_local_operations; anterior main: 0005_reporting_indexes |
 | Specs funcionales vigentes | Referencia 0.5.1; las secciones futuras siguen identificadas |
 
 lockfileVersion=3 es el formato de npm y no debe cambiarse a 0.5.1.
@@ -131,3 +131,30 @@ Prueba general del ZIP informada correcta. El propietario indica otra versión d
 versión exacta y casos específicos de recuperación/actualización pendientes de confirmar.
 Se añade evidencia humana, sin asumir toda la matriz Windows 11 validada. Producto sigue
 0.5.1 candidato; no se etiqueta 0.6.0 ni se fusiona PR #7 por este reporte.
+
+
+## Requisito fiscal añadido — 2026-10-22
+
+Facturación integrada con ARCA pasa a ser obligatoria para la aceptación comercial
+(ADR-016). Esta entrega solo cambia especificaciones: producto sigue 0.5.1 y esquema
+main 0005_reporting_indexes; candidato F6 en PR #7 conserva su esquema/versión propios.
+No hay módulo fiscal implementado, homologación, migración nueva ni versión fiscal
+entregada. La numeración de esa entrega se decidirá con su implementación validada.
+
+
+## Candidato de conexión ARCA — 2026-10-23 UTC
+
+Rama feat/arca-integration sobre F6 452ae71 + propuesta fiscal PR #8. Se conserva
+producto/API/frontend/lockfile 0.5.1, esquema 0006, sin nueva migración. No es release
+0.6.0 ni entrega comercial fiscal. Cryptography 50.0.2 como runtime empaquetado; build-info
+identifica conexión ARCA homologación. No actualizar ZIP anterior ni fusionar F6/main.
+Diseño, fuentes, dependencias/pruebas reales y límites en ARCA_DEVELOPMENT.md.
+
+
+## Integración y ZIP desde main — 2026-10-23 UTC
+
+Autorización posterior del propietario para integrar lo implementado de F6 y ARCA.
+Conserva 0.5.1 candidato y esquema 0006; no agrega migraciones ni etiqueta 0.6.0 final.
+Paquete descargable contiene procedencia de Git, manifest y SHA256SUMS; workflow permite
+main/ejecución manual y publica únicamente tras smoke. Las notas históricas de no
+fusionar reflejan el permiso disponible entonces. Ver MAIN_DISTRIBUTION.md.

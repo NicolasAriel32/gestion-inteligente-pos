@@ -12,7 +12,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.22000
 OutputDir=..\dist\installer
-OutputBaseFilename=GestionInteligentePOS-{#AppVersion}-F6-candidate-setup
+OutputBaseFilename=GestionInteligentePOS-{#AppVersion}-ARCA-connection-candidate-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -25,12 +25,15 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 [Files]
 Source: "..\dist\GestionInteligentePOS\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "PRIMER_INICIO.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "ARCA_HOMOLOGACION.txt"; DestDir: "{app}"; Flags: ignoreversion
 [Tasks]
 Name: "desktopicon"; Description: "Crear acceso en el escritorio"; Flags: unchecked
 [Icons]
 Name: "{group}\Gestión Inteligente POS"; Filename: "{app}\GestionInteligentePOS.exe"
 Name: "{group}\Preparar o actualizar base local"; Filename: "{app}\GestionInteligentePOS.exe"; Parameters: "--prepare"
 Name: "{group}\Recuperar restauración interrumpida"; Filename: "{app}\GestionInteligentePOS.exe"; Parameters: "--recover-restore"
+Name: "{group}\Configurar ARCA homologación"; Filename: "{app}\GestionInteligentePOS.exe"; Parameters: "--configure-arca"
+Name: "{group}\Guía ARCA homologación"; Filename: "{app}\ARCA_HOMOLOGACION.txt"
 Name: "{group}\Primeros pasos para probar sin internet"; Filename: "{app}\PRIMER_INICIO.txt"
 Name: "{autodesktop}\Gestión Inteligente POS"; Filename: "{app}\GestionInteligentePOS.exe"; Tasks: desktopicon
 [Run]

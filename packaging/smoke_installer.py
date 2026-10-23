@@ -4,10 +4,11 @@ import http.cookiejar
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import HTTPCookieProcessor, ProxyHandler, Request, build_opener
 from uuid import uuid4
 
@@ -52,6 +53,37 @@ with tempfile.TemporaryDirectory(prefix='pos-win-smoke-') as temporary:
         steps.append('second_instance_excluded')
         call('/api/auth/setup', {'username': 'owner', 'password': password, 'setup_token': secret.read_text()})
         csrf = call('/api/auth/login', {'username': 'owner', 'password': password})['csrf_token']
+        fiscal = call('/api/fiscal/status')
+        assert not fiscal['configured'] and not fiscal['emission_enabled'] and not fiscal['production_enabled']
+        # El builder genera material sintético; el hijo instalado no tiene Python,
+        # Node ni OpenSSL en PATH. No conectar a ARCA desde el smoke de instalación.
+        from datetime import UTC, datetime, timedelta
+
+        from cryptography import x509
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.x509.oid import NameOID
+
+        sys.path.insert(0, str(root / 'backend'))
+        from app.infrastructure.arca_credentials import CredentialFiles
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'Synthetic Windows smoke')])
+        now = datetime.now(UTC)
+        cert = (x509.CertificateBuilder().subject_name(subject).issuer_name(subject)
+                .public_key(key.public_key()).serial_number(x509.random_serial_number())
+                .not_valid_before(now - timedelta(days=1)).not_valid_after(now + timedelta(days=1)).sign(key, hashes.SHA256()))
+        credentials = CredentialFiles(folder / 'profile/GestionInteligentePOS')
+        credentials.configure('20123456786', cert.public_bytes(serialization.Encoding.PEM),
+                              key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()),
+                              '', 'Synthetic-local-key-42', time.time())
+        assert call('/api/fiscal/status')['configured']
+        try:
+            call('/api/fiscal/access', {'private_key_password': 'Wrong-local-password-42'}, csrf)
+        except HTTPError as error:
+            assert error.code == 422 and 'Wrong-local-password' not in error.read().decode()
+        else:
+            raise AssertionError('La clave cifrada debe rechazar otra contraseña sin red')
+        steps.append('packaged_crypto_encrypted_key_and_offline_fiscal_status')
         csv = 'nombre;codigo;precio;stock_inicial;stock_minimo\nPrueba;0001;1,25;3;1\n'
         preview = call('/api/imports/products/preview', {'content': csv}, csrf)
         imported = call('/api/imports/products/confirm', {'content': csv, 'source_hash': preview['source_hash'], 'reason': 'Carga ficticia', 'idempotency_key': str(uuid4())}, csrf)
@@ -81,7 +113,7 @@ with tempfile.TemporaryDirectory(prefix='pos-win-smoke-') as temporary:
         before = hashlib.sha256(database.read_bytes()).hexdigest()
         private = folder / 'profile/GestionInteligentePOS'
         preserved = {path: hashlib.sha256(path.read_bytes()).hexdigest()
-                     for path in [secret, *(private / 'backups').glob('*.posbackup')]}
+                     for path in [secret, credentials.configuration, *(private / 'backups').glob('*.posbackup')]}
         assert len(preserved) >= 3  # secreto, respaldo manual y previo a restauración
         def check_preserved_files():
             assert all(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == digest

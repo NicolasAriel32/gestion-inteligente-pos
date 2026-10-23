@@ -129,3 +129,24 @@ Botón ? y diálogo sin red, búsqueda local por palabras/acentos y filtro de te
 según rol. Teclado/foco/fondo inerte y preservación de formulario/intento de venta; lectura
 sin escrituras por API. Evidencia ejecutada en USER_HELP_DEVELOPMENT.md. No modifica las
 reglas AT comerciales ni declara aprobadas fases futuras/impresora física.
+
+
+## Facturación fiscal obligatoria — aceptación añadida, sin ejecutar
+
+AT-FIS-01..10 en [FISCAL_INVOICING.md](FISCAL_INVOICING.md) amplían la aceptación comercial:
+homologación, roles/credenciales, impuestos exactos, autorización/QR, concurrencia y
+respuesta perdida, notas de crédito, contingencia y conciliación tras restaurar.
+Estas son pruebas pendientes sobre implementación todavía inexistente, no resultados.
+AT-012 conserva la operación local offline y no certifica autorización fiscal sin red.
+Los PDF/tickets F4 y las suites F1–F6 no validan emisión fiscal. Antes del piloto comercial
+se requieren integración fiscal verificada y aprobación explícita; F7 no se inicia aquí.
+
+
+## Conexión ARCA — incremento independiente (2026-10-23 UTC)
+
+187 pruebas backend (16 fiscales nuevas), 54 frontend y E2E F1–F6/ayuda aprobados en
+Linux. FEDummy real homologación devuelve OK en sus tres componentes. Certificados
+sintéticos verifican custodia/roles/CSRF/contratos/firma/cache y frontera de restauración;
+no equivalen a autenticación real. Evidencia detallada: ARCA_DEVELOPMENT.md.
+AT-FIS-01/09 reciben evidencia parcial; todos los criterios comerciales siguen abiertos.
+Emisión, notas de crédito, QR, impuestos, contingencia y producción no implementados.

@@ -143,3 +143,59 @@ búsqueda y temas; no requiere servicios, IA ni conexión. Muestra pasos según 
 funciones pendientes sin presentarlas disponibles. No realiza acciones comerciales ni
 reemplaza permisos backend. Es una mejora de uso separada de F6; F6 no está iniciada.
 Diseño previo/criterios/resultados en USER_HELP_DEVELOPMENT.md.
+
+
+## ADR-016 — Facturación fiscal obligatoria (REQUISITO ACEPTADO; EMISIÓN PENDIENTE)
+
+Fecha local: 2026-10-22. El propietario establece facturación fiscal integrada con ARCA
+como condición de entrega comercial. Sustituye la exclusión anterior del MVP y precisa
+ADR-001/BR-015: gestión local sin internet, emisión fiscal con autorización o contingencia
+habilitada. Una venta, un pago declarado y una factura autorizada tienen estados distintos.
+
+No exige contratar el mismo proveedor ni adoptar su abono mensual. Se propone un módulo
+fiscal por capas; servicio/régimen y alcance C/A/B pendientes de definición. Facturas,
+notas de crédito, respuestas inciertas, impuestos, QR, credenciales y restauraciones deben
+probarse en homologación antes de habilitar producción. Fuentes oficiales y criterios
+pendientes en [FISCAL_INVOICING.md](FISCAL_INVOICING.md).
+
+No autoriza emitir comprobantes reales, migrar datos comerciales, fusionar F6 ni iniciar
+F7. El ZIP candidato no cambia y continúa sin facturación fiscal. El POS debe seguir
+abriendo sin actualización obligatoria ni internet; la falta de autorización se refleja
+en la operación fiscal, sin inventar comprobantes ni bloquear la gestión local.
+
+## ADR-017 — Conexión independiente a homologación ARCA (IMPLEMENTADA EN RAMA)
+
+2026-10-23 UTC. El propietario pide integrar ARCA para el primer comercio; desconoce su
+régimen y no tiene ejemplos. Se implementa primero infraestructura independiente del
+régimen: FEDummy, firma CMS/WSAA y FEParamGetPtosVenta en homologación. No se implementa
+emisión sin definir antes emisor/receptor/impuestos y estados recuperables de ADR-016.
+No se autoriza usar producción para probar ni se reemplaza su facturador actual.
+
+ADMIN configura localmente con instancia cerrada, contraseña vigente y confirmación;
+certificado/clave PEM válidos y coincidentes, copia PKCS8 cifrada siempre con contraseña
+local nueva no persistida. Certificados y TA no van en SQLite/.posbackup. Archivos
+privados fuera de binarios; cache TA durable ligado a CUIT/fingerprint/servicio/ambiente
+para no solicitar otro ticket vigente tras reiniciar. Credenciales perdidas no se
+recuperan de un respaldo comercial. Reinstalación conserva el perfil.
+
+Cryptography 50.0.2 firma CMS adjunto DER RSA/SHA256; no invocar OpenSSL externo en
+cliente. TLS verificado, URLs fijas de homologación, sin redirects ni reintentos de red,
+límite de tamaño/tiempo y XML sin DTD/entidades. No se construye transporte ni se consulta
+ARCA al arrancar. HTTP ADMIN/CSRF, claves/tokens sin exportación ni logs; auditoría de
+intención/resultado de configuración sin secretos. Una configuración dañada afecta solo
+este módulo. No hay migraciones ni cambios a dinero/stock/ventas/ayuda.
+
+FEDummy real OK no equivale a autenticar con certificado ni homologar facturas. La
+emisión y todos los criterios fiscales comerciales siguen pendientes. Detalles y
+resultados reales: ARCA_DEVELOPMENT.md. F6 permanece candidata; F7 no iniciada.
+
+
+## ADR-018 — Integración autorizada y descarga trazable desde main
+
+2026-10-23 UTC. El propietario requiere todo lo implementado en main para descargar un
+ZIP operativo. Se integran F6 y conexión de homologación ARCA con sus specs; se mantienen
+criterios humanos pendientes y producto candidato 0.5.1. No habilita emisión ni F7.
+La construcción corre en main o por acción manual y publica tras smoke correcto.
+El ZIP tiene instalador y LEEME en raíz, manifest de commit/ref, resultado smoke y hashes;
+Code → Download ZIP sigue siendo código fuente. Actualización del POS siempre voluntaria,
+sin llamadas de versión al arrancar. Diseño/evidencia: MAIN_DISTRIBUTION.md.

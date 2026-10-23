@@ -1,5 +1,11 @@
 # PERSISTENCE — base de datos, transacciones y respaldos
 
+Incremento de conexión ARCA: esquema sigue en 0006, sin tablas fiscales. Certificado,
+clave PKCS8 cifrada y TA privado viven en config/fiscal, fuera de SQLite/.posbackup.
+Restauración comercial no los retrocede ni revoca; emisión todavía inexistente. Custodia
+y respaldo separado en [ARCA_HOMOLOGATION.md](ARCA_HOMOLOGATION.md). Autorización ADMIN
+se consulta en transacción breve, liberada antes de llamadas SOAP.
+
 - Versión de referencia: 0.5.1 (2026-10-22)
 - Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema candidato 0006_local_operations.
   Respaldo y restauración siguen como diseño F6, sin implementación validada.
@@ -148,3 +154,17 @@ Restore drena solicitudes, copia previa, journal durable y Backup API al destino
 renombrar sobre WAL. Revalida, cambia generación, cierra sesiones y audita. Fallo ordinario
 recupera previo; journal pendiente rechaza arranque hasta recuperación ADMIN explícita.
 Pruebas/limitaciones de interrupción y Windows en F6_DEVELOPMENT.md y F6_OPERATIONS.md.
+
+
+## Persistencia fiscal futura — requisito obligatorio pendiente
+
+La autorización de ARCA no se revierte al restaurar SQLite. El diseño fiscal deberá
+conservar identidad externa, intención/resultados e instantáneas y conciliar documentos
+posteriores a una copia antes de reanudar emisión. Recuperar un backup no autoriza
+reutilizar números ni inventar ítems de ventas ausentes. Las correcciones fiscales se
+vinculan a documentos autorizados, sin editar/borrar historia.
+
+No se cambia el esquema en esta entrega documental. La migración nueva, custodia de
+claves y consistencia con outbox/recuperación se diseñarán y probarán antes de integrar.
+No esperar red bajo BEGIN IMMEDIATE ni prometer rollback conjunto con ARCA. Detalle:
+[FISCAL_INVOICING.md](FISCAL_INVOICING.md), BR-FIS-02/03/04/06 y AT-FIS-03/08.

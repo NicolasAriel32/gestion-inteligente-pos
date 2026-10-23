@@ -1,0 +1,39 @@
+GESTIÓN INTELIGENTE POS — CONEXIÓN ARCA DE PRUEBA
+
+Este candidato permite comprobar infraestructura, autenticación y puntos de venta
+en HOMOLOGACIÓN. Todavía NO emite facturas, notas de crédito ni comprobantes con CAE.
+Producción deshabilitada. Los tickets del POS siguen siendo NO FISCALES.
+No reemplaza todavía el sistema con el que tu comercio factura actualmente.
+
+1. Tu responsable fiscal/técnico debe obtener un certificado de HOMOLOGACIÓN en
+   WSASS y asociarlo al servicio wsfe para el CUIT representado. No uses certificados
+   de producción. Guía oficial: https://www.arca.gob.ar/ws/documentacion/wsaa.asp
+   Esta versión no genera certificados ni realiza esas habilitaciones por vos.
+2. Terminá las operaciones y cerrá el POS desde Herramientas.
+3. Menú Inicio > Gestión Inteligente POS > Configurar ARCA homologación.
+4. Ingresá tu usuario y contraseña ADMIN del POS. Confirmá CONFIGURAR ARCA.
+5. Ingresá CUIT sin guiones y las rutas completas de certificado y clave PEM.
+   Si el archivo de clave está cifrado, ingresá su contraseña cuando se solicite.
+6. Elegí y repetí una contraseña local nueva de 12 a 128 caracteres para proteger
+   la copia de la clave. Guardala de manera segura: NO es la clave fiscal ARCA,
+   no se almacena y necesitarás ingresarla al verificar acceso.
+7. Reabrí el POS > Herramientas > ARCA. Comprobar conexión funciona sin certificado.
+   Para Verificar acceso y puntos de venta ingresá la contraseña local elegida.
+   Necesitás internet para esas consultas; el resto del POS sigue funcionando offline.
+
+No compartas claves fiscales, certificados privados ni contraseñas por chat/email.
+La clave copiada se cifra en el perfil Windows del usuario, separada de binarios/SQLite:
+%LOCALAPPDATA%\GestionInteligentePOS\config\fiscal
+El nombre exacto de la carpeta de datos se describe en PRIMER_INICIO.txt.
+El respaldo .posbackup NO incluye certificados ni tickets WSAA: conservá tus archivos
+originales cifrados y la contraseña en un medio privado seguro. Restaurar datos no
+revoca un ticket WSAA. No borres su cache para forzar otro: WSAA puede rechazarlo
+como alreadyAuthenticated hasta que venza. Cambiar CUIT/certificado invalida su uso local.
+
+Un certificado vigente y coincidente no prueba que ARCA lo haya autorizado: eso se
+comprueba con Verificar acceso. Si falla revisá reloj, certificado, CUIT y asociación
+wsfe en WSASS. Un error fiscal no bloquea el arranque ni exige actualizar el programa.
+
+Pendiente antes de facturar: condición fiscal, impuestos, receptor, clases de factura,
+emisión/consulta recuperable, notas de crédito, QR, contingencia, conciliación tras
+restaurar y validación contable y técnica. Una conexión correcta no completa esa etapa.

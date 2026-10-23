@@ -1,10 +1,11 @@
-name: Windows F6 candidate
+name: Windows POS candidate
 on:
+  workflow_dispatch:
   push:
-    branches: [feat/f6-backup-import-distribution]
+    branches: [main, feat/f6-backup-import-distribution, feat/arca-integration]
     paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
   pull_request:
-    branches: [main]
+    branches: [main, feat/f6-backup-import-distribution]
     paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
 permissions:
   contents: read
@@ -26,12 +27,12 @@ jobs:
       - name: Test installed executable without runtime tools on PATH
         shell: pwsh
         run: python packaging/smoke_installer.py
+      - name: Prepare verified Windows download
+        shell: pwsh
+        run: python packaging/prepare_download.py
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: F6-Windows-candidate
-          path: |
-            dist/installer/*.exe
-            dist/GestionInteligentePOS/build-info.json
-            dist/windows-smoke.json
-          retention-days: 7
+          name: POS-Windows-${{ github.ref_name == 'main' && 'main' || 'candidate' }}
+          path: dist/download/*
+          if-no-files-found: error
+          retention-days: 30
