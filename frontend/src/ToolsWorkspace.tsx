@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import FiscalPanel from './FiscalPanel'
 import type { InputHTMLAttributes } from 'react'
 import { ApiError } from './identity'
 import type { Session } from './identity'
@@ -69,6 +70,7 @@ export default function ToolsWorkspace({ session, onBusyChange, onExpired }: { s
     {error && <Notice tone="error" focus>{error}</Notice>}{notice && <Notice focus>{notice}</Notice>}
     {loading && !data && <p role="status">Consultando herramientas locales…</p>}
     {!data && error && <Button onClick={() => { setError(''); setRevision(n => n + 1) }}>Reintentar herramientas</Button>}
+    <FiscalPanel csrf={session.csrf_token} disabled={busy} run={run} onExpired={onExpired} />
     <Panel className="tools-panel"><h2>Importar productos</h2><p>Altas nuevas desde CSV UTF-8, hasta 500 productos y 1 MiB. Separador punto y coma. Los códigos conservan ceros iniciales.</p><p className="csv-format">nombre;codigo;precio;stock_inicial;stock_minimo</p><p>Precio en pesos, sin miles y con hasta dos decimales. Stock en unidades enteras. No modifica productos existentes.</p>
       {storageError ? <Notice tone="error">{storageError}</Notice> : pending ? <><Notice>Hay una importación con respuesta pendiente. Recuperá el mismo intento antes de importar otro archivo.</Notice><Button busy={busy} onClick={() => void run(importProducts)}>Reintentar la misma importación</Button></> : <>
         <FileField label="Archivo CSV" accept=".csv,text/csv" disabled={busy} onChange={event => { const file = event.target.files?.[0]; setPreview(null); setCsv(''); if (file) void run(async () => { if (file.size > 1048576) throw new Error('El CSV supera 1 MiB.'); const content = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer()); setCsv(content); setPreview(await api.preview(session.csrf_token, content)) }) }} />

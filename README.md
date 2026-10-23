@@ -162,6 +162,20 @@ Sigue pendiente Windows 11 limpio. La instalación compatible seguirá arrancand
 actualizar aunque exista otra versión; actualizar es decisión manual del propietario
 y podrá hacerse con una herramienta externa separada (ADR-015).
 
+## ARCA: conexión de homologación en esta rama
+
+ADMIN → Herramientas → ARCA comprueba infraestructura y consulta puntos de venta con
+WSAA/WSFEv1. **Todavía no emite facturas ni conecta a producción**. Configuración local
+offline: `python -m app.runtime --configure-arca` desde backend con el entorno activado,
+o acceso «Configurar ARCA homologación» del candidato Windows. La clave se copia cifrada;
+no se necesitan OpenSSL/Python/Node externos en el cliente empaquetado. Cryptography
+50.0.2 se agrega como dependencia de runtime y se incluye con PyInstaller/licencias.
+
+[Guía y custodia](docs/ARCA_HOMOLOGATION.md) · [Diseño y evidencia](ARCA_DEVELOPMENT.md).
+La conexión real FEDummy respondió OK; autenticación real requiere certificado de prueba
+local del titular y sigue pendiente. Arranque/gestión local sin internet y actualizaciones
+manuales preservados. Este incremento no cierra F6, no inicia F7 ni habilita uso fiscal.
+
 ## Ayuda integrada
 
 El botón **?** en la esquina superior derecha abre guías rápidas sin salir de la pantalla.

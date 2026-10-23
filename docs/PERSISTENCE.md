@@ -1,5 +1,11 @@
 # PERSISTENCE — base de datos, transacciones y respaldos
 
+Incremento de conexión ARCA: esquema sigue en 0006, sin tablas fiscales. Certificado,
+clave PKCS8 cifrada y TA privado viven en config/fiscal, fuera de SQLite/.posbackup.
+Restauración comercial no los retrocede ni revoca; emisión todavía inexistente. Custodia
+y respaldo separado en [ARCA_HOMOLOGATION.md](ARCA_HOMOLOGATION.md). Autorización ADMIN
+se consulta en transacción breve, liberada antes de llamadas SOAP.
+
 - Versión de referencia: 0.5.1 (2026-10-22)
 - Implementado: SQLite + SQLAlchemy + Alembic en una sola PC, esquema candidato 0006_local_operations.
   Respaldo y restauración siguen como diseño F6, sin implementación validada.

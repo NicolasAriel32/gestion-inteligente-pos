@@ -12,17 +12,21 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.catalog import router as catalog_router
+from app.api.fiscal import router as fiscal_router
 from app.api.identity import router
 from app.api.operations import router as operations_router
 from app.api.reporting import router as reporting_router
 from app.api.sales import router as sales_router
 from app.application.catalog import CatalogService
+from app.application.fiscal import FiscalService
 from app.application.identity import IdentityService
 from app.application.importing import ImportService
 from app.application.maintenance import MaintenanceService
 from app.application.reporting import ReportingService
 from app.application.sales import SalesService
 from app.domain.identity import IdentityError
+from app.infrastructure.arca import ArcaGateway
+from app.infrastructure.arca_credentials import CredentialFiles
 from app.infrastructure.backups import BackupFiles
 from app.infrastructure.catalog import CatalogStore
 from app.infrastructure.database import build_engine, get_db_path
@@ -56,6 +60,10 @@ def create_app(db_path: Path | None = None, frontend_path: Path | None = None) -
             passwords = ArgonPasswords()
             application.state.identity = IdentityService(
                 IdentityStore(engine), passwords, passwords.dummy
+            )
+            application.state.fiscal = FiscalService(
+                IdentityStore(engine), ArcaGateway(CredentialFiles(files.root), lambda: application.state.identity.clock()),
+                lambda: application.state.identity.clock()
             )
             application.state.catalog = CatalogService(
                 CatalogStore(engine), lambda: application.state.identity.clock()
@@ -167,6 +175,7 @@ def create_app(db_path: Path | None = None, frontend_path: Path | None = None) -
     application.include_router(sales_router, prefix="/api")
     application.include_router(reporting_router, prefix="/api")
     application.include_router(operations_router, prefix="/api")
+    application.include_router(fiscal_router, prefix="/api")
     return application
 
 

@@ -140,3 +140,12 @@ Facturación integrada con ARCA pasa a ser obligatoria para la aceptación comer
 main 0005_reporting_indexes; candidato F6 en PR #7 conserva su esquema/versión propios.
 No hay módulo fiscal implementado, homologación, migración nueva ni versión fiscal
 entregada. La numeración de esa entrega se decidirá con su implementación validada.
+
+
+## Candidato de conexión ARCA — 2026-10-23 UTC
+
+Rama feat/arca-integration sobre F6 452ae71 + propuesta fiscal PR #8. Se conserva
+producto/API/frontend/lockfile 0.5.1, esquema 0006, sin nueva migración. No es release
+0.6.0 ni entrega comercial fiscal. Cryptography 50.0.2 como runtime empaquetado; build-info
+identifica conexión ARCA homologación. No actualizar ZIP anterior ni fusionar F6/main.
+Diseño, fuentes, dependencias/pruebas reales y límites en ARCA_DEVELOPMENT.md.

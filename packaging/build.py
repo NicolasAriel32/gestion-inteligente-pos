@@ -25,9 +25,9 @@ for distribution in importlib.metadata.distributions():
                 shutil.copyfile(source, destination)
 subprocess.run([sys.executable, '-m', 'PyInstaller', '--clean', '--noconfirm', str(root / 'packaging/pos.spec')], cwd=root, check=True)
 bundle = root / 'dist/GestionInteligentePOS'
-manifest = {'product_version': version, 'phase': 'F6 candidate', 'build_os': platform.platform(),
+manifest = {'product_version': version, 'phase': 'F6 + ARCA homologation connection candidate', 'build_os': platform.platform(),
             'python': platform.python_version(), 'pyinstaller': importlib.metadata.version('pyinstaller'),
             'files': {str(p.relative_to(bundle)): hashlib.sha256(p.read_bytes()).hexdigest()
                       for p in sorted(bundle.rglob('*')) if p.is_file()}}
 (bundle / 'build-info.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
-print('Paquete candidato F6 generado:', bundle)
+print('Paquete candidato F6 + conexión ARCA homologación generado:', bundle)

@@ -145,7 +145,7 @@ reemplaza permisos backend. Es una mejora de uso separada de F6; F6 no está ini
 Diseño previo/criterios/resultados en USER_HELP_DEVELOPMENT.md.
 
 
-## ADR-016 — Facturación fiscal obligatoria (REQUISITO ACEPTADO; NO IMPLEMENTADO)
+## ADR-016 — Facturación fiscal obligatoria (REQUISITO ACEPTADO; EMISIÓN PENDIENTE)
 
 Fecha local: 2026-10-22. El propietario establece facturación fiscal integrada con ARCA
 como condición de entrega comercial. Sustituye la exclusión anterior del MVP y precisa
@@ -162,3 +162,29 @@ No autoriza emitir comprobantes reales, migrar datos comerciales, fusionar F6 ni
 F7. El ZIP candidato no cambia y continúa sin facturación fiscal. El POS debe seguir
 abriendo sin actualización obligatoria ni internet; la falta de autorización se refleja
 en la operación fiscal, sin inventar comprobantes ni bloquear la gestión local.
+
+## ADR-017 — Conexión independiente a homologación ARCA (IMPLEMENTADA EN RAMA)
+
+2026-10-23 UTC. El propietario pide integrar ARCA para el primer comercio; desconoce su
+régimen y no tiene ejemplos. Se implementa primero infraestructura independiente del
+régimen: FEDummy, firma CMS/WSAA y FEParamGetPtosVenta en homologación. No se implementa
+emisión sin definir antes emisor/receptor/impuestos y estados recuperables de ADR-016.
+No se autoriza usar producción para probar ni se reemplaza su facturador actual.
+
+ADMIN configura localmente con instancia cerrada, contraseña vigente y confirmación;
+certificado/clave PEM válidos y coincidentes, copia PKCS8 cifrada siempre con contraseña
+local nueva no persistida. Certificados y TA no van en SQLite/.posbackup. Archivos
+privados fuera de binarios; cache TA durable ligado a CUIT/fingerprint/servicio/ambiente
+para no solicitar otro ticket vigente tras reiniciar. Credenciales perdidas no se
+recuperan de un respaldo comercial. Reinstalación conserva el perfil.
+
+Cryptography 50.0.2 firma CMS adjunto DER RSA/SHA256; no invocar OpenSSL externo en
+cliente. TLS verificado, URLs fijas de homologación, sin redirects ni reintentos de red,
+límite de tamaño/tiempo y XML sin DTD/entidades. No se construye transporte ni se consulta
+ARCA al arrancar. HTTP ADMIN/CSRF, claves/tokens sin exportación ni logs; auditoría de
+intención/resultado de configuración sin secretos. Una configuración dañada afecta solo
+este módulo. No hay migraciones ni cambios a dinero/stock/ventas/ayuda.
+
+FEDummy real OK no equivale a autenticar con certificado ni homologar facturas. La
+emisión y todos los criterios fiscales comerciales siguen pendientes. Detalles y
+resultados reales: ARCA_DEVELOPMENT.md. F6 permanece candidata; F7 no iniciada.

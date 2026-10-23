@@ -23,7 +23,7 @@ la matriz de aceptación diferencia evidencia ejecutada y objetivos.
 | BR-015 | Gestión local sin internet | Arranque, catálogo, inventario e historial no dependen de servicios remotos; emisión fiscal según autorización/contingencia de ADR-016 |
 | BR-016 | Pago declarado no equivale a pago verificado | Sin integración financiera automática |
 
-## Facturación obligatoria — reglas objetivo, no implementadas
+## Facturación obligatoria — reglas objetivo, emisión no implementada
 
 No cambian retrospectivamente las garantías F1–F5 ni convierten sus tickets en facturas.
 
@@ -37,6 +37,10 @@ No cambian retrospectivamente las garantías F1–F5 ni convierten sus tickets e
 | BR-FIS-06 | Restauración conserva realidad externa | Conciliar ARCA antes de reanudar emisión; no reutilizar numeración |
 
 Detalle: [FISCAL_INVOICING.md](FISCAL_INVOICING.md); aceptación AT-FIS-01..10 pendiente.
+
+Primer incremento de conexión implementa parte de BR-FIS-04: configuración ADMIN local,
+clave cifrada, rutas/secretos sin exportación HTTP y consultas limitadas a homologación.
+No completa garantías de emisión ni prueba el acceso con certificado ARCA autorizado.
 
 ## Política de cantidades y dinero
 - Unidades: enteros positivos en venta; producto no fraccionable en MVP.

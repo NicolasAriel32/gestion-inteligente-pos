@@ -140,7 +140,15 @@ la autorización backend de todos los módulos continúa intacta. Sin dependenci
 nuevos. No introduce navegación que desmonte borradores ni modifica intento de caja.
 
 
-## Integración fiscal obligatoria — arquitectura objetivo pendiente
+## Integración fiscal obligatoria — conexión implementada, emisión pendiente
+
+Primer incremento en esta rama: FiscalService autoriza ADMIN con IdentityStore y libera
+su transacción antes de usar el puerto FiscalGateway. ArcaGateway usa consultas SOAP1.1
+con endpoints fijos de homologación, TLS verificado y redirects prohibidos. CredentialFiles
+custodia certificado/clave cifrada y TA privado fuera de SQLite/respaldos. GET status no
+usa red. POST connection/access exigen CSRF. No hay métodos de emisión/producción ni
+esquema fiscal; la arquitectura objetivo siguiente aún no está implementada. Contratos
+y límites: ARCA_DEVELOPMENT.md / ARCA_HOMOLOGATION.md / ADR-017.
 
 Módulo fiscal por capas con puerto de emisión/consulta y adaptador ARCA. WSAA/certificados
 y ambientes separados; secreto restringido al backend. Salida de red fiscal autorizada

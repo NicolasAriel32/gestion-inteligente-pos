@@ -1,5 +1,10 @@
 # INSTALLATION — instalación, uso y actualizaciones
 
+Esta rama incorpora conexión ARCA de homologación, no facturación. Guía local/comando
+ADMIN: [ARCA_HOMOLOGATION.md](ARCA_HOMOLOGATION.md). Cryptography se incluye en paquete;
+sin OpenSSL externo en cliente. Arranque offline/actualización voluntaria preservados.
+El ZIP previo del propietario no cambia automáticamente.
+
 - Versión de referencia: 0.5.1 (2026-10-22)
 - Modalidad aprobada: aplicación local y sin internet
 - Destino objetivo: Windows 11 de 64 bits; Windows 10 requiere evaluación explícita por fin de soporte general.

@@ -83,12 +83,15 @@ Evidencia en USER_HELP_DEVELOPMENT.md; revisión de la mejora independiente del 
 
 - [x] Propietario establece requisito obligatorio; retiro de la exclusión del MVP.
 - [ ] Confirmar regímenes/emisores y clases de comprobante iniciales.
+- [x] Implementar conexión FEDummy, cliente WSAA y consulta de puntos de venta en homologación; software del incremento, no emisión.
+- [ ] Verificar autenticación real con certificado de homologación local del titular.
 - [ ] Diseñar e implementar autenticación, emisión, consulta, impuestos y representación.
 - [ ] Resolver reintentos, notas de crédito y conciliación después de restauraciones.
 - [ ] Definir y validar contingencia fiscal aplicable al modo sin comunicación.
 - [ ] Pruebas de homologación y validación contable/operativa con evidencia real.
 - [ ] Habilitación de producción por acción concreta del titular cuando corresponda.
-- Alcance documentado; implementación no iniciada. Ver FISCAL_INVOICING.md y ADR-016.
+- Conexión real FEDummy satisfactoria; autenticación y emisión reales pendientes.
+  Ver ARCA_DEVELOPMENT.md, FISCAL_INVOICING.md y ADR-017. F7 no iniciada.
 
 ## F7 — Piloto y comercialización
 - [ ] Pruebas de flujo real con dueño y empleado.

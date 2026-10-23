@@ -60,7 +60,9 @@ Ante conflicto, **detener la implementación relacionada y señalarlo**. No rein
 
 La entrega comercial debe incluir facturación fiscal integrada con ARCA. Leer
 [docs/FISCAL_INVOICING.md](docs/FISCAL_INVOICING.md) y ADR-016 antes de diseñarla.
-Requisito aceptado, todavía sin implementación/homologación; tickets actuales no fiscales.
+Requisito aceptado; primer incremento de conexión de homologación implementado en
+esta rama (ARCA_DEVELOPMENT.md). Emisión fiscal y homologación autenticada pendientes;
+los tickets actuales siguen siendo no fiscales.
 La gestión local sigue operativa sin internet y sin actualización obligatoria; la emisión
 fiscal debe respetar autorización o contingencia habilitada. No emitir en producción ni
 pedir claves fiscales/certificados por chat. Esta decisión no inicia F7 ni autoriza merge F6.

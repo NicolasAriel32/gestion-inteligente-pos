@@ -4,8 +4,10 @@
 - Estado: núcleo F1–F5 implementado y validado localmente; F5 fusionada en PR #5 (fb85521).
   F6 candidata con CI Windows y prueba general del propietario satisfactorias; este usó
   otra versión de Windows, aún por identificar. Windows 11 limpio, impresora física y piloto pendientes.
-- Requisito comercial añadido: facturación fiscal integrada obligatoria, aún no implementada;
+- Requisito comercial añadido: facturación fiscal integrada obligatoria, emisión aún pendiente;
   ver [FISCAL_INVOICING.md](FISCAL_INVOICING.md). F6 candidata en PR #7, sin merge.
+- Esta rama agrega conexión/auth/consulta en homologación desde Herramientas ADMIN;
+  no emite facturas ni habilita producción. Guía: ARCA_HOMOLOGATION.md.
 - Moneda: ARS; idioma: español argentino; reportes: America/Argentina/Buenos_Aires
 
 ## Misión

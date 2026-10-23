@@ -1,10 +1,10 @@
-name: Windows F6 candidate
+name: Windows POS candidate
 on:
   push:
-    branches: [feat/f6-backup-import-distribution]
+    branches: [feat/f6-backup-import-distribution, feat/arca-integration]
     paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
   pull_request:
-    branches: [main]
+    branches: [main, feat/f6-backup-import-distribution]
     paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
 permissions:
   contents: read
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: F6-Windows-candidate
+          name: POS-Windows-ARCA-connection-candidate
           path: |
             dist/installer/*.exe
             dist/GestionInteligentePOS/build-info.json

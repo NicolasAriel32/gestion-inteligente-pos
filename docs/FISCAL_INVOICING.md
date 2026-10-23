@@ -1,7 +1,16 @@
 # Facturación fiscal integrada con ARCA
 
-Estado: **requisito obligatorio aceptado por el propietario; no implementado**.
+Estado actual (2026-10-23 UTC): **conexión de homologación implementada en rama;
+facturación fiscal aún no implementada ni habilitada**.
 Registro: 2026-10-22, fecha local de Buenos Aires. ADR-016.
+
+Incremento posterior autorizado: el propietario pide integrar ARCA y responde que no
+conoce condición fiscal ni tiene ejemplos. Se avanza con infraestructura independiente
+del régimen: FEDummy, WSAA y consulta de puntos de venta, sin emisión. El requisito de
+definir emisor/receptor/impuestos antes de implementar emisión sigue vigente; no se
+inventa su perfil. ADR-017 / [guía](ARCA_HOMOLOGATION.md) /
+[diseño y evidencia](../ARCA_DEVELOPMENT.md). Los apartados siguientes conservan el
+alcance comercial objetivo y la evidencia de la propuesta documental original.
 
 ## Cambio de alcance y diseño previo
 
@@ -111,7 +120,10 @@ ofrecer una opción comercial para ocultar operaciones alcanzadas por facturaci�
 | AT-FIS-09 | Regresión F1–F6, roles y uso local preservados; migración interrumpida/reintentada con SQLite real |
 | AT-FIS-10 | Validación contable del alcance y procedimiento; producción habilitada por acción concreta del titular |
 
-Todos están **sin ejecutar**. Simular SOAP no constituye homologación. No usar datos
+La propuesta documental original dejó todos **sin ejecutar**. El incremento de conexión
+aporta evidencia parcial a AT-FIS-01/09 (roles, custodia, regresión), sin completarlos:
+no existe producción ni esquema fiscal. AT-FIS-02..08/10 siguen pendientes. Simular
+SOAP no constituye homologación. No usar datos
 comerciales ni producción para probar. Los certificados de homologación se configurarán
 localmente cuando corresponda; nunca pedir que se peguen claves fiscales aquí.
 
@@ -122,7 +134,7 @@ mal calculados, confundir anulación con nota de crédito, contingencia no habil
 exposición de claves. Definir además el tratamiento contable de ventas pendientes y
 comprobantes de corrección en reportes, sin alterar retrospectivamente F1–F5.
 
-Revisadas las páginas oficiales y la coherencia documental; todavía no hay adaptador,
+En la propuesta documental original: revisadas las páginas y coherencia, sin adaptador,
 tablas fiscales, endpoints, homologación ni habilitación de producción implementados.
 
 ## Validación de esta actualización documental
