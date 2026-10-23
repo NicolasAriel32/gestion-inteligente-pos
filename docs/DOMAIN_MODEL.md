@@ -29,7 +29,9 @@
 - No modificar producto ya vendido mediante borrado físico.
 - El estado VOIDED no retorna a COMPLETED.
 - Una venta completada tiene al menos un ítem y un pago.
-- No registrar saldo a cobrar, descuentos, impuestos desglosados ni pagos mixtos en el MVP.
+- El núcleo actual no registra saldo a cobrar, descuentos, impuestos desglosados ni pagos
+  mixtos. La integración fiscal obligatoria deberá incorporar el tratamiento impositivo
+  e instantáneas necesarios; el resto continúa fuera de alcance.
 
 ## Eventos de dominio (descriptivos; no requiere event sourcing)
 PRODUCT_CREATED, PRODUCT_UPDATED, STOCK_ADJUSTED, SALE_COMPLETED, SALE_VOIDED, EMPLOYEE_CREATED, EMPLOYEE_DISABLED.
@@ -44,6 +46,15 @@ Ventas válidas = status COMPLETED. Agregación por fecha local Buenos Aires; co
 
 ## Evolución
 Separar dominio de infraestructura para incorporar MySQL/API remota/MCP después; no modelar varias empresas ni multi-caja como funcionalidad del MVP.
+
+## Extensión fiscal obligatoria — modelo pendiente
+
+Venta registrada y comprobante fiscal autorizado son conceptos diferentes. El modelo
+objetivo incorpora emisor/punto/tipo/número, instantáneas de receptor/impuestos, intención
+durable, autorización/estado, intentos y notas de crédito vinculadas. Su DDL y contratos
+deben diseñarse antes de implementar, sin editar historia o migraciones publicadas.
+Anular venta local no cancela una factura autorizada; los efectos sobre fiscalidad,
+cobro e inventario deben coordinarse explícitamente. Ver FISCAL_INVOICING.md / ADR-016.
 
 ## Identidad implementada en F2
 

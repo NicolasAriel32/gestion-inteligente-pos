@@ -148,3 +148,17 @@ Restore drena solicitudes, copia previa, journal durable y Backup API al destino
 renombrar sobre WAL. Revalida, cambia generación, cierra sesiones y audita. Fallo ordinario
 recupera previo; journal pendiente rechaza arranque hasta recuperación ADMIN explícita.
 Pruebas/limitaciones de interrupción y Windows en F6_DEVELOPMENT.md y F6_OPERATIONS.md.
+
+
+## Persistencia fiscal futura — requisito obligatorio pendiente
+
+La autorización de ARCA no se revierte al restaurar SQLite. El diseño fiscal deberá
+conservar identidad externa, intención/resultados e instantáneas y conciliar documentos
+posteriores a una copia antes de reanudar emisión. Recuperar un backup no autoriza
+reutilizar números ni inventar ítems de ventas ausentes. Las correcciones fiscales se
+vinculan a documentos autorizados, sin editar/borrar historia.
+
+No se cambia el esquema en esta entrega documental. La migración nueva, custodia de
+claves y consistencia con outbox/recuperación se diseñarán y probarán antes de integrar.
+No esperar red bajo BEGIN IMMEDIATE ni prometer rollback conjunto con ARCA. Detalle:
+[FISCAL_INVOICING.md](FISCAL_INVOICING.md), BR-FIS-02/03/04/06 y AT-FIS-03/08.

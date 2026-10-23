@@ -131,3 +131,12 @@ Prueba general del ZIP informada correcta. El propietario indica otra versión d
 versión exacta y casos específicos de recuperación/actualización pendientes de confirmar.
 Se añade evidencia humana, sin asumir toda la matriz Windows 11 validada. Producto sigue
 0.5.1 candidato; no se etiqueta 0.6.0 ni se fusiona PR #7 por este reporte.
+
+
+## Requisito fiscal añadido — 2026-10-22
+
+Facturación integrada con ARCA pasa a ser obligatoria para la aceptación comercial
+(ADR-016). Esta entrega solo cambia especificaciones: producto sigue 0.5.1 y esquema
+main 0005_reporting_indexes; candidato F6 en PR #7 conserva su esquema/versión propios.
+No hay módulo fiscal implementado, homologación, migración nueva ni versión fiscal
+entregada. La numeración de esa entrega se decidirá con su implementación validada.

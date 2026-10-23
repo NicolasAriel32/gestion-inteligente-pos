@@ -39,3 +39,12 @@ No se implementa impresión silenciosa, envío ESC/POS directo, apertura de caj�
 consulta de estado USB/Bluetooth en F4. Si se necesita alguno, evaluar modelo, protocolo,
 permisos de Windows y spooler local antes de incorporar un adaptador. No agregar QZ Tray,
 servicios cloud o bibliotecas de impresora sin justificar la necesidad y documentarla.
+
+
+## Requisito fiscal posterior — aún no implementado
+
+La integración fiscal obligatoria deberá generar una representación con datos y QR
+reglamentarios del comprobante autorizado. El ticket no fiscal de F4 no se convierte
+en factura por imprimirlo o por instalar el controlador de una térmica. Compatibilidad
+física, contenido fiscal y autorización son verificaciones distintas. La nota de crédito
+y la reimpresión no deben generar otra venta. Ver FISCAL_INVOICING.md / ADR-016.

@@ -96,3 +96,16 @@ limpio: [WINDOWS_VALIDATION.md](WINDOWS_VALIDATION.md). No afirmar soporte por b
 Build/smoke Windows Server aprobados: evidencia y artefacto en WINDOWS_VALIDATION.md.
 Windows 11 limpio conserva su checklist pendiente. Nunca bloquear arranque por versión
 nueva, antigüedad o falta de internet; actualización voluntaria externa según ADR-015.
+
+
+## Facturación fiscal obligatoria — configuración futura pendiente
+
+El instalador candidato entregado sigue sin emitir facturas fiscales. El módulo futuro
+requerirá alta/habilitación del punto de venta y credenciales del servicio fiscal, con
+ambiente de homologación separado de producción. Configuración por ADMIN en el equipo;
+no pedir claves fiscales por chat ni incluirlas en paquetes, logs o repositorio.
+
+Arranque y gestión local siguen disponibles sin internet o actualización. La autorización
+fiscal y la contingencia aplicable tienen requisitos de comunicación/operación propios.
+No prometer facturación comercial siempre offline a partir de las pruebas locales.
+Alcance y puesta en servicio: FISCAL_INVOICING.md / ADR-016.

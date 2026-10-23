@@ -9,12 +9,14 @@ Diseño, contratos y resultados de F5: [F5_DEVELOPMENT.md](F5_DEVELOPMENT.md).
 ## Decisiones de producto
 
 - MVP: un comercio, una sucursal, una caja y una PC.
-- Funciona sin internet para las operaciones comerciales principales.
+- Gestión local sin internet; autorización fiscal y contingencia según el régimen aplicable.
 - Roles: **ADMIN** (dueño) y **EMPLOYEE** (empleado).
 - Módulos: autenticación, productos, inventario, caja, historial de ventas, panel de indicadores y empleados.
 - Idioma español argentino, moneda ARS, reportes en `America/Argentina/Buenos_Aires`.
 - Las ventas no pueden producir stock negativo ni duplicarse por reintentos.
-- No incluye facturación fiscal ARCA, pasarelas de pago, varias cajas ni agentes autónomos en el MVP.
+- Facturación fiscal ARCA obligatoria para la entrega comercial, **todavía no implementada**:
+  [alcance y criterios](docs/FISCAL_INVOICING.md). El software actual emite tickets no fiscales.
+- Pasarelas de pago, varias cajas y agentes autónomos continúan fuera del MVP.
 
 ## Arquitectura objetivo (sujeta a validación técnica)
 
@@ -55,7 +57,8 @@ Instalación, comandos y resultados: [F4_DEVELOPMENT.md](F4_DEVELOPMENT.md),
 [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md) y [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md).
 F5 agrega KPIs, comparación con período anterior, ranking por unidades/ingresos y ventas
 por hora de Buenos Aires; excluye anuladas y mantiene instantáneas históricas.
-Sin instalador ni piloto aprobado. F6 requiere autorización independiente.
+F6 tiene un instalador candidato en PR #7, aún sin fusionar; Windows 11 limpio y piloto
+comercial siguen pendientes. Facturación fiscal ahora obligatoria, todavía sin implementación.
 
 ## Desarrollo local
 
