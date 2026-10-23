@@ -137,3 +137,17 @@ una venta entre KPIs y rankings y conserva una vista consistente; siguiente repo
 excluye la anulada. Índice cubriente por estado/fecha y UNIQUE(sale_id,product_id) existente.
 Agregación Python exacta dentro de SQLite mediante pos_sum; salida decimal textual evita
 overflow int64 y transporte JS inseguro. Sin caches ni tablas resumen que puedan divergir.
+
+
+## Persistencia fiscal futura — requisito obligatorio pendiente
+
+La autorización de ARCA no se revierte al restaurar SQLite. El diseño fiscal deberá
+conservar identidad externa, intención/resultados e instantáneas y conciliar documentos
+posteriores a una copia antes de reanudar emisión. Recuperar un backup no autoriza
+reutilizar números ni inventar ítems de ventas ausentes. Las correcciones fiscales se
+vinculan a documentos autorizados, sin editar/borrar historia.
+
+No se cambia el esquema en esta entrega documental. La migración nueva, custodia de
+claves y consistencia con outbox/recuperación se diseñarán y probarán antes de integrar.
+No esperar red bajo BEGIN IMMEDIATE ni prometer rollback conjunto con ARCA. Detalle:
+[FISCAL_INVOICING.md](FISCAL_INVOICING.md), BR-FIS-02/03/04/06 y AT-FIS-03/08.

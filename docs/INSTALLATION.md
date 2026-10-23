@@ -82,3 +82,16 @@ sobre datos comerciales. Arranque verifica también índice de reportes. Actuali
 dependencias declaradas incorpora tzdata local para zoneinfo en Windows; no hay descarga
 al operar. Comandos de desarrollo conservados; evidencia aislada en F5_DEVELOPMENT.md.
 No hay instalador, backups o validación física de impresión nuevos en esta fase.
+
+
+## Facturación fiscal obligatoria — configuración futura pendiente
+
+El instalador candidato entregado sigue sin emitir facturas fiscales. El módulo futuro
+requerirá alta/habilitación del punto de venta y credenciales del servicio fiscal, con
+ambiente de homologación separado de producción. Configuración por ADMIN en el equipo;
+no pedir claves fiscales por chat ni incluirlas en paquetes, logs o repositorio.
+
+Arranque y gestión local siguen disponibles sin internet o actualización. La autorización
+fiscal y la contingencia aplicable tienen requisitos de comunicación/operación propios.
+No prometer facturación comercial siempre offline a partir de las pruebas locales.
+Alcance y puesta en servicio: FISCAL_INVOICING.md / ADR-016.

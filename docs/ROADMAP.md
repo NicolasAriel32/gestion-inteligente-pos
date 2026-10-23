@@ -63,23 +63,38 @@ Cada etapa empieza con criterios de aceptación claros y termina con pruebas rep
 - Aceptación: reportes excluyen anuladas y coinciden con datos de prueba.
 
 Software F5 verificado localmente y fusionado por autorización del propietario en PR #5 (fb85521).
-Evidencia y límites: F5_DEVELOPMENT.md. F6 no iniciada ni autorizada.
+Evidencia y límites: F5_DEVELOPMENT.md. F6 fue autorizada posteriormente y tiene un
+candidato en PR #7, pendiente de integración y validación Windows 11 limpio.
 
 Mejora posterior 0.5.1: ayuda de uso local con guías rápidas y buscador, sin avanzar F6.
 Evidencia en USER_HELP_DEVELOPMENT.md; revisión de la mejora independiente del merge F5.
 
 ## F6 — Respaldo, importación y distribución
+Implementación candidata publicada en PR #7, aún fuera de main. La nueva exigencia
+fiscal no fusiona ese PR, no altera el instalador entregado ni cierra F6.
 - [ ] Backup consistente y restauración probada.
 - [ ] CSV de productos con vista previa/validación (mejora para onboarding piloto).
 - [ ] Build Windows, instalador y arranque único.
 - [ ] Actualizaciones manuales documentadas.
 - Aceptación: instalación limpia sin herramientas de desarrollo y recuperación demostrada.
 
+## Facturación fiscal — obligatoria antes de la aceptación comercial
+
+- [x] Propietario establece requisito obligatorio; retiro de la exclusión del MVP.
+- [ ] Confirmar regímenes/emisores y clases de comprobante iniciales.
+- [ ] Diseñar e implementar autenticación, emisión, consulta, impuestos y representación.
+- [ ] Resolver reintentos, notas de crédito y conciliación después de restauraciones.
+- [ ] Definir y validar contingencia fiscal aplicable al modo sin comunicación.
+- [ ] Pruebas de homologación y validación contable/operativa con evidencia real.
+- [ ] Habilitación de producción por acción concreta del titular cuando corresponda.
+- Alcance documentado; implementación no iniciada. Ver FISCAL_INVOICING.md y ADR-016.
+
 ## F7 — Piloto y comercialización
 - [ ] Pruebas de flujo real con dueño y empleado.
 - [ ] Usabilidad, monitoreo de errores y ajustes.
 - [ ] Guía de uso y recuperación de datos.
-- Aceptación: aprobación explícita del piloto; no confundir demo con producción.
+- Aceptación: aprobación explícita del piloto e integración fiscal validada antes del uso
+  comercial; no confundir pruebas locales ficticias con producción. F7 no iniciada.
 
 ## Futuro, no MVP
-MySQL multi-PC, servidor remoto, MCP, n8n, actualizador asistido, pagos online, varias cajas, facturación fiscal. Cada evolución requiere nueva spec y análisis de riesgos.
+MySQL multi-PC, servidor remoto, MCP, n8n, actualizador asistido, pagos online, varias cajas. Cada evolución requiere nueva spec y análisis de riesgos.

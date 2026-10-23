@@ -120,3 +120,22 @@ búsqueda y temas; no requiere servicios, IA ni conexión. Muestra pasos según 
 funciones pendientes sin presentarlas disponibles. No realiza acciones comerciales ni
 reemplaza permisos backend. Es una mejora de uso separada de F6; F6 no está iniciada.
 Diseño previo/criterios/resultados en USER_HELP_DEVELOPMENT.md.
+
+
+## ADR-016 — Facturación fiscal obligatoria (REQUISITO ACEPTADO; NO IMPLEMENTADO)
+
+Fecha local: 2026-10-22. El propietario establece facturación fiscal integrada con ARCA
+como condición de entrega comercial. Sustituye la exclusión anterior del MVP y precisa
+ADR-001/BR-015: gestión local sin internet, emisión fiscal con autorización o contingencia
+habilitada. Una venta, un pago declarado y una factura autorizada tienen estados distintos.
+
+No exige contratar el mismo proveedor ni adoptar su abono mensual. Se propone un módulo
+fiscal por capas; servicio/régimen y alcance C/A/B pendientes de definición. Facturas,
+notas de crédito, respuestas inciertas, impuestos, QR, credenciales y restauraciones deben
+probarse en homologación antes de habilitar producción. Fuentes oficiales y criterios
+pendientes en [FISCAL_INVOICING.md](FISCAL_INVOICING.md).
+
+No autoriza emitir comprobantes reales, migrar datos comerciales, fusionar F6 ni iniciar
+F7. El ZIP candidato no cambia y continúa sin facturación fiscal. El POS debe seguir
+abriendo sin actualización obligatoria ni internet; la falta de autorización se refleja
+en la operación fiscal, sin inventar comprobantes ni bloquear la gestión local.

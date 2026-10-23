@@ -55,6 +55,15 @@ Ante conflicto, **detener la implementación relacionada y señalarlo**. No rein
 - Documentación coherente y riesgos pendientes explícitos.
 - La creación de documentación por sí sola **no implica software implementado**.
 
+## Facturación fiscal obligatoria — decisión del propietario
+
+La entrega comercial debe incluir facturación fiscal integrada con ARCA. Leer
+[docs/FISCAL_INVOICING.md](docs/FISCAL_INVOICING.md) y ADR-016 antes de diseñarla.
+Requisito aceptado, todavía sin implementación/homologación; tickets actuales no fiscales.
+La gestión local sigue operativa sin internet y sin actualización obligatoria; la emisión
+fiscal debe respetar autorización o contingencia habilitada. No emitir en producción ni
+pedir claves fiscales/certificados por chat. Esta decisión no inicia F7 ni autoriza merge F6.
+
 ## Aprendizajes obligatorios para nuevas fases
 - Leer [docs/ENGINEERING_FINDINGS.md](docs/ENGINEERING_FINDINGS.md) antes de trabajar en
   persistencia, migraciones, arranque o cierre de validación.

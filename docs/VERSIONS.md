@@ -110,3 +110,12 @@ Ayuda rápida por rol, sin nuevas dependencias ni migraciones; esquema permanece
 0005_reporting_indexes. Versiones de paquetes/API/lockfile se alinean a 0.5.1. F5 conserva
 sus resultados históricos y merge autorizado fb85521; F6 no se inicia. Evidencia real y
 metadata instalada: USER_HELP_DEVELOPMENT.md.
+
+
+## Requisito fiscal añadido — 2026-10-22
+
+Facturación integrada con ARCA pasa a ser obligatoria para la aceptación comercial
+(ADR-016). Esta entrega solo cambia especificaciones: producto sigue 0.5.1 y esquema
+main 0005_reporting_indexes; candidato F6 en PR #7 conserva su esquema/versión propios.
+No hay módulo fiscal implementado, homologación, migración nueva ni versión fiscal
+entregada. La numeración de esa entrega se decidirá con su implementación validada.

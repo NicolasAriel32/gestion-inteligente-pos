@@ -128,3 +128,15 @@ userHelp.ts, búsqueda local por términos sin distinguir acentos/mayúsculas. N
 APIs, escribe storage ni realiza acciones comerciales. Filtro por rol es de presentación;
 la autorización backend de todos los módulos continúa intacta. Sin dependencias/esquema
 nuevos. No introduce navegación que desmonte borradores ni modifica intento de caja.
+
+
+## Integración fiscal obligatoria — arquitectura objetivo pendiente
+
+Módulo fiscal por capas con puerto de emisión/consulta y adaptador ARCA. WSAA/certificados
+y ambientes separados; secreto restringido al backend. Salida de red fiscal autorizada
+por ADR-016, API de usuario siempre en loopback, sin cloud de gestión obligatorio.
+
+Intención/resultado durables y conciliación para la transacción distribuida; llamadas
+remotas fuera de bloqueos SQLite de escritura. Estado fiscal separado de venta y pago.
+No se implementan endpoints ni selecciona dependencia SOAP en este cambio documental.
+Ver [FISCAL_INVOICING.md](FISCAL_INVOICING.md), con límites del modo offline y pruebas pendientes.

@@ -20,8 +20,23 @@ la matriz de aceptación diferencia evidencia ejecutada y objetivos.
 | BR-012 | Acciones sensibles auditadas | Usuario, acción, fecha y motivo cuando aplica |
 | BR-013 | No hay autorregistro público | Solo inicialización protegida y ADMIN crea empleados |
 | BR-014 | No sobreventa concurrente | Una sola validación-escritura serializable por SQLite |
-| BR-015 | Operación esencial sin internet | Ningún servicio remoto es dependencia del POS |
+| BR-015 | Gestión local sin internet | Arranque, catálogo, inventario e historial no dependen de servicios remotos; emisión fiscal según autorización/contingencia de ADR-016 |
 | BR-016 | Pago declarado no equivale a pago verificado | Sin integración financiera automática |
+
+## Facturación obligatoria — reglas objetivo, no implementadas
+
+No cambian retrospectivamente las garantías F1–F5 ni convierten sus tickets en facturas.
+
+| ID | Regla objetivo | Garantía requerida |
+| --- | --- | --- |
+| BR-FIS-01 | Venta y comprobante fiscal tienen estados distintos | No afirmar emisión fiscal sin autorización o modalidad habilitada |
+| BR-FIS-02 | Emisión recuperable y única | Respuesta incierta se concilia sin duplicar número, cobro ni stock |
+| BR-FIS-03 | Comprobante autorizado inmutable | Corrección por documento fiscal vinculado; VOIDED local no lo cancela |
+| BR-FIS-04 | Credenciales restringidas | Configuración ADMIN, sin claves privadas en navegador/logs/repositorio |
+| BR-FIS-05 | Contingencia explícita | Una cola local sin autorización no constituye factura emitida |
+| BR-FIS-06 | Restauración conserva realidad externa | Conciliar ARCA antes de reanudar emisión; no reutilizar numeración |
+
+Detalle: [FISCAL_INVOICING.md](FISCAL_INVOICING.md); aceptación AT-FIS-01..10 pendiente.
 
 ## Política de cantidades y dinero
 - Unidades: enteros positivos en venta; producto no fraccionable en MVP.

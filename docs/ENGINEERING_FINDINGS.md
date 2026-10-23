@@ -479,3 +479,17 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
 - Regresión: E2E final 32.5 s, PNG reales a 1366/390 px revisados y checks de desborde.
 - Práctica: elegir el área de captura según el componente y comprobar que la evidencia
   representa lo que el usuario ve; un modal desplazable no es una página larga.
+
+
+## H-FIS-001 — Restaurar datos locales no revierte autorizaciones externas
+
+- Estado: riesgo de diseño identificado; integración fiscal todavía no implementada.
+- Causa: SQLite y ARCA mantienen estados diferentes; restaurar una copia puede borrar
+  intenciones/resultados locales de comprobantes que el servicio ya autorizó.
+- Prevención especificada: identidad fiscal durable, conciliación antes de emitir,
+  consulta tras respuesta incierta y documentos compensatorios; no prometer rollback
+  distribuido ni reutilizar numeración. Ningún cambio sobre datos o runtime actual.
+- Regresión exigida: AT-FIS-03/04/06/08, pendientes de implementación/homologación.
+- Práctica: separar efectos comerciales/fiscales y revisar garantías de restauración
+  antes de conectar cualquier operación irreversible externa. Fuentes y alcance en
+  FISCAL_INVOICING.md; el requisito es del propietario, no una certificación legal del POS.
