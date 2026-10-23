@@ -55,4 +55,3 @@ export function createHandler(fetchBackend = fetch) {
     },
   };
 }
-
