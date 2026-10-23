@@ -82,7 +82,7 @@ Evidencia Linux Python 3.12.14/Node 24.19/Chromium 154:
 | Comando / operación | Resultado observado |
 | --- | --- |
 | backend `.venv/bin/pytest -q` | 187 passed, 141.63 s; 16 nuevas fiscales |
-| backend `.venv/bin/pytest tests/test_fiscal.py -q` | 16 passed, 3.66 s antes del ajuste final de lectura acotada |
+| backend `.venv/bin/pytest tests/test_fiscal.py -q` | 16 passed, 3.78 s tras lectura acotada y ampliación de permisos EMPLOYEE |
 | frontend `npm test` | 54 passed, 7 archivos |
 | frontend `npm run build`, `npm run lint` | Aprobados |
 | frontend `npx tsc --project tsconfig.e2e.json` | Aprobado |
@@ -125,6 +125,38 @@ aceptación con certificado autorizado **sin probar**, sin fallback automático 
 
 Autenticación real, puntos reales y emisión: **pendientes por falta de certificado y
 perfil fiscal**. FEDummy no los sustituye. Paquete Windows con cryptography/smoke
-nativo pendiente del CI de esta rama; no trasladar evidencia F6 previa. Windows 11
+nativo aprobado en esta rama (detalle debajo); no trasladar evidencia F6 previa. Windows 11
 limpio, Windows exacto del propietario e impresora física pendientes. No se fusiona
 F6 ni inicia F7. Producto permanece 0.5.1 candidato.
+
+Capturas publicadas del estado sin certificado: [escritorio](docs/screenshots/arca/arca-tools-desktop.png) y [móvil](docs/screenshots/arca/arca-tools-mobile.png), productos ficticios y campos secretos vacíos.
+
+## Paquete nativo Windows verificado
+
+CI [39910712617](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/runs/39910712617)
+y comprobación PR [39910783897](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/runs/39910783897)
+aprobados para e4d4870. Entorno Windows Server 2025, Python builder 3.12.10,
+PyInstaller 6.16.0; no certifica Windows 11 limpio ni la PC concreta del propietario.
+Nueve comprobaciones del ejecutable instalado con PATH limitado a Windows System32:
+instalación por usuario, preparación explícita, arranque, exclusión de instancia,
+cryptography/clave cifrada/estado fiscal offline, importación/ventas/anulación/backup/
+restauración/reportes/reautenticación, cierre, reinstalación y desinstalación preservando
+DB/respaldos/configuración fiscal. Sin llamadas reales a ARCA en smoke Windows.
+El builder genera certificado ficticio; la clave incorrecta devuelve 422 antes de red.
+No se afirma firma CMS exitosa desde el ejecutable ni autenticación WSAA real.
+
+ZIP artefacto [12482522256](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/runs/39910712617/artifacts/12482522256),
+21 582 683 bytes, expira 2026-10-30. Incluye instalador, build-info.json y windows-smoke.json.
+ZIP SHA256: `987ba9c0a71e2bedbc1bfe47917eacb4188ed28ce89c600f0bfe825996a3cb63`.
+Instalador `GestionInteligentePOS-0.5.1-ARCA-connection-candidate-setup.exe`,
+22 100 043 bytes, SHA256 `ce4420cff4b3e4ef7b8f1cf2171d9b840599938c76f9afc2daba012bb3b55ee1`.
+Se descargó ZIP, verificó hash/contenido y se comprobó en build-info que están
+cryptography-50.0.2, _rust.pyd, libcrypto-3.dll y sus licencias. No se ejecutó EXE en Linux.
+[Evidencia smoke](docs/validation/arca/windows-smoke.json).
+
+PR [#9](https://github.com/NicolasAriel32/gestion-inteligente-pos/pull/9) en borrador,
+base feat/f6-backup-import-distribution. No fusionado. Las ampliaciones finales de tests/
+documentación no cambian el software del paquete e4d4870; su CI se reporta por separado.
+Metadata editable reinstalada sin actualizar dependencias: backend 0.5.1 y Requires-Dist
+cryptography==50.0.2 confirmados. El entorno de instalación inicial precedía ese cambio
+de pyproject; se corrigió la metadata además de instalar la biblioteca.

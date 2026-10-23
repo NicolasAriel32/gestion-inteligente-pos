@@ -232,8 +232,12 @@ def test_api_auth_csrf_safe_secrets_offline_start_and_restore_boundary(client, s
     assert client.get('/api/fiscal/status').status_code == 401
     csrf = login(client)
     client.post('/api/employees', json={'username': 'worker', 'password': PASSWORD}, headers={'X-CSRF-Token': csrf})
-    login(client, 'worker')
+    worker_csrf = login(client, 'worker')
     assert client.get('/api/fiscal/status').status_code == 403
+    transport.reset_mock()
+    assert client.post('/api/fiscal/connection', json={}, headers={'X-CSRF-Token': worker_csrf}).status_code == 403
+    assert client.post('/api/fiscal/access', json={'private_key_password': KEY_PASSWORD}, headers={'X-CSRF-Token': worker_csrf}).status_code == 403
+    assert not transport.call.called
 
 
 def test_configure_cli_offline_authenticated_audited(admin, material, tmp_path, monkeypatch):
