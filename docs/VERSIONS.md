@@ -123,3 +123,11 @@ metadata instalada: USER_HELP_DEVELOPMENT.md.
 Actualización posterior: PR #6 autorizado e integrado en main 4b40e3f. Candidato F6
 incorpora esa ayuda, mantiene producto 0.5.1 y conserva pendiente Windows 11 limpio.
 La evidencia anterior describe su ejecución original; PR #7 no se fusiona.
+
+
+## Reporte posterior del propietario sobre su PC
+
+Prueba general del ZIP informada correcta. El propietario indica otra versión de Windows;
+versión exacta y casos específicos de recuperación/actualización pendientes de confirmar.
+Se añade evidencia humana, sin asumir toda la matriz Windows 11 validada. Producto sigue
+0.5.1 candidato; no se etiqueta 0.6.0 ni se fusiona PR #7 por este reporte.

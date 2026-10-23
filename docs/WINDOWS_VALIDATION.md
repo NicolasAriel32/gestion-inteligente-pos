@@ -1,4 +1,4 @@
-# Validación Windows F6 — CI aprobada; PC objetivo pendiente
+# Validación Windows F6 — CI y prueba general del propietario aprobadas
 
 No completar esta lista por construir en Linux o por revisar scripts. La CI Windows
 Server y una PC Windows 11 limpia son evidencias diferentes; registrar cada resultado.
@@ -24,13 +24,14 @@ instalar/preparar/iniciar/importar/respaldar/restaurar/reinstalar/desinstalar co
 temporales. PATH del ejecutable no contiene herramientas de desarrollo. Esto no prueba
 una PC Windows 11 limpia ni su cuenta estándar; conservar esa diferencia en el informe.
 
-## Prueba humana en Windows 11 limpio
+## Prueba humana en Windows 11 limpio — criterios específicos pendientes
 
 Usar Windows Sandbox/VM de prueba si está disponible, sin datos del comercio ni Python,
 Node, herramientas de build o servicios externos obligatorios. No instalar sobre la
 PC comercial para probar. Registrar Windows/build/arquitectura, usuario estándar,
 checksum del setup y capturas reales.
 
+- [x] Prueba general del ZIP satisfactoria según el propietario; otra versión de Windows, número exacto pendiente.
 - [ ] Instalación por usuario sin exigir elevación innecesaria.
 - [ ] Preparación explícita de DB, secreto inicial privado y alta ADMIN única.
 - [ ] Arranque de acceso directo, health, navegador y una sola instancia.
@@ -106,3 +107,16 @@ no se afirma que el POS esté instalado en su PC. Se entrega instalador descarga
 ejecutar desde una sesión local Windows. Nunca tocar datos comerciales para probar ni
 desconectar redes remotamente; primera cuenta ADMIN queda a cargo de su titular.
 F6 y el checklist Windows 11 limpio conservan su estado pendiente.
+
+
+## Reporte del propietario: prueba general correcta
+
+El propietario confirmó: «Ya probe el zip en la pc y esta bien esta correcto». Luego
+precisó: «Usé otra versión de Windows», al preguntarle por Windows 11. Su prueba de uso
+general se registra aprobada por reporte humano, con versión/build aún por identificar.
+Esto reemplaza el estado previo de «sin prueba en su PC», conservado arriba como historia.
+
+No se informó el detalle de backup/restauración, reinicio, actualización, equipo limpio
+sin runtimes, desconexión de internet ni impresora. Los criterios específicos sin confirmar
+permanecen abiertos; no se infiere que hayan fallado. Tampoco se cambia el soporte objetivo
+Windows 11 ni se certifica otra versión sin identificarla. No equivale a merge F6 ni F7.

@@ -73,8 +73,10 @@ Evidencia en USER_HELP_DEVELOPMENT.md; revisión de la mejora independiente del 
 - [x] CSV de altas nuevas con vista previa/validación, confirmación atómica y reintentos.
 - [x] Build Windows, instalador y arranque único comprobados en CI Windows Server 2025; PC Windows 11 limpia pendiente.
 - [x] Actualizaciones manuales documentadas; comprobación Windows pendiente.
+- [x] Prueba general del ZIP correcta según el propietario, en otra versión de Windows; identificación exacta pendiente.
 - Aceptación: instalación limpia sin herramientas de desarrollo y recuperación demostrada.
-- **F6 pendiente de cierre**: scripts/paquete candidato y validación Linux no certifican Windows 11 limpio.
+- **F6 pendiente de cierre**: CI Windows y prueba general del propietario aprobadas; falta
+  precisar el alcance de recuperación/actualización y validar los criterios de Windows 11 limpio.
   Ver F6_DEVELOPMENT.md y WINDOWS_VALIDATION.md. F7 no iniciada.
 
 ## F7 — Piloto y comercialización

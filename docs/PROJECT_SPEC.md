@@ -2,7 +2,8 @@
 
 - Versión de referencia: 0.5.1 (2026-10-22); ver VERSIONS.md
 - Estado: núcleo F1–F5 implementado y validado localmente; F5 fusionada en PR #5 (fb85521).
-  F6 candidata en desarrollo; Windows limpio, impresora física y piloto pendientes.
+  F6 candidata con CI Windows y prueba general del propietario satisfactorias; este usó
+  otra versión de Windows, aún por identificar. Windows 11 limpio, impresora física y piloto pendientes.
 - Moneda: ARS; idioma: español argentino; reportes: America/Argentina/Buenos_Aires
 
 ## Misión

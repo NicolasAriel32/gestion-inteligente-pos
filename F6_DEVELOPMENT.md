@@ -240,3 +240,24 @@ Incluye ayuda PR #6 aprobada y primeros pasos locales. Resultados JSON Windows c
 sin reemplazar evidencia previa. Instalación en la PC del propietario bloqueada por
 ausencia de endpoint Windows en esta sesión; no es un fallo del instalador ni se declara
 realizada. Se entrega artefacto para continuar en Codex con ejecución local Windows.
+
+## Confirmación posterior del propietario — prueba de su PC
+
+Alcance del incremento: registrar evidencia humana de uso sin cambiar software, versión,
+esquema o criterios de aceptación; actualizar Windows/roadmap y PR #7. No implica
+autorización de merge/release ni inicio de F7.
+
+El propietario informa: «Ya probe el zip en la pc y esta bien esta correcto». Al consultar
+si había sido Windows 11 respondió: «Usé otra versión de Windows». Se registra resultado
+general satisfactorio del ZIP en su PC; versión/build exactos pendientes de identificación.
+El paquete entregado en el contexto de esta prueba es el candidato 0.5.1 con ayuda. No se
+observaron directamente su ejecución ni el checksum de ese equipo desde esta sesión.
+
+No atribuir a este reporte instalación limpia Windows 11, ausencia de runtimes, prueba
+offline específica, restauración, actualización, ACL o impresora: no se detallaron esos
+casos. Las pruebas CI previas mantienen su evidencia independiente. Ya existe prueba
+humana positiva; queda por precisar su alcance para cerrar criterios pendientes de F6.
+Se conserva producto 0.5.1 y PR #7 borrador. La facturación ARCA sigue sin implementación.
+
+Verificación de este incremento: solo Markdown y git diff --check; no se reejecutan
+suites de aplicación porque no hay cambios de código. No se modifica evidencia histórica.
