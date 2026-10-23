@@ -5,9 +5,11 @@
   F6 candidata con CI Windows y prueba general del propietario satisfactorias; este usó
   otra versión de Windows, aún por identificar. Windows 11 limpio, impresora física y piloto pendientes.
 - Requisito comercial añadido: facturación fiscal integrada obligatoria, emisión aún pendiente;
-  ver [FISCAL_INVOICING.md](FISCAL_INVOICING.md). F6 candidata en PR #7, sin merge.
-- Esta rama agrega conexión/auth/consulta en homologación desde Herramientas ADMIN;
+  ver [FISCAL_INVOICING.md](FISCAL_INVOICING.md). F6 candidata con integración autorizada en main.
+- El candidato agrega conexión/auth/consulta en homologación desde Herramientas ADMIN;
   no emite facturas ni habilita producción. Guía: ARCA_HOMOLOGATION.md.
+- Integración y paquete Windows desde main: MAIN_DISTRIBUTION.md; merge no equivale a
+  completar validación Windows 11/impresora ni habilitación fiscal. F7 no iniciada.
 - Moneda: ARS; idioma: español argentino; reportes: America/Argentina/Buenos_Aires
 
 ## Misión

@@ -2,6 +2,7 @@
 import hashlib
 import importlib.metadata
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -25,7 +26,10 @@ for distribution in importlib.metadata.distributions():
                 shutil.copyfile(source, destination)
 subprocess.run([sys.executable, '-m', 'PyInstaller', '--clean', '--noconfirm', str(root / 'packaging/pos.spec')], cwd=root, check=True)
 bundle = root / 'dist/GestionInteligentePOS'
+source_commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+source_ref = os.getenv('GITHUB_REF') or subprocess.check_output(['git', 'branch', '--show-current'], cwd=root, text=True).strip()
 manifest = {'product_version': version, 'phase': 'F6 + ARCA homologation connection candidate', 'build_os': platform.platform(),
+            'source_commit': source_commit, 'source_ref': source_ref,
             'python': platform.python_version(), 'pyinstaller': importlib.metadata.version('pyinstaller'),
             'files': {str(p.relative_to(bundle)): hashlib.sha256(p.read_bytes()).hexdigest()
                       for p in sorted(bundle.rglob('*')) if p.is_file()}}

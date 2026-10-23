@@ -5,6 +5,11 @@ ADMIN: [ARCA_HOMOLOGATION.md](ARCA_HOMOLOGATION.md). Cryptography se incluye en 
 sin OpenSSL externo en cliente. Arranque offline/actualización voluntaria preservados.
 El ZIP previo del propietario no cambia automáticamente.
 
+Integración autorizada en main: [MAIN_DISTRIBUTION.md](MAIN_DISTRIBUTION.md). Descargar
+**POS-Windows-main** del workflow Windows correcto en main y comprobar manifest/hashes.
+El ZIP contiene instalador Windows, no exige Python/Node/OpenSSL externos. No confundir
+con Code → Download ZIP. La preparación de base sigue explícita; actualizar es voluntario.
+
 - Versión de referencia: 0.5.1 (2026-10-22)
 - Modalidad aprobada: aplicación local y sin internet
 - Destino objetivo: Windows 11 de 64 bits; Windows 10 requiere evaluación explícita por fin de soporte general.

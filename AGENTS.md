@@ -7,6 +7,14 @@ F6 no se declara validada hasta completar la instalación limpia y recuperación
 Consultar ROADMAP para distinguir entregas verificadas, validación física pendiente y
 fases futuras. No usar Lovable ni agregar servicios cloud obligatorios.
 
+## Integración autorizada en main — 2026-10-23 UTC
+
+El propietario pide que los cambios implementados estén en main y que el ZIP funcione
+desde ese estado. Autoriza integrar PR #7 y #9; #8 está incorporado en la historia de
+#9. Sustituye las restricciones anteriores de no fusionar esos cambios. Conservar el
+estado candidato 0.5.1, pendientes Windows 11/impresora y emisión fiscal no implementada.
+No inicia F7 ni autoriza producción ARCA. Diseño/evidencia: docs/MAIN_DISTRIBUTION.md.
+
 ## Orden de lectura
 1. docs/PROJECT_SPEC.md — alcance y actores
 2. docs/BUSINESS_RULES.md — invariantes
@@ -65,7 +73,9 @@ esta rama (ARCA_DEVELOPMENT.md). Emisión fiscal y homologación autenticada pen
 los tickets actuales siguen siendo no fiscales.
 La gestión local sigue operativa sin internet y sin actualización obligatoria; la emisión
 fiscal debe respetar autorización o contingencia habilitada. No emitir en producción ni
-pedir claves fiscales/certificados por chat. Esta decisión no inicia F7 ni autoriza merge F6.
+pedir claves fiscales/certificados por chat. Esta decisión original no iniciaba F7 ni
+autorizaba merge F6; la integración posterior en main se autoriza arriba, sin cerrar
+los criterios de validación pendientes.
 
 ## Aprendizajes obligatorios para nuevas fases
 - Leer [docs/ENGINEERING_FINDINGS.md](docs/ENGINEERING_FINDINGS.md) antes de trabajar en

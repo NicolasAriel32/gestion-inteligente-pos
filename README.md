@@ -1,7 +1,12 @@
 # Gestión Inteligente POS
 
 Sistema de gestión y punto de venta local para un kiosco o pequeño comercio argentino.
-**Versión 0.5.1: identidad, catálogo, inventario, caja, historial y reportes ADMIN locales.**
+**Candidato 0.5.1: identidad, catálogo, inventario, caja, historial, reportes, respaldos,
+importación CSV y conexión ARCA de homologación.** No emite facturas fiscales.
+Descargar el programa Windows desde el artefacto **POS-Windows-main** de una ejecución
+correcta de [Actions](https://github.com/NicolasAriel32/gestion-inteligente-pos/actions/workflows/windows-candidate.yml)
+en main. **Code → Download ZIP contiene fuentes**, no el programa instalado.
+Instalador/LEEME en raíz, manifest de commit/ref y hashes incluidos. [Detalle](docs/MAIN_DISTRIBUTION.md).
 F4 aprobada para integración mediante PR #4; la prueba física de impresoras de 58 mm sigue pendiente.
 Versiones de producto, esquema y evidencias: [VERSIONS.md](docs/VERSIONS.md).
 Diseño, contratos y resultados de F5: [F5_DEVELOPMENT.md](F5_DEVELOPMENT.md).
@@ -57,8 +62,9 @@ Instalación, comandos y resultados: [F4_DEVELOPMENT.md](F4_DEVELOPMENT.md),
 [F2_DEVELOPMENT.md](F2_DEVELOPMENT.md) y [F1_DEVELOPMENT.md](F1_DEVELOPMENT.md).
 F5 agrega KPIs, comparación con período anterior, ranking por unidades/ingresos y ventas
 por hora de Buenos Aires; excluye anuladas y mantiene instantáneas históricas.
-F6 tiene un instalador candidato en PR #7, aún sin fusionar; Windows 11 limpio y piloto
-comercial siguen pendientes. Facturación fiscal ahora obligatoria, todavía sin implementación.
+F6 y conexión ARCA tienen integración autorizada en main mediante PR #7/#9; Windows 11
+limpio y piloto comercial siguen pendientes. Facturación fiscal obligatoria: emisión
+todavía sin implementación, conexión de homologación disponible en este candidato.
 
 ## Desarrollo local
 

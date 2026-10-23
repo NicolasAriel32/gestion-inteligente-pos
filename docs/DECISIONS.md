@@ -188,3 +188,14 @@ este módulo. No hay migraciones ni cambios a dinero/stock/ventas/ayuda.
 FEDummy real OK no equivale a autenticar con certificado ni homologar facturas. La
 emisión y todos los criterios fiscales comerciales siguen pendientes. Detalles y
 resultados reales: ARCA_DEVELOPMENT.md. F6 permanece candidata; F7 no iniciada.
+
+
+## ADR-018 — Integración autorizada y descarga trazable desde main
+
+2026-10-23 UTC. El propietario requiere todo lo implementado en main para descargar un
+ZIP operativo. Se integran F6 y conexión de homologación ARCA con sus specs; se mantienen
+criterios humanos pendientes y producto candidato 0.5.1. No habilita emisión ni F7.
+La construcción corre en main o por acción manual y publica tras smoke correcto.
+El ZIP tiene instalador y LEEME en raíz, manifest de commit/ref, resultado smoke y hashes;
+Code → Download ZIP sigue siendo código fuente. Actualización del POS siempre voluntaria,
+sin llamadas de versión al arrancar. Diseño/evidencia: MAIN_DISTRIBUTION.md.

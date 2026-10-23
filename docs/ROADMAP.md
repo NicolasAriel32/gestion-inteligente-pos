@@ -106,3 +106,13 @@ MySQL multi-PC, servidor remoto, MCP, n8n, actualizador asistido, pagos online, 
 Actualización posterior: PR #6 autorizado e integrado en main 4b40e3f. Candidato F6
 incorpora esa ayuda, mantiene producto 0.5.1 y conserva pendiente Windows 11 limpio.
 La evidencia anterior describe su ejecución original; PR #7 no se fusiona.
+
+
+## Integración autorizada en main — 2026-10-23 UTC
+
+El propietario pide disponer de los cambios implementados en main antes de descargar
+el ZIP. Se autoriza integrar PR #7/#9 y sus ancestros fiscales #8; la limitación anterior
+sobre esos merges queda sustituida. No implica cerrar criterios Windows 11/impresora,
+homologación autenticada o entrega fiscal. No inicia F7. Candidato sigue en 0.5.1.
+El workflow ahora construye en main, publica solo tras smoke correcto e identifica
+commit/ref del paquete. Diseño y resultados: MAIN_DISTRIBUTION.md.
