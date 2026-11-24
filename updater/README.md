@@ -2,74 +2,104 @@
 
 Programa separado que el técnico usa en la PC del cliente para instalar una versión nueva
 del POS. Se instala aparte (`%LOCALAPPDATA%\Programs\GestionInteligentePOS-Actualizador`)
-porque tiene que poder reemplazar la carpeta del POS. Decisión: ADR-019.
+porque tiene que poder reemplazar la carpeta del POS. Decisión: **ADR-019**.
+Correcciones de la segunda iteración: [docs/UPDATER_REVIEW_2.md](../docs/UPDATER_REVIEW_2.md).
 
 ## Seguridad en una línea
 
-**Clave del técnico + contraseña del dueño** abren el botón; **la firma Ed25519** decide qué
-se puede instalar. Una clave robada no sirve sin un paquete firmado por vos, y un paquete
-copiado o modificado no pasa la verificación aunque tengan las dos claves.
+**Clave del técnico + contraseña del dueño** abren el botón (y el motor las vuelve a validar
+justo antes de actuar); **la firma Ed25519** decide qué se puede instalar. Una clave robada
+no sirve sin un paquete firmado por vos; un paquete copiado o modificado no pasa la
+verificación aunque tengan las dos claves.
 
-Límite honesto: quien controla la cuenta de Windows puede reemplazar el propio
-actualizador o el POS directamente (auditoría H-01). El actualizador evita paquetes
-falsos y errores de procedimiento; no reemplaza separar las cuentas de Windows.
+Límite honesto: quien controla la cuenta de Windows puede reemplazar el propio actualizador
+o el POS directamente (auditoría H-01). El actualizador evita paquetes falsos, errores de
+procedimiento y estados a medias; no reemplaza separar las cuentas de Windows.
 
-## Flujo (lo que hace al apretar Actualizar)
+## Flujo
 
-| Paso | Qué hace | Si falla |
+| Paso | Qué hace | Si falla o se corta |
 |---|---|---|
-| 1. Consultar versiones | Baja `latest.json` y `latest.json.sig`; verifica la firma | Usar un archivo `.gipupdate` |
-| 2. Descargar | Baja el paquete a `updates\tmp`; compara el SHA-256 con el índice firmado | Se borra la descarga |
-| 3. Verificar | Firma del manifiesto, archivos exactos, hash y tamaño del instalador, versión posterior a la instalada y a la más alta instalada antes | No se toca nada |
-| 4. Cerrar el POS | Si está abierto: login del dueño por la API local y cierre ordenado | No se toca nada |
-| 5. Respaldo | Copia `pos.db`, `-wal`, `-shm` (con el POS cerrado = consistente) y la carpeta del programa a `updates\rollback` | No se toca nada |
-| 6. Instalar y migrar | Instalador silencioso y luego `GestionInteligentePOS.exe --prepare-stdin` (contraseña por entrada estándar, nunca en argumentos; hace además su respaldo `pre_upgrade`) | **Restaura** programa y datos |
-| 7. Comprobar | `--version` igual a la firmada, arranque, `/api/health`, login del dueño como ADMIN, cierre | **Restaura** programa y datos |
+| 1. Consultar | Baja `latest.json` + `.sig`; verifica firma y `key_id` | Usar archivo `.gipupdate` |
+| 2. Descargar | A `updates\tmp`; SHA-256 contra el índice firmado | Se borra la descarga |
+| 3. Verificar | Firma, exactamente 3 archivos sin duplicados, hash y tamaño, versión posterior | Nada cambia |
+| — | Revalida técnico + dueño (contadores separados) | Nada cambia |
+| 4. Cerrar el POS | Cierre ordenado por API y **toma el bloqueo de instancia del POS** | Si no lo obtiene: nada cambia |
+| 5. Respaldo | Journal `snapshotting`; copia programa + `pos.db/-wal/-shm` a `updates\rollback\<id>`, hashes, `integrity_check` | Corte: la recuperación descarta la copia parcial |
+| 6. Instalar y migrar | Revalida el hash con el instalador bloqueado contra escritura; Inno silencioso; `--prepare-stdin` con token de traspaso | **Restaura** programa y datos |
+| 7. Comprobar | `--version`, arranque con token, `/api/health`, login ADMIN, cierre | **Restaura** programa y datos |
+| Confirmar | Fase `committing`, `state.json` atómico, borra journal y copias **anteriores** | Corte: la recuperación completa la confirmación |
 
-Registro sin secretos: `%LOCALAPPDATA%\GestionInteligentePOS\updates\actualizaciones.log`.
-Después de 5 claves incorrectas el actualizador se bloquea 15 minutos.
+### Bloqueo de mantenimiento y recuperación
+
+Mientras exista `%LOCALAPPDATA%\GestionInteligentePOS\updates\update-journal.json`, el POS
+**no abre** y muestra: "Hay una actualización del POS en curso o interrumpida…". Es una
+protección de integridad, no de versión (ADR-019). Solo el proceso que lanza el
+actualizador con el token de esa actualización pasa, y solo para migrar y comprobar.
+
+Si hubo un corte de luz, un reinicio o se mató el proceso: abrí el actualizador. Arranca en
+**modo recuperación** y solo ofrece **Recuperar**, que acepta la **clave del técnico o la
+contraseña del dueño** (validada contra la copia verificada, porque la base actual puede
+estar a medio migrar). La recuperación:
+
+- antes del respaldo completo: descarta la copia parcial (programa y datos no se tocaron);
+- en instalación, migración, comprobación o restauración: verifica la copia y restaura
+  programa y datos; se puede repetir si se vuelve a cortar;
+- en la confirmación: completa la versión nueva.
+
+Un journal dañado bloquea igual y pide revisión manual del técnico (no se adivina).
+La ventana no se puede cerrar mientras actualiza o recupera.
+
+Archivos: `updates\actualizaciones.log` (sin secretos), `updates\state.json`,
+`updates\intentos-tecnico.json`, `updates\intentos-dueno.json`, `updates\rollback\<id>`.
+
+## Claves de firma
+
+- **Principal** (`gip-firma\principal.pem`): la usás para firmar.
+- **Respaldo** (`respaldo.pem` en un pendrive guardado offline, otra frase): no se usa
+  salvo emergencia. Su clave pública va desde el día uno en todos los actualizadores.
+
+| Situación | Qué hacer |
+|---|---|
+| Perdiste la principal | Firmá con la de respaldo (`--clave E:\gip-firma\respaldo.pem`); los actualizadores ya la aceptan. Creá una nueva principal y, en tu próxima visita, reinstalá el actualizador con `--publica nueva.pub --publica respaldo.pub`. |
+| Te robaron la principal | Igual que arriba **y** reinstalá cuanto antes el actualizador en cada cliente sin la clave robada. Hasta entonces, quien la tenga puede firmar paquetes que esos actualizadores aceptan (aún necesita tu clave de técnico y la del dueño). |
+| Rotación planificada | Agregá la nueva al anillo, reinstalá el actualizador en cada visita y recién después dejá de usar la vieja. |
+
+El actualizador no se actualiza solo (ADR-015): cambiar el anillo implica reinstalarlo en
+cada cliente. No hay revocación remota a propósito: el sistema funciona offline.
 
 ## Una sola vez, en TU PC
 
 ```powershell
 cd updater
 python -m pip install -r requirements.txt
-python firmar.py claves        # crea C:\Users\<vos>\gip-firma\clave-privada.pem (cifrada)
-python firmar.py configurar    # graba clave pública + clave de técnico en gip_updater\trust.json
+python firmar.py claves --nombre principal
+python firmar.py claves --nombre respaldo --salida E:\gip-firma\respaldo.pem
+python firmar.py configurar --publica $HOME\gip-firma\principal.pub --publica E:\gip-firma\respaldo.pub
 git add gip_updater/trust.json; git commit -m "Configurar actualizador"; git push
 ```
 
-- **Guardá la clave privada fuera del repo y con copia en un pendrive.** Si la perdés,
-  los actualizadores ya instalados no aceptarán nuevas versiones; si te la roban, pueden
-  firmar actualizaciones falsas.
-- `trust.json` contiene la clave pública (no es secreta) y el hash Argon2id de tu clave de
-  técnico. Con 16 caracteres o más no es práctico romperlo, pero conviene que el repo sea privado.
+`trust.json` contiene claves públicas (no son secretas) y el hash Argon2id de tu clave de
+técnico (16+ caracteres: no es práctico romperlo, pero conviene repo privado). Con
+`trust.json` subido, GitHub Actions arma `ActualizadorPOS-1.0.0-setup.exe`.
 
-Con `trust.json` subido, GitHub Actions arma `ActualizadorPOS-1.0.0-setup.exe`
-(artefacto **Actualizador-POS**). Lo instalás una vez en cada cliente.
+## Cada versión
 
-## Cada vez que publicás una versión
-
-1. Subí la versión en `backend/pyproject.toml` y en `backend/app/main.py` (`--version` la toma de ahí).
-2. Bajá el instalador del POS del artefacto **POS-Windows-main**.
-3. Firmalo:
-
-```powershell
-python firmar.py empaquetar GestionInteligentePOS-0.6.0-setup.exe 0.6.0 --notas "Cierre de caja" `
-  --url https://github.com/NicolasAriel32/gestion-inteligente-pos/releases/download/v0.6.0/GestionInteligentePOS-0.6.0.gipupdate
-```
-
-4. **Por pendrive:** llevá `GestionInteligentePOS-0.6.0.gipupdate`.
-   **Por internet:** creá el Release `v0.6.0` y subí el `.gipupdate`, `latest.json` y `latest.json.sig`.
-
-## En la PC del cliente
-
-Abrí **Actualizador del POS (técnico)** → clave de técnico + contraseña del dueño →
-**Desbloquear** → **Elegir archivo** o **Buscar en internet** → **Actualizar**.
+1. Subí la versión en `backend/pyproject.toml` y `backend/app/main.py`.
+2. Bajá el instalador del artefacto **POS-Windows-main**.
+3. `python firmar.py empaquetar GestionInteligentePOS-0.6.0-setup.exe 0.6.0 --notas "…" [--url https://…/x.gipupdate]`
+4. Pendrive: llevá el `.gipupdate`. Internet: Release con `.gipupdate`, `latest.json`, `latest.json.sig`.
 
 ## Pruebas
 
 ```bash
 cd updater
-PYTHONPATH=.:../backend python -m pytest tests -q   # incluye integración con el POS real si está instalado
+PYTHONPATH=.:../backend python -m pytest tests -q        # motor, paquetes, claves, POS real
+PYTHONPATH=. xvfb-run -a python -m pytest tests/test_gui.py   # ventana (Linux sin pantalla)
 ```
+
+CI (`.github/workflows/windows-candidate.yml`): job `updater` corre las pruebas en Windows;
+job `updater-e2e` instala **main** con ventas reales y actualiza con Inno Setup a una
+versión de prueba 0.6.0 con migración 0007 (`packaging/e2e/`, solo CI), fuerza una falla
+con restauración y mata el actualizador a mitad de la instalación para probar la
+recuperación. Claves y contraseñas de prueba: descartables, generadas en cada corrida.

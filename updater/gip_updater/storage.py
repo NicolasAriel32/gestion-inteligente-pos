@@ -72,10 +72,21 @@ def tree_manifest(root: Path) -> dict[str, str]:
     return result
 
 
+def fsync_file(path: Path) -> None:
+    """En Windows FlushFileBuffers exige un handle con escritura: abrir r+b. Un archivo de
+    solo lectura (atributo copiado del original) no se puede reabrir así; se omite su
+    fsync y queda cubierto por la verificación de hashes posterior."""
+    try:
+        with path.open('r+b') as stream:
+            os.fsync(stream.fileno())
+    except PermissionError:
+        if os.name != 'nt':
+            raise
+
+
 def fsync_tree(root: Path) -> None:
     for path in root.rglob('*'):
         if path.is_file():
-            with path.open('rb') as stream:
-                os.fsync(stream.fileno())
+            fsync_file(path)
     for directory in [root, *(p for p in root.rglob('*') if p.is_dir())]:
         fsync_directory(directory)

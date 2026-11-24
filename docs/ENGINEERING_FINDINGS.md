@@ -559,3 +559,40 @@ AGENTS.md del nuevo repositorio; este archivo no configura automáticamente otro
 - Evidencia: descargas/manuales/WSDL y FEDummy real en ARCA_DEVELOPMENT.md. No equivale
   a homologación de facturas ni valida criterios fiscales comerciales pendientes.
 - Práctica: diferenciar implementación local, contrato publicado y aceptación observada.
+
+
+## H-UPD-001 — "No responde" no prueba que el POS esté cerrado
+
+- Causa: la primera iteración del actualizador daba por cerrado el POS cuando /api/health
+  dejaba de responder, sin tomar su bloqueo de instancia, y copiaba o restauraba SQLite.
+- Fix: el actualizador toma el mismo bloqueo de instancia del POS (mutex/flock) antes del
+  respaldo y de la restauración; si no lo obtiene, no cambia nada.
+- Regresión: test_pos_que_no_suelta_su_bloqueo_frena_sin_cambios,
+  test_bloqueo_de_instancia_se_mantiene_durante_el_respaldo; E2E Windows con el POS abierto.
+- Práctica: probar exclusión con el mismo mecanismo que usa el otro proceso, no con síntomas.
+
+## H-UPD-002 — Una operación de varios pasos sin journal no sobrevive a un corte
+
+- Causa: la restauración vivía en un `except` del mismo proceso; un corte de luz o cerrar
+  la ventana (hilo daemon) dejaba programa y base a medias, y la siguiente corrida borraba
+  la única copia previa.
+- Fix: journal atómico con fases; el POS no arranca con journal (excepción documentada en
+  ADR-019); recuperación obligatoria e idempotente; copias nuevas en carpetas nuevas.
+- Regresión: test_corte_de_luz_* (instalación, migración, comprobación, respaldo,
+  confirmación), test_recuperacion_idempotente_tras_corte_durante_la_restauracion; E2E
+  Windows que mata el árbol del actualizador durante Inno Setup.
+- Práctica: simular el corte con una excepción que el código no atrapa (BaseException) y
+  reabrir con una instancia nueva, en lugar de probar solo la rama de error.
+
+## H-UPD-003 — Un contador compartido se reinicia con la credencial equivocada
+
+- Causa: acertar la clave del técnico reiniciaba el contador común antes de validar al dueño.
+- Fix y regresión: contadores separados; test_contadores_separados_*.
+- Práctica: un límite de intentos por secreto; el éxito de uno no borra los fallos de otro.
+
+## H-UPD-004 — Numeración de decisiones duplicada
+
+- Causa: se tomó "el siguiente número" sin listar los ADR existentes; ADR-016 ya era fiscal.
+- Fix: renumerada a ADR-019 y referencias corregidas.
+- Práctica: `grep -n "^#.*ADR-"` antes de crear una decisión.
+

@@ -45,7 +45,7 @@ from . import package
 from .auth import AuthError, Limiter, check_owner, check_technician
 from .locks import LockBusy, NamedLock, pos_instance_lock, updater_mutex
 from .package import IndexEntry, Keyring, Manifest, PackageError
-from .storage import CorruptStateError, atomic_write_json, file_sha256, fsync_tree, read_json_strict, tree_manifest
+from .storage import CorruptStateError, atomic_write_json, file_sha256, fsync_file, fsync_tree, read_json_strict, tree_manifest
 
 APP_ID = '{F95EAEE3-B79F-4501-9C08-02EF49B75021}_is1'
 EXE = 'GestionInteligentePOS.exe'
@@ -539,8 +539,7 @@ class Updater:
         for name in meta['data']:
             staged = data_dir / f'{name}.restaurando'
             shutil.copy2(folder / 'data' / name, staged)
-            with staged.open('rb') as stream:
-                os.fsync(stream.fileno())
+            fsync_file(staged)
             os.replace(staged, data_dir / name)
         restored = {name: file_sha256(data_dir / name) for name in meta['data']}
         if restored != meta['data'] or (meta['app_present'] and tree_manifest(app_dir) != meta['app']):

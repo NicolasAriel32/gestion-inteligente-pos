@@ -135,28 +135,6 @@ con respaldo al reemplazar voluntariamente binarios. Esas protecciones no consul
 versiones nuevas ni obligan a cambiar una instalación compatible. La aplicación no
 descarga ni instala actualizaciones al arrancar o cerrar.
 
-## ADR-019 — Actualizador externo firmado (aceptada, 2026-11-24)
-
-El propietario autoriza implementar el programa externo previsto en ADR-015, operado por
-el técnico en la PC del cliente. ADR-015 sigue vigente: el POS no consulta, descarga ni
-exige actualizaciones; el actualizador es un programa aparte que solo corre cuando alguien
-lo abre.
-
-- Autorización doble: clave de técnico (Argon2id embebido, mínimo 16 caracteres, 5 fallos
-  bloquean 15 min) **y** contraseña ADMIN vigente del dueño.
-- Autenticidad: paquete `.gipupdate` con manifiesto firmado Ed25519; la clave pública va
-  embebida y la privada nunca sale de la PC del técnico. Hash y tamaño del instalador se
-  verifican contra el manifiesto. El índice `latest.json` para internet también se firma.
-- Sin vuelta atrás: solo versiones posteriores a la instalada y a la más alta ya instalada.
-- Flujo: consultar, descargar, verificar, cierre ordenado por la API local, respaldo de
-  base (+WAL/SHM) y binarios con el POS cerrado, instalación silenciosa, `--prepare-stdin`,
-  comprobación de versión/salud/login ADMIN. Error tras el respaldo: restaurar ambos.
-- El POS agrega `--version` y `--prepare-stdin` (contraseña por entrada estándar, nunca
-  por argumentos). `--prepare` interactivo no cambia.
-- Límite: no protege contra quien controla la cuenta de Windows (auditoría H-01).
-
-Diseño, uso y pruebas: updater/README.md.
-
 ### ADR-013 — Ayuda local y guías por rol (IMPLEMENTADA 0.5.1, 2026-10-22)
 
 El propietario propuso ayuda rápida con signo de pregunta para cargar productos, cambiar
@@ -221,3 +199,37 @@ La construcción corre en main o por acción manual y publica tras smoke correct
 El ZIP tiene instalador y LEEME en raíz, manifest de commit/ref, resultado smoke y hashes;
 Code → Download ZIP sigue siendo código fuente. Actualización del POS siempre voluntaria,
 sin llamadas de versión al arrancar. Diseño/evidencia: MAIN_DISTRIBUTION.md.
+
+
+## ADR-019 — Actualizador externo firmado (ACEPTADA, 2026-11-24; merge pendiente de aprobación)
+
+El propietario autoriza el programa externo previsto en ADR-015, operado por el técnico en
+la PC del cliente. ADR-015 sigue vigente: el POS no consulta, descarga ni exige
+actualizaciones; el actualizador es un programa aparte que solo corre cuando alguien lo abre.
+(Numerada 019: la primera iteración la llamó por error ADR-016, que es facturación fiscal.)
+
+- Autorización doble: clave de técnico (Argon2id embebido, mín. 16) **y** contraseña ADMIN
+  vigente del dueño; contadores de fallos separados (5 fallos → 15 min); revalidada dentro
+  del motor inmediatamente antes de cerrar el POS.
+- Autenticidad: `.gipupdate` con manifiesto firmado Ed25519 y `key_id`; anillo de claves
+  públicas (principal + respaldo offline) para rotación; ZIP con exactamente tres miembros,
+  sin nombres repetidos; hash del instalador revalidado con el archivo bloqueado contra
+  escritura justo antes de ejecutarlo. Índice `latest.json` firmado.
+- Sin vuelta atrás: solo versiones posteriores a la instalada y a la más alta ya instalada.
+- Exclusión: mutex propio del actualizador; bloqueo de instancia del POS tomado durante
+  respaldo y restauración (prueba de que el POS está cerrado).
+- Journal atómico `updates/update-journal.json`. **Excepción acotada a "nunca bloquear el
+  arranque"**: mientras exista, el POS no arranca ni hace mantenimiento (protección de
+  integridad, no de versión): `backend/app/update_gate.py`, salida 3. Solo el proceso que
+  el actualizador lanza con el token de traspaso de esa actualización pasa, y solo en
+  migración y comprobación. Un registro dañado también bloquea (falla cerrado). Se
+  levanta al terminar o al recuperar; la recuperación la puede hacer el dueño con su
+  contraseña (validada contra la copia verificada) o el técnico.
+- Respaldo por actualización con hashes e `integrity_check`; la copia previa solo se borra
+  tras confirmar la nueva versión. Restauración verificada, por staging e idempotente.
+- `state.json` y contadores con escritura atómica; estado dañado se rechaza.
+- El POS agrega `--version` y `--prepare-stdin` (contraseña por entrada estándar).
+- Límite: no protege contra quien controla la cuenta de Windows (auditoría H-01).
+
+Diseño, uso, pruebas y riesgos: updater/README.md y docs/UPDATER_REVIEW_2.md.
+
