@@ -230,8 +230,8 @@ def test_actualizacion_exitosa_sigue_los_7_pasos(setup, tmp_path, key):
     assert paths.database.read_bytes() == b'BASE MIGRADA'
     assert json.loads(paths.state.read_text())['installed_version'] == '0.6.0'
     assert (paths.rollback / 'data' / 'pos.db').read_bytes() == b'BASE ORIGINAL'
-    assert 'Éxito: versión 0.6.0' in paths.log.read_text()
-    assert OWNER_PW not in paths.log.read_text()
+    assert 'Éxito: versión 0.6.0' in paths.log.read_text(encoding='utf-8')
+    assert OWNER_PW not in paths.log.read_text(encoding='utf-8')
 
 
 @pytest.mark.parametrize('kwargs, fail, message', [
