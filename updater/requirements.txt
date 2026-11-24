@@ -1,0 +1,3 @@
+# Actualizador separado. Mismas versiones que el backend para no duplicar riesgos.
+cryptography==50.0.2
+argon2-cffi==25.1.0

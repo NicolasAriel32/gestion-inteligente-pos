@@ -15,6 +15,7 @@ from uuid import uuid4
 
 import uvicorn
 
+import app.main as _main
 from app.bootstrap import prepare_setup
 from app.domain.identity import IdentityError
 from app.infrastructure.backups import BackupFiles
@@ -23,6 +24,7 @@ from app.infrastructure.maintenance import MaintenanceStore
 from app.infrastructure.migrations import upgrade_database
 from app.infrastructure.schema import verify_schema
 from app.main import create_app
+from app.update_gate import maintenance_block
 
 
 class InstanceLock:
@@ -101,7 +103,10 @@ def ready(instance: str, timeout: float = 10) -> bool:
     return False
 
 
-def prepare(path: Path, approved: bool = False) -> None:
+PRODUCT_VERSION = _main.app.version  # misma fuente que la API (docs/VERSIONS.md)
+
+
+def prepare(path: Path, approved: bool = False, password: str | None = None) -> None:
     if not approved and input('Escribí PREPARAR para crear/actualizar la base local: ') != 'PREPARAR':
         raise IdentityError(409, 'Preparación cancelada')
     files = BackupFiles(path)
@@ -113,7 +118,8 @@ def prepare(path: Path, approved: bool = False) -> None:
         with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as db:
             owner = db.execute("SELECT username FROM users WHERE role='ADMIN'").fetchone()
         if owner:
-            MaintenanceStore.credentials(path, owner[0], getpass.getpass('Contraseña ADMIN: '))
+            secret = password if password is not None else getpass.getpass('Contraseña ADMIN: ')
+            MaintenanceStore.credentials(path, owner[0], secret)
         saved = files.create('pre_upgrade', current=False)
         print('Respaldo previo guardado:', saved['id'])
     upgrade_database(path)
@@ -175,11 +181,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--renew-setup', action='store_true')
     parser.add_argument('--configure-arca', action='store_true', help='Configurar certificado de homologación local (ADMIN, sin red)')
     parser.add_argument('--no-browser', action='store_true')
+    parser.add_argument('--version', action='store_true', help='Mostrar la versión instalada y salir')
+    parser.add_argument('--prepare-stdin', action='store_true',
+                        help='Uso del actualizador: preparar/migrar leyendo la contraseña ADMIN de la entrada estándar')
     args = parser.parse_args(argv)
+    if args.version:
+        print(PRODUCT_VERSION)
+        return 0
     path = get_db_path().resolve()
+    blocked = maintenance_block(path)
+    if blocked:
+        # ADR-019: integridad durante una actualización; no depende de versiones ni de red.
+        print(blocked)
+        return 3
     lock = InstanceLock(path.parent.parent / 'config' / 'instance.lock')
     if not lock.acquire():
-        if args.prepare or args.recover_restore or args.renew_setup or args.configure_arca:
+        if args.prepare or args.prepare_stdin or args.recover_restore or args.renew_setup or args.configure_arca:
             print('Cerrá la aplicación antes de realizar mantenimiento.')
             return 1
         try:
@@ -196,6 +213,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.prepare:
             prepare(path)
+            return 0
+        if args.prepare_stdin:
+            # Aprobación explícita del actualizador firmado; la contraseña nunca va en argumentos.
+            prepare(path, approved=True, password=sys.stdin.readline().rstrip('\r\n'))
             return 0
         if args.renew_setup:
             print('Archivo del nuevo secreto inicial:', prepare_setup(path, renew=True))

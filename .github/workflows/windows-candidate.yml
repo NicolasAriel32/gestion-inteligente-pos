@@ -2,11 +2,11 @@ name: Windows POS candidate
 on:
   workflow_dispatch:
   push:
-    branches: [main, feat/f6-backup-import-distribution, feat/arca-integration]
-    paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
+    branches: [main, feat/f6-backup-import-distribution, feat/arca-integration, feat/actualizador-firmado]
+    paths: ['backend/**', 'frontend/**', 'packaging/**', 'updater/**', '.github/workflows/windows-candidate.yml']
   pull_request:
     branches: [main, feat/f6-backup-import-distribution]
-    paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
+    paths: ['backend/**', 'frontend/**', 'packaging/**', 'updater/**', '.github/workflows/windows-candidate.yml']
 permissions:
   contents: read
 jobs:
@@ -35,4 +35,82 @@ jobs:
           name: POS-Windows-${{ github.ref_name == 'main' && 'main' || 'candidate' }}
           path: dist/download/*
           if-no-files-found: error
+          retention-days: 30
+  updater:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Updater tests on Windows (incluye ventana tkinter)
+        shell: pwsh
+        run: |
+          python -m pip install -r updater/requirements.txt "pytest>=8,<10"
+          $env:PYTHONPATH = 'updater'
+          python -m pytest updater/tests -q -rs
+      - name: Build updater installer (only when trust.json is configured)
+        if: hashFiles('updater/gip_updater/trust.json') != ''
+        shell: pwsh
+        run: ./packaging/build-updater.ps1
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('updater/gip_updater/trust.json') != ''
+        with:
+          name: Actualizador-POS
+          path: dist/installer/ActualizadorPOS-*-setup.exe
+          if-no-files-found: error
+          retention-days: 30
+  updater-e2e:
+    # ADR-019: actualización REAL con Inno Setup. Instala main (0.5.1) con ventas, actualiza a
+    # una versión de prueba 0.6.0 con migración 0007 (solo CI), fuerza falla y corte, recupera.
+    runs-on: windows-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build old installer from main (versión en campo)
+        shell: pwsh
+        run: |
+          git worktree add ../pos-old origin/main
+          Push-Location ../pos-old
+          ./packaging/build-windows.ps1
+          Pop-Location
+          New-Item -ItemType Directory e2e -Force | Out-Null
+          Copy-Item (Get-ChildItem ../pos-old/dist/installer/*-setup.exe)[0] e2e/old-setup.exe
+      - name: Build probe installer 0.6.0 (migración de prueba, no se distribuye)
+        shell: pwsh
+        run: |
+          git worktree add ../pos-new HEAD
+          python packaging/e2e/make_probe_version.py ../pos-new 0.6.0
+          Push-Location ../pos-new
+          ./packaging/build-windows.ps1
+          Pop-Location
+          Copy-Item (Get-ChildItem ../pos-new/dist/installer/*-setup.exe)[0] e2e/new-setup.exe
+      - name: Real update, failure restore, forced kill and recovery
+        shell: pwsh
+        run: |
+          python -m pip install -r updater/requirements.txt
+          python packaging/e2e/updater_e2e.py e2e/old-setup.exe e2e/new-setup.exe e2e/report.json
+      - name: Collect updater logs
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory e2e -Force | Out-Null
+          Copy-Item "$env:LOCALAPPDATA\GestionInteligentePOS\updates\*.log" e2e/ -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Updater-E2E-report
+          path: |
+            e2e/report.json
+            e2e/*.log
+          if-no-files-found: warn
           retention-days: 30
