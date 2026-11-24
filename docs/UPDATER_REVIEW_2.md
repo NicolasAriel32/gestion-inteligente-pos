@@ -29,7 +29,38 @@ en el primer intento de esta iteración y fue restaurado antes de commitear.
 
 ## Resultados
 
-RESULTADOS_PENDIENTES
+Comandos y resultados reales (2026-11-24):
+
+| Dónde | Comando | Resultado |
+|---|---|---|
+| Linux (sesión) | `cd backend && python -m pytest -q` | 190 pasan (187 previas + 3 de `test_update_gate.py`) |
+| Linux | `cd updater && PYTHONPATH=.:../backend python -m pytest tests -q` | 38 pasan, 1 módulo salteado (`test_gui`, sin pantalla) |
+| Linux + Xvfb | `PYTHONPATH=. xvfb-run -a python -m pytest tests/test_gui.py` | 3 pasan |
+| Linux | `ruff check` en `backend/app`, `backend/tests`, `updater` | sin observaciones |
+| Windows CI, job `updater` (run 45436092842) | pruebas del actualizador | 38 pasan (incluye la ventana tkinter), 1 salteado (`test_pos_real`: sin backend en ese job) |
+| Windows CI, job `build` | instalador del POS + smoke | 9 chequeos de arranque pasan |
+| Windows CI, job `updater-e2e` | `packaging/e2e/updater_e2e.py` | **OK**, detalle abajo |
+
+E2E real en Windows (GitHub Actions `windows-latest`, Inno Setup, run 45436092842):
+
+1. `seed`: instalador de **main** (0.5.1, sin `--version`), dueño, 3 productos, **12 ventas** por la API.
+2. `update_ok`: con el POS **abierto**, actualización a 0.6.0 en **16,1 s**; revisión
+   `0006_local_operations → 0007_e2e_update_probe`; la migración registró 12 ventas;
+   ventas, ítems, pagos, stock, usuarios y movimientos **idénticos**.
+3. `new_version_sells`: arranque normal sin token y una venta nueva (13).
+4. `failure_restored`: paquete 0.7.0 con instalador 0.6.0 → falla la comprobación →
+   programa restaurado (sin carpetas `.restaurando`/`.descartado`) y base **idéntica por SHA-256**.
+5. `crash_blocks_pos`: `taskkill /T /F` del actualizador durante la instalación (fase
+   `installing`); el POS 0.6.0 se niega a arrancar (**código 3**).
+6. `crash_recovered`: recuperación con la clave del técnico; versión 0.6.0, datos idénticos,
+   el POS vuelve a arrancar.
+7. `single_updater`: un segundo actualizador con el mutex tomado se rechaza.
+8. El registro del actualizador no contiene la clave del técnico ni la del dueño.
+
+Iteración en CI: la primera corrida falló en Windows por `fsync` sobre un archivo abierto
+solo para lectura (Windows exige escritura para `FlushFileBuffers`); corregido en
+`storage.fsync_file`. La segunda pasó la E2E y falló solo al subir registros fuera del
+workspace; corregido juntándolos en `e2e/`.
 
 ## Riesgos residuales
 
