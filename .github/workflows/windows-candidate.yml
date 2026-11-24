@@ -2,11 +2,11 @@ name: Windows POS candidate
 on:
   workflow_dispatch:
   push:
-    branches: [main, feat/f6-backup-import-distribution, feat/arca-integration]
-    paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
+    branches: [main, feat/f6-backup-import-distribution, feat/arca-integration, feat/actualizador-firmado]
+    paths: ['backend/**', 'frontend/**', 'packaging/**', 'updater/**', '.github/workflows/windows-candidate.yml']
   pull_request:
     branches: [main, feat/f6-backup-import-distribution]
-    paths: ['backend/**', 'frontend/**', 'packaging/**', '.github/workflows/windows-candidate.yml']
+    paths: ['backend/**', 'frontend/**', 'packaging/**', 'updater/**', '.github/workflows/windows-candidate.yml']
 permissions:
   contents: read
 jobs:
@@ -34,5 +34,30 @@ jobs:
         with:
           name: POS-Windows-${{ github.ref_name == 'main' && 'main' || 'candidate' }}
           path: dist/download/*
+          if-no-files-found: error
+          retention-days: 30
+  updater:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Updater tests on Windows
+        shell: pwsh
+        run: |
+          python -m pip install -r updater/requirements.txt "pytest>=8,<10"
+          $env:PYTHONPATH = 'updater'
+          python -m pytest updater/tests -q
+      - name: Build updater installer (only when trust.json is configured)
+        if: hashFiles('updater/gip_updater/trust.json') != ''
+        shell: pwsh
+        run: ./packaging/build-updater.ps1
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('updater/gip_updater/trust.json') != ''
+        with:
+          name: Actualizador-POS
+          path: dist/installer/ActualizadorPOS-*-setup.exe
           if-no-files-found: error
           retention-days: 30
