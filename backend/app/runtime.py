@@ -24,6 +24,7 @@ from app.infrastructure.maintenance import MaintenanceStore
 from app.infrastructure.migrations import upgrade_database
 from app.infrastructure.schema import verify_schema
 from app.main import create_app
+from app.update_gate import maintenance_block
 
 
 class InstanceLock:
@@ -188,6 +189,11 @@ def main(argv: list[str] | None = None) -> int:
         print(PRODUCT_VERSION)
         return 0
     path = get_db_path().resolve()
+    blocked = maintenance_block(path)
+    if blocked:
+        # ADR-019: integridad durante una actualización; no depende de versiones ni de red.
+        print(blocked)
+        return 3
     lock = InstanceLock(path.parent.parent / 'config' / 'instance.lock')
     if not lock.acquire():
         if args.prepare or args.prepare_stdin or args.recover_restore or args.renew_setup or args.configure_arca:

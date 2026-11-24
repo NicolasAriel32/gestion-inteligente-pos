@@ -1,40 +1,73 @@
-"""Motor del actualizador. Pasos:
-1 consultar versiones · 2 descargar a carpeta temporal · 3 verificar firma y compatibilidad
-4 cerrar el POS · 5 respaldo consistente · 6 instalar y migrar · 7 comprobar funcionamiento
-Éxito: confirmar versión. Error después del paso 5: restaurar binarios y datos anteriores.
+"""Motor del actualizador (ADR-019).
 
-Todo lo que toca el sistema operativo pasa por `System`, para poder probarlo sin Windows.
+Pasos: 1 consultar · 2 descargar · 3 verificar · 4 cerrar el POS · 5 respaldo verificado ·
+6 instalar y migrar · 7 comprobar. Éxito: confirmar. Error: restaurar.
+
+Garantías:
+- Un solo actualizador a la vez (mutex propio) y bloqueo de instancia del POS mientras se
+  copian o restauran archivos: tenerlo PRUEBA que el POS está cerrado.
+- Journal persistente y atómico (`updates/update-journal.json`). Mientras exista, el POS
+  no arranca (backend/app/update_gate.py) salvo el traspaso controlado de migración
+  y comprobación. Un corte de luz, reinicio o cierre forzado deja el journal: la próxima
+  apertura del actualizador obliga a recuperar antes de cualquier otra cosa.
+- Respaldo en una carpeta nueva por actualización, con hashes, verificado y con
+  `integrity_check` de SQLite; la copia anterior no se borra hasta confirmar la nueva versión.
+- Restauración idempotente: verifica la copia antes de tocar nada, arma la carpeta en
+  staging y la cambia con renombres; se puede repetir hasta completar.
+- state.json atómico y estricto: si está dañado se frena, no se ignora.
+- Autorización (técnico + dueño, contadores separados) revalidada dentro del motor
+  inmediatamente antes de cerrar el POS; hash del instalador revalidado con el archivo
+  bloqueado contra escritura justo antes de ejecutarlo.
 """
 from __future__ import annotations
 
+import hashlib
 import http.cookiejar
 import json
 import os
+import secrets
 import shutil
+import sqlite3
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import closing, contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import BinaryIO
 
 from . import package
-from .package import IndexEntry, Manifest, PackageError
+from .auth import AuthError, Limiter, check_owner, check_technician
+from .locks import LockBusy, NamedLock, pos_instance_lock, updater_mutex
+from .package import IndexEntry, Keyring, Manifest, PackageError
+from .storage import CorruptStateError, atomic_write_json, file_sha256, fsync_tree, read_json_strict, tree_manifest
 
 APP_ID = '{F95EAEE3-B79F-4501-9C08-02EF49B75021}_is1'
 EXE = 'GestionInteligentePOS.exe'
 BASE = 'http://127.0.0.1:8765'
+ENV_TOKEN = 'GIP_MAINTENANCE_TOKEN'
 MAX_DOWNLOAD = package.MAX_INSTALLER + 1024 * 1024
 INSTALLER_ARGS = ['/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOCANCEL', '/SP-']
+DB_FILES = ('pos.db', 'pos.db-wal', 'pos.db-shm')
+PHASES = ('snapshotting', 'snapshot_ok', 'installing', 'migrating', 'checking', 'committing', 'restoring')
+STATE_FIELDS = {'installed_version': str, 'highest_installed': str, 'updated_at': str}
+JOURNAL_FIELDS = {'id': str, 'phase': str, 'from_version': (str, type(None)), 'to_version': str,
+                  'handoff_token': str, 'started_at': str, 'updated_at': str}
 
 Report = Callable[[int, str], None]
 
 
 class UpdateError(Exception):
     pass
+
+
+def now() -> str:
+    return datetime.now().astimezone().isoformat(timespec='seconds')
 
 
 @dataclass(frozen=True)
@@ -64,6 +97,10 @@ class Paths:
         return self.updates / 'rollback'
 
     @property
+    def journal(self) -> Path:
+        return self.updates / 'update-journal.json'
+
+    @property
     def state(self) -> Path:
         return self.updates / 'state.json'
 
@@ -76,13 +113,18 @@ class Paths:
         return self.data_root / 'config' / 'restore-pending.json'
 
 
+@dataclass(frozen=True)
+class Authorization:
+    owner: str | None
+
+
 class LocalApi:
     """Cliente mínimo de la API local del POS (loopback, sin proxy, con cookie y CSRF)."""
 
     def __init__(self, base: str = BASE):
         self.base = base
-        self.jar = http.cookiejar.CookieJar()
-        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(self.jar))
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}),
+                                                  urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
         self.csrf = ''
 
     def request(self, method: str, path: str, body: dict | None = None, timeout: float = 5) -> tuple[int, dict]:
@@ -123,26 +165,52 @@ class System:
     def __init__(self, paths: Paths):
         self.paths = paths
 
-    def run(self, args: list[str], stdin: str | None = None, timeout: float = 900) -> tuple[int, str]:
+    def run(self, args: list[str], stdin: str | None = None, timeout: float = 900,
+            env: dict[str, str] | None = None) -> tuple[int, str]:
         flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-        result = subprocess.run(args, input=stdin, check=False, capture_output=True, text=True, timeout=timeout, creationflags=flags)
+        result = subprocess.run(args, input=stdin, check=False, capture_output=True, text=True, timeout=timeout,
+                                creationflags=flags, env={**os.environ, **(env or {})})
         return result.returncode, (result.stdout + result.stderr)[-2000:]
 
-    def start_pos(self) -> subprocess.Popen:
+    def start_pos(self, env: dict[str, str]) -> subprocess.Popen:
         flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
         return subprocess.Popen([str(self.paths.exe), '--no-browser'], stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL, creationflags=flags)
+                                stderr=subprocess.DEVNULL, creationflags=flags, env={**os.environ, **env})
 
     def api(self) -> LocalApi:
         return LocalApi()
+
+    def pos_lock(self) -> NamedLock:
+        return pos_instance_lock(self.paths.data_root)
+
+    @contextmanager
+    def locked_file(self, path: Path) -> Iterator[BinaryIO]:
+        """Abre para lectura impidiendo que otro proceso lo modifique mientras está abierto."""
+        if os.name != 'nt':
+            with path.open('rb') as stream:
+                yield stream
+            return
+        import ctypes
+        import msvcrt
+        from ctypes import wintypes
+        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+                                       wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+        kernel.CreateFileW.restype = wintypes.HANDLE
+        generic_read, share_read, open_existing = 0x80000000, 0x1, 3
+        handle = kernel.CreateFileW(str(path), generic_read, share_read, None, open_existing, 0, None)
+        if handle in (None, wintypes.HANDLE(-1).value):
+            raise OSError(ctypes.get_last_error(), 'No se pudo bloquear el instalador')
+        fd = msvcrt.open_osfhandle(handle, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
+        with os.fdopen(fd, 'rb') as stream:
+            yield stream
 
     def registry_version(self) -> str | None:
         if os.name != 'nt':
             return None
         import winreg
-        key_path = rf'Software\Microsoft\Windows\CurrentVersion\Uninstall\{APP_ID}'
         try:
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, rf'Software\Microsoft\Windows\CurrentVersion\Uninstall\{APP_ID}') as key:
                 return str(winreg.QueryValueEx(key, 'DisplayVersion')[0])
         except OSError:
             return None
@@ -181,21 +249,61 @@ class Updater:
 
     def __post_init__(self) -> None:
         self.system = self.system or System(self.paths)
-        self.key = package.public_key(self.trust['public_key'])
+        try:
+            self.keyring = Keyring.from_trust(self.trust)
+        except PackageError as exc:
+            raise UpdateError(str(exc)) from exc
+        self.technician_limiter = Limiter(self.paths.updates / 'intentos-tecnico.json', 'la clave del técnico')
+        self.owner_limiter = Limiter(self.paths.updates / 'intentos-dueno.json', 'la contraseña del dueño')
+        self.mutex = updater_mutex(self.paths.data_root)
 
-    # --- estado y registro --------------------------------------------------------
+    # --- registro, estado y journal --------------------------------------------------------
     def log(self, message: str) -> None:
         self.paths.updates.mkdir(parents=True, exist_ok=True)
         with self.paths.log.open('a', encoding='utf-8') as stream:
-            stream.write(f'{datetime.now().astimezone().isoformat(timespec="seconds")} {message}\n')
+            stream.write(f'{now()} {message}\n')
+            stream.flush()
+            os.fsync(stream.fileno())
 
     def state(self) -> dict:
         try:
-            data = json.loads(self.paths.state.read_text(encoding='utf-8'))
-            return data if isinstance(data, dict) else {}
-        except (OSError, ValueError):
+            data = read_json_strict(self.paths.state, STATE_FIELDS)
+        except CorruptStateError as exc:
+            raise UpdateError(f'{exc}. Revisá {self.paths.state} antes de actualizar.') from exc
+        if data is None:
             return {}
+        for key in ('installed_version', 'highest_installed'):
+            try:
+                package.parse_version(data[key])
+            except PackageError as exc:
+                raise UpdateError(f'state.json está dañado: {key}. Revisá {self.paths.state}.') from exc
+        return data
 
+    def write_state(self, version: str) -> None:
+        highest = self.state().get('highest_installed')
+        if not highest or package.parse_version(version) > package.parse_version(highest):
+            highest = version
+        atomic_write_json(self.paths.state, {'installed_version': version, 'highest_installed': highest, 'updated_at': now()})
+
+    def journal(self) -> dict | None:
+        try:
+            data = read_json_strict(self.paths.journal, JOURNAL_FIELDS)
+        except CorruptStateError as exc:
+            raise UpdateError(f'{exc}: la recuperación necesita revisión manual del técnico') from exc
+        if data is not None and (data['phase'] not in PHASES or not data['id'].isalnum()):
+            raise UpdateError('update-journal.json está dañado: la recuperación necesita revisión manual del técnico')
+        return data
+
+    def set_phase(self, journal: dict, phase: str, **changes) -> dict:
+        journal = {**journal, **changes, 'phase': phase, 'updated_at': now()}
+        atomic_write_json(self.paths.journal, journal)
+        return journal
+
+    def pending(self) -> dict | None:
+        """Actualización interrumpida que hay que recuperar antes de cualquier otra cosa."""
+        return self.journal()
+
+    # --- versiones -------------------------------------------------------------------------
     def installed_version(self) -> str | None:
         if self.paths.exe.is_file():
             try:
@@ -216,7 +324,15 @@ class Updater:
             if current and new <= package.parse_version(current):
                 raise UpdateError(f'La versión {version} no es posterior a {label} ({current}). No se permite volver atrás.')
 
-    # --- pasos 1 a 3 --------------------------------------------------------------
+    # --- autorización (centralizada) --------------------------------------------------------
+    def authorize(self, technician: str, owner_password: str) -> Authorization:
+        try:
+            check_technician(self.trust.get('technician_hash', ''), technician, self.technician_limiter)
+            return Authorization(check_owner(self.paths.database, owner_password, self.owner_limiter))
+        except AuthError as exc:
+            raise UpdateError(str(exc)) from exc
+
+    # --- pasos 1 a 3 ------------------------------------------------------------------------
     def available(self) -> IndexEntry:
         self.report(1, 'Consultando versiones disponibles…')
         url = self.trust.get('index_url', '')
@@ -226,7 +342,7 @@ class Updater:
         except (OSError, urllib.error.URLError) as exc:
             raise UpdateError('No se pudo consultar internet. Podés usar un archivo .gipupdate.') from exc
         try:
-            return package.parse_index(data, signature, self.key)
+            return package.parse_index(data, signature, self.keyring)
         except PackageError as exc:
             raise UpdateError(str(exc)) from exc
 
@@ -239,7 +355,7 @@ class Updater:
         except (OSError, urllib.error.URLError) as exc:
             target.unlink(missing_ok=True)
             raise UpdateError('Falló la descarga. Reintentá o usá un archivo .gipupdate.') from exc
-        if package.file_sha256(target) != entry.package_sha256:
+        if file_sha256(target) != entry.package_sha256:
             target.unlink(missing_ok=True)
             raise UpdateError('El archivo descargado no coincide con el índice firmado')
         return target
@@ -249,68 +365,126 @@ class Updater:
         work = self.paths.updates / 'tmp' / 'verificado'
         shutil.rmtree(work, ignore_errors=True)
         try:
-            manifest = package.open_package(package_path, self.key, work)
+            manifest = package.open_package(package_path, self.keyring, work)
         except PackageError as exc:
             shutil.rmtree(work, ignore_errors=True)
             raise UpdateError(str(exc)) from exc
         self.check_compatible(manifest.version)
         return manifest, work / 'installer.exe'
 
-    # --- pasos 4 a 7 --------------------------------------------------------------
-    def stop_pos(self, owner: str | None, password: str) -> None:
+    # --- paso 4 -----------------------------------------------------------------------------
+    def stop_pos(self, auth: Authorization, password: str) -> NamedLock:
+        """Cierra el POS si está abierto y devuelve su bloqueo de instancia TOMADO."""
         self.report(4, 'Cerrando el POS de forma segura…')
         api = self.system.api()
-        if not api.alive():
-            return
-        if owner is None:
-            raise UpdateError('El POS está abierto. Cerralo desde Herramientas y reintentá.')
-        api.login(owner, password)
-        api.shutdown()
-        for _ in range(60):
-            self.system.sleep(0.5)
-            if not api.alive():
-                self.system.sleep(1)  # margen para liberar bloqueo de instancia y archivos
-                return
-        raise UpdateError('El POS no se cerró a tiempo. No se cambió nada.')
+        if api.alive():
+            if auth.owner is None:
+                raise UpdateError('El POS está abierto. Cerralo desde Herramientas y reintentá.')
+            api.login(auth.owner, password)
+            api.shutdown()
+        lock = self.system.pos_lock()
+        for _ in range(120):
+            try:
+                lock.acquire()
+                return lock
+            except LockBusy:
+                self.system.sleep(0.5)
+        raise UpdateError('El POS sigue abierto (su bloqueo de instancia no se liberó). No se cambió nada.')
 
-    def snapshot(self, from_version: str | None) -> None:
-        self.report(5, 'Generando respaldo consistente de programa y datos…')
-        if self.paths.restore_journal.exists():
-            raise UpdateError('Hay una restauración interrumpida. Resolvela con "Recuperar restauración interrumpida".')
-        rollback = self.paths.rollback
-        shutil.rmtree(rollback, ignore_errors=True)
-        (rollback / 'data').mkdir(parents=True)
-        # Con el POS cerrado, copiar base + WAL + SHM juntos da un estado consistente.
-        for suffix in ('', '-wal', '-shm'):
-            source = self.paths.database.with_name('pos.db' + suffix)
+    # --- paso 5 -----------------------------------------------------------------------------
+    def snapshot(self, journal: dict) -> dict:
+        """Copia verificada de programa y base. No toca copias anteriores."""
+        self.report(5, 'Generando respaldo verificado de programa y datos…')
+        target = self.paths.rollback / journal['id']
+        shutil.rmtree(target, ignore_errors=True)
+        (target / 'data').mkdir(parents=True)
+        for name in DB_FILES:
+            source = self.paths.database.with_name(name)
             if source.exists():
-                shutil.copy2(source, rollback / 'data' / source.name)
-        if self.paths.app_dir.exists():
-            package.copy_tree(self.paths.app_dir, rollback / 'app')
-        (rollback / 'meta.json').write_text(json.dumps({'from_version': from_version,
-                                                       'created_at': datetime.now().astimezone().isoformat()}), encoding='utf-8')
+                shutil.copy2(source, target / 'data' / name)
+        app_present = self.paths.app_dir.exists()
+        if app_present:
+            shutil.copytree(self.paths.app_dir, target / 'app', symlinks=False)
+        fsync_tree(target)
+        meta = {
+            'id': journal['id'], 'from_version': journal['from_version'], 'created_at': now(),
+            'app_present': app_present,
+            'app': tree_manifest(target / 'app') if app_present else {},
+            'data': tree_manifest(target / 'data'),
+        }
+        # La copia debe coincidir con el original (el POS está cerrado y bloqueado).
+        if app_present and meta['app'] != tree_manifest(self.paths.app_dir):
+            raise UpdateError('La copia del programa no coincide con el original')
+        for name, digest in meta['data'].items():
+            if file_sha256(self.paths.database.with_name(name)) != digest:
+                raise UpdateError('La copia de la base no coincide con el original')
+        self.check_database_copy(target / 'data')
+        atomic_write_json(target / 'snapshot.json', meta)
+        return meta
 
-    def install(self, installer: Path, password: str) -> None:
+    def check_database_copy(self, folder: Path) -> None:
+        """integrity_check sobre una copia descartable (abrirla aplica el WAL)."""
+        if not (folder / 'pos.db').exists():
+            return
+        with tempfile.TemporaryDirectory(dir=self.paths.updates) as scratch:
+            for item in folder.iterdir():
+                shutil.copy2(item, Path(scratch) / item.name)
+            with closing(sqlite3.connect(Path(scratch) / 'pos.db')) as db:
+                result = db.execute('PRAGMA integrity_check').fetchone()[0]
+        if result != 'ok':
+            raise UpdateError('La base actual no pasa el control de integridad; no se actualiza')
+
+    def verify_snapshot(self, snapshot_id: str) -> dict:
+        folder = self.paths.rollback / snapshot_id
+        try:
+            meta = read_json_strict(folder / 'snapshot.json', {'id': str, 'app_present': bool, 'app': dict, 'data': dict})
+        except CorruptStateError as exc:
+            raise UpdateError('La copia de seguridad está dañada; no se restaura') from exc
+        if meta is None or meta['id'] != snapshot_id:
+            raise UpdateError('La copia de seguridad está incompleta; no se restaura')
+        try:
+            actual_app = tree_manifest(folder / 'app') if meta['app_present'] else {}
+            actual_data = tree_manifest(folder / 'data')
+        except OSError as exc:
+            raise UpdateError('La copia de seguridad no se puede leer; no se restaura') from exc
+        if meta['app'] != actual_app or meta['data'] != actual_data:
+            raise UpdateError('La copia de seguridad no coincide con sus hashes; no se restaura')
+        return meta
+
+    # --- paso 6 -----------------------------------------------------------------------------
+    def install(self, installer: Path, manifest: Manifest) -> None:
         self.report(6, 'Instalando nueva versión…')
         log = self.paths.updates / 'instalador.log'
-        code, _ = self.system.run([str(installer), *INSTALLER_ARGS, f'/LOG={log}'])
+        with self.system.locked_file(installer) as stream:
+            digest, size = hashlib.sha256(), 0
+            for block in iter(lambda: stream.read(1 << 20), b''):
+                digest.update(block)
+                size += len(block)
+            if size != manifest.installer_size or digest.hexdigest() != manifest.installer_sha256:
+                raise UpdateError('El instalador cambió después de verificarlo; no se ejecuta')
+            code, _ = self.system.run([str(installer), *INSTALLER_ARGS, f'/LOG={log}'])
         if code != 0:
             raise UpdateError(f'El instalador terminó con error ({code})')
+
+    def migrate(self, password: str, token: str) -> None:
         self.report(6, 'Migrando base de datos…')
+        code, output = 1, ''
         for _ in range(10):
-            code, output = self.system.run([str(self.paths.exe), '--prepare-stdin'], stdin=password + '\n')
+            code, output = self.system.run([str(self.paths.exe), '--prepare-stdin'], stdin=password + '\n',
+                                           env={ENV_TOKEN: token})
             if code == 0 or 'Cerrá la aplicación' not in output:
                 break
-            self.system.sleep(1)  # el proceso anterior todavía libera su bloqueo de instancia
+            self.system.sleep(1)
         if code != 0:
             detail = output.strip().splitlines()[-1][:200] if output.strip() else 'sin detalle'
             raise UpdateError(f'La migración de la base falló: {detail}')
 
-    def check_running(self, version: str, owner: str | None, password: str) -> None:
+    # --- paso 7 -----------------------------------------------------------------------------
+    def check_running(self, version: str, auth: Authorization, password: str, token: str) -> None:
         self.report(7, 'Comprobando la nueva versión…')
         if self.installed_version() != version:
             raise UpdateError('La versión instalada no es la esperada')
-        process = self.system.start_pos()
+        process = self.system.start_pos({ENV_TOKEN: token})
         api = self.system.api()
         try:
             for _ in range(120):
@@ -321,11 +495,9 @@ class Updater:
                 self.system.sleep(0.5)
             else:
                 raise UpdateError('La nueva versión no respondió a tiempo')
-            if owner is not None:
-                user = api.login(owner, password)
-                if user.get('role') != 'ADMIN':
+            if auth.owner is not None:
+                if api.login(auth.owner, password).get('role') != 'ADMIN':
                     raise UpdateError('La cuenta del dueño no quedó como ADMIN')
-            if owner is not None:
                 api.shutdown()
                 process.wait(timeout=30)
         finally:
@@ -335,59 +507,180 @@ class Updater:
                     process.wait(timeout=15)
                 except subprocess.TimeoutExpired:
                     process.kill()
+                    process.wait(timeout=15)
 
-    def restore(self) -> None:
-        rollback = self.paths.rollback
-        if not (rollback / 'meta.json').exists():
-            raise UpdateError('No hay copia previa para restaurar')
-        if (rollback / 'app').exists():
-            package.copy_tree(rollback / 'app', self.paths.app_dir)
-        for suffix in ('-wal', '-shm', ''):
-            self.paths.database.with_name('pos.db' + suffix).unlink(missing_ok=True)
-        for saved in (rollback / 'data').iterdir():
-            self.paths.database.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(saved, self.paths.database.parent / saved.name)
+    # --- restauración (idempotente) -----------------------------------------------------------
+    def restore(self, snapshot_id: str) -> None:
+        meta = self.verify_snapshot(snapshot_id)  # nada se toca si la copia no es confiable
+        folder = self.paths.rollback / snapshot_id
+        app_dir = self.paths.app_dir
+        staging = app_dir.with_name(app_dir.name + '.restaurando')
+        discarded = app_dir.with_name(app_dir.name + f'.descartado-{snapshot_id}')
+        if meta['app_present']:
+            shutil.rmtree(staging, ignore_errors=True)
+            shutil.copytree(folder / 'app', staging, symlinks=False)
+            fsync_tree(staging)
+            if tree_manifest(staging) != meta['app']:
+                raise UpdateError('La restauración del programa no se pudo verificar')
+            if app_dir.exists():
+                shutil.rmtree(discarded, ignore_errors=True)
+                os.replace(app_dir, discarded)
+            os.replace(staging, app_dir)
+        elif app_dir.exists():
+            shutil.rmtree(discarded, ignore_errors=True)
+            os.replace(app_dir, discarded)
+        shutil.rmtree(discarded, ignore_errors=True)
+        data_dir = self.paths.database.parent
+        data_dir.mkdir(parents=True, exist_ok=True)
+        # Primero quitar WAL/SHM ajenos: un WAL nuevo sobre una base vieja la corrompe.
+        for name in DB_FILES:
+            if name not in meta['data']:
+                (data_dir / name).unlink(missing_ok=True)
+        for name in meta['data']:
+            staged = data_dir / f'{name}.restaurando'
+            shutil.copy2(folder / 'data' / name, staged)
+            with staged.open('rb') as stream:
+                os.fsync(stream.fileno())
+            os.replace(staged, data_dir / name)
+        restored = {name: file_sha256(data_dir / name) for name in meta['data']}
+        if restored != meta['data'] or (meta['app_present'] and tree_manifest(app_dir) != meta['app']):
+            raise UpdateError('La restauración no coincide con la copia; reintentá la recuperación')
 
-    def update(self, package_path: Path, owner: str | None, password: str) -> str:
-        manifest, installer = self.verify(package_path)
-        from_version = self.installed_version()
-        if self.paths.restore_journal.exists():
-            raise UpdateError('Hay una restauración interrumpida. Resolvela con "Recuperar restauración interrumpida".')
-        self.log(f'Inicio: {from_version} -> {manifest.version}')
-        self.stop_pos(owner, password)
-        self.snapshot(from_version)
+    def prune(self, keep: str) -> None:
+        if not self.paths.rollback.exists():
+            return
+        for folder in self.paths.rollback.iterdir():
+            if folder.name != keep:
+                shutil.rmtree(folder, ignore_errors=True)
+
+    # --- orquestación ---------------------------------------------------------------------------
+    @contextmanager
+    def exclusive(self) -> Iterator[None]:
         try:
-            self.install(installer, password)
-            self.check_running(manifest.version, owner, password)
-        except Exception as exc:
-            self.log(f'Error: {exc}. Restaurando {from_version}.')
-            self.report(0, 'Error: restaurando versión y datos anteriores…')
+            self.mutex.acquire()
+        except LockBusy as exc:
+            raise UpdateError('Ya hay otro actualizador abierto') from exc
+        try:
+            yield
+        finally:
+            self.mutex.release()
+
+    def update(self, package_path: Path, technician: str, owner_password: str) -> str:
+        with self.exclusive():
+            if self.pending():
+                raise UpdateError('Hay una actualización interrumpida: recuperala primero')
+            if self.paths.restore_journal.exists():
+                raise UpdateError('Hay una restauración interrumpida del POS. Resolvela con "Recuperar restauración interrumpida".')
+            self.state()  # estado dañado: frena antes de tocar nada
+            manifest, installer = self.verify(package_path)
+            from_version = self.installed_version()
+            auth = self.authorize(technician, owner_password)  # revalidación inmediata antes de actuar
+            lock = self.stop_pos(auth, owner_password)
+            journal = {'id': secrets.token_hex(8), 'phase': 'snapshotting', 'from_version': from_version,
+                       'to_version': manifest.version, 'handoff_token': '', 'started_at': now(), 'updated_at': now()}
             try:
-                self.restore()
-            except Exception as restore_exc:  # noqa: BLE001 - doble falla: se informa al técnico
-                self.log(f'FALLÓ LA RESTAURACIÓN: {restore_exc}')
-                raise UpdateError(f'{exc}. ATENCIÓN: no se pudo restaurar automáticamente; la copia está en {self.paths.rollback}') from exc
-            self.log('Restauración completa')
-            raise UpdateError(f'{exc}. Se restauraron la versión {from_version or "anterior"} y sus datos.') from exc
-        state = self.state()
-        highest = state.get('highest_installed')
-        if not highest or package.parse_version(manifest.version) > package.parse_version(highest):
-            highest = manifest.version
-        self.paths.state.write_text(json.dumps({'installed_version': manifest.version, 'highest_installed': highest,
-                                               'updated_at': datetime.now().astimezone().isoformat()}), encoding='utf-8')
+                atomic_write_json(self.paths.journal, journal)
+                self.log(f'Inicio {journal["id"]}: {from_version} -> {manifest.version}')
+                try:
+                    self.snapshot(journal)
+                except Exception:
+                    shutil.rmtree(self.paths.rollback / journal['id'], ignore_errors=True)
+                    self.paths.journal.unlink(missing_ok=True)
+                    raise
+                journal = self.set_phase(journal, 'snapshot_ok')
+            finally:
+                lock.release()  # el journal ya bloquea el arranque; Inno exige el mutex libre
+            try:
+                journal = self.set_phase(journal, 'installing')
+                self.install(installer, manifest)
+                token = secrets.token_hex(32)
+                journal = self.set_phase(journal, 'migrating', handoff_token=token)
+                self.migrate(owner_password, token)
+                journal = self.set_phase(journal, 'checking')
+                self.check_running(manifest.version, auth, owner_password, token)
+            except Exception as exc:
+                self.log(f'Error {journal["id"]}: {exc}. Restaurando {from_version}.')
+                self.report(0, 'Error: restaurando versión y datos anteriores…')
+                try:
+                    self._recover(journal)
+                except UpdateError as restore_exc:
+                    self.log(f'RECUPERACIÓN PENDIENTE {journal["id"]}: {restore_exc}')
+                    raise UpdateError(f'{exc}. ATENCIÓN: la restauración no terminó ({restore_exc}). '
+                                      'Cerrá todo y abrí de nuevo el actualizador para recuperar.') from exc
+                raise UpdateError(f'{exc}. Se restauraron la versión {from_version or "anterior"} y sus datos.') from exc
+            journal = self.set_phase(journal, 'committing', handoff_token='')
+            self._commit(journal)
+            self.report(8, f'Listo: versión {manifest.version} instalada y comprobada.')
+            return manifest.version
+
+    def _commit(self, journal: dict) -> None:
+        self.write_state(journal['to_version'])
+        self.paths.journal.unlink(missing_ok=True)
+        self.prune(keep=journal['id'])
         shutil.rmtree(self.paths.updates / 'tmp', ignore_errors=True)
-        self.log(f'Éxito: versión {manifest.version}')
-        self.report(8, f'Listo: versión {manifest.version} instalada y comprobada.')
-        return manifest.version
+        self.log(f'Éxito {journal["id"]}: versión {journal["to_version"]}')
+
+    def _recover(self, journal: dict) -> str:
+        """Lleva una actualización interrumpida a un estado final. Repetible."""
+        phase = journal['phase']
+        if phase == 'committing':
+            self._commit(journal)
+            return f'La versión {journal["to_version"]} ya estaba instalada; se completó el cierre.'
+        lock = self.system.pos_lock()
+        for attempt in range(20):
+            try:
+                lock.acquire()
+                break
+            except LockBusy as exc:
+                if attempt == 19:
+                    raise UpdateError('El POS está abierto: cerralo para poder recuperar') from exc
+                self.system.sleep(0.5)
+        try:
+            if phase == 'snapshotting':  # no se llegó a tocar programa ni datos
+                shutil.rmtree(self.paths.rollback / journal['id'], ignore_errors=True)
+                self.paths.journal.unlink(missing_ok=True)
+                self.log(f'Recuperado {journal["id"]}: interrumpida antes de modificar; nada que restaurar')
+                return 'La actualización se cortó antes de modificar nada.'
+            self.set_phase(journal, 'restoring', handoff_token='')
+            self.restore(journal['id'])
+            self.paths.journal.unlink(missing_ok=True)
+            self.log(f'Restaurado {journal["id"]}: versión {journal["from_version"]}')
+            return f'Se restauraron la versión {journal["from_version"] or "anterior"} y sus datos.'
+        finally:
+            lock.release()
+
+    def recover(self, technician: str = '', owner_password: str = '') -> str:
+        """Recuperación tras corte o cierre forzado: clave del técnico O contraseña del dueño
+        (validada contra la copia verificada, porque la base actual puede estar a medio migrar)."""
+        with self.exclusive():
+            journal = self.pending()
+            if journal is None:
+                return 'No hay actualizaciones interrumpidas.'
+            try:
+                if technician:
+                    check_technician(self.trust.get('technician_hash', ''), technician, self.technician_limiter)
+                else:
+                    if journal['phase'] not in ('snapshotting', 'committing'):
+                        self.verify_snapshot(journal['id'])
+                    copy = self.paths.rollback / journal['id'] / 'data'
+                    folder = copy if (copy / 'pos.db').exists() else self.paths.database.parent
+                    with tempfile.TemporaryDirectory(dir=self.paths.updates) as scratch:
+                        for name in DB_FILES:
+                            if (folder / name).exists():
+                                shutil.copy2(folder / name, Path(scratch) / name)
+                        if check_owner(Path(scratch) / 'pos.db', owner_password, self.owner_limiter) is None:
+                            raise AuthError('Sin cuenta de dueño en la copia: usá la clave del técnico')
+            except AuthError as exc:
+                raise UpdateError(str(exc)) from exc
+            return self._recover(journal)
 
 
 def load_trust() -> dict:
     base = Path(getattr(sys, '_MEIPASS', Path(__file__).parent))
-    candidates = [base / 'trust.json', base / 'gip_updater' / 'trust.json', Path(__file__).parent / 'trust.json']
-    for path in candidates:
+    for path in (base / 'trust.json', base / 'gip_updater' / 'trust.json', Path(__file__).parent / 'trust.json'):
         if path.is_file():
             data = json.loads(path.read_text(encoding='utf-8'))
-            if not data.get('public_key') or not data.get('technician_hash'):
+            if not (data.get('public_keys') or data.get('public_key')) or not data.get('technician_hash'):
                 raise UpdateError('Actualizador sin configurar: falta la clave pública o la clave del técnico')
             return data
     raise UpdateError('Actualizador sin configurar: falta trust.json')

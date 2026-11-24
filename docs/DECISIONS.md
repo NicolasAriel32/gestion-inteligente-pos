@@ -135,7 +135,7 @@ con respaldo al reemplazar voluntariamente binarios. Esas protecciones no consul
 versiones nuevas ni obligan a cambiar una instalación compatible. La aplicación no
 descarga ni instala actualizaciones al arrancar o cerrar.
 
-## ADR-016 — Actualizador externo firmado (aceptada, 2026-11-24)
+## ADR-019 — Actualizador externo firmado (aceptada, 2026-11-24)
 
 El propietario autoriza implementar el programa externo previsto en ADR-015, operado por
 el técnico en la PC del cliente. ADR-015 sigue vigente: el POS no consulta, descarga ni

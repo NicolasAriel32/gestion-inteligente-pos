@@ -57,9 +57,9 @@ def test_version_y_migracion_con_contrasena_por_stdin(env, tmp_path):
     right = pos(env, '--prepare-stdin', stdin=PW + '\n')
     assert right.returncode == 0, right.stderr
     assert 'Respaldo previo guardado' in right.stdout and PW not in right.stdout + right.stderr
-    assert check_owner(database, PW, Limiter(tmp_path / 'l.json')) == 'owner'
+    assert check_owner(database, PW, Limiter(tmp_path / 'l.json', 'dueño')) == 'owner'
     with pytest.raises(AuthError):
-        check_owner(database, 'otra-cosa-larga', Limiter(tmp_path / 'l.json'))
+        check_owner(database, 'otra-cosa-larga', Limiter(tmp_path / 'l.json', 'dueño'))
 
 
 def test_cierre_ordenado_por_api_y_no_migra_con_pos_abierto(env, tmp_path):
@@ -76,3 +76,22 @@ def test_cierre_ordenado_por_api_y_no_migra_con_pos_abierto(env, tmp_path):
     finally:
         if server.poll() is None:
             server.kill()
+
+
+def test_pos_real_respeta_el_bloqueo_de_mantenimiento(env, tmp_path):
+    """Con journal de actualización el POS no arranca ni migra; solo el traspaso correcto pasa."""
+    import json
+    journal = tmp_path / 'GestionInteligentePOS' / 'updates' / 'update-journal.json'
+    journal.parent.mkdir(parents=True)
+    token = 'c' * 64
+    journal.write_text(json.dumps({'phase': 'installing', 'handoff_token': token}))
+    for args in (['--no-browser'], ['--prepare-stdin'], ['--recover-restore']):
+        blocked = pos({**env, 'GIP_MAINTENANCE_TOKEN': token}, *args, stdin='\n')
+        assert blocked.returncode == 3 and 'actualización del POS' in blocked.stdout
+    assert pos(env, '--version').returncode == 0  # informar la versión no toca datos
+    journal.write_text(json.dumps({'phase': 'migrating', 'handoff_token': token}))
+    assert pos(env, '--prepare-stdin', stdin='\n').returncode == 3  # sin token
+    allowed = pos({**env, 'GIP_MAINTENANCE_TOKEN': token}, '--prepare-stdin', stdin='\n')
+    assert allowed.returncode == 0, allowed.stdout + allowed.stderr
+    journal.write_text('{dañado')
+    assert pos({**env, 'GIP_MAINTENANCE_TOKEN': token}, '--prepare-stdin', stdin='\n').returncode == 3

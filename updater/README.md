@@ -2,7 +2,7 @@
 
 Programa separado que el técnico usa en la PC del cliente para instalar una versión nueva
 del POS. Se instala aparte (`%LOCALAPPDATA%\Programs\GestionInteligentePOS-Actualizador`)
-porque tiene que poder reemplazar la carpeta del POS. Decisión: ADR-016.
+porque tiene que poder reemplazar la carpeta del POS. Decisión: ADR-019.
 
 ## Seguridad en una línea
 

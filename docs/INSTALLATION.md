@@ -48,7 +48,7 @@ Herramienta administrativa con estado, fecha y resultado. Antes de restaurar det
 Actualizador separado, iniciado por usuario: comprobar versión, descargar paquete por canal seguro cuando exista internet, validar firma/autenticidad + integridad, crear backup, detener proceso, aplicar actualización y migración, comprobar salud y permitir recuperación. Nunca reemplazar binarios mientras están en uso ni prometer rollback de datos sin prueba.
 
 En la primera versión se acepta actualización manual asistida y documentada; no se implementa actualizador silencioso.
-Desde ADR-016 existe además el actualizador firmado del técnico (programa aparte, se abre a mano): ver updater/README.md.
+Desde ADR-019 existe además el actualizador firmado del técnico (programa aparte, se abre a mano): ver updater/README.md.
 
 ## Pruebas en PC limpia
 - Instalación y primer ADMIN desde cero.
@@ -119,4 +119,4 @@ no pedir claves fiscales por chat ni incluirlas en paquetes, logs o repositorio.
 Arranque y gestión local siguen disponibles sin internet o actualización. La autorización
 fiscal y la contingencia aplicable tienen requisitos de comunicación/operación propios.
 No prometer facturación comercial siempre offline a partir de las pruebas locales.
-Alcance y puesta en servicio: FISCAL_INVOICING.md / ADR-016.
+Alcance y puesta en servicio: FISCAL_INVOICING.md / ADR-019.
